@@ -1,5 +1,5 @@
 Package: DTedit
-Title: Editable DataTables for shiny apps.
+Title: Editable DataTables for shiny apps
 Version: 1.0.0
 Authors@R: person("Jason", "Bryer", email = "jason@bryer.org", role = c("aut", "cre"))
 Description: This package extends the DT::DataTable to allow users to create, edit, and delete

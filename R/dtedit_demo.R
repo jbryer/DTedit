@@ -2,6 +2,7 @@
 #'
 #' @export
 dtedit_demo <- function() {
-	dir <- find.package('DTedit')
-	shiny::runApp(paste0(dir, '/inst/shiny'))
+	dir <- paste0(find.package('DTedit'), '/inst/shiny_demo')
+	message(paste0("Running shiny app from ", dir))
+	shiny::runApp(appDir = dir)
 }

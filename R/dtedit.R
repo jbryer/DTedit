@@ -36,8 +36,8 @@
 #'        This can be a subset of the full \code{data.frame}.
 #' @param edit.cols character vector with the column names the user can edit/add.
 #'        This can be a subset of the full \code{data.frame}.
-#' @param edit.cols.labels character vector with the labels to use on the edit
-#'        and add dialogs. The length and order of \{code.cols.labels} must
+#' @param edit.label.cols character vector with the labels to use on the edit
+#'        and add dialogs. The length and order of \code{code.cols.labels} must
 #'        correspond to \code{edit.cols}.
 #' @param input.types a character vector where the name corresponds to a column
 #'        in \code{edit.cols} and the value is the input type. Possible values
@@ -45,28 +45,35 @@
 #'        \code{textInput}, \code{textAreaInput}, or \code{passwordInput}.
 #'        The most common case where this parameter is desirable is when a text
 #'        area is required instead of a simple text input.
-#' @param input.choices
+#' @param input.choices a list of character vectors. The names of each element in the list must
+#'        correpsond to a column name in the data. The value, a character vector, are the options
+#'        presented to the user for data entry.
+#' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
+#' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
-#' @param text.width
-#' @param textarea.width
-#' @param textarea.height
-#' @param date.width
-#' @param numeric.width
-#' @param select.width
-#' @param title.delete
-#' @param title.edit
-#' @param title.add
-#' @param label.delete
-#' @param label.edit
-#' @param label.add
-#' @param label.copy
-#' @param show.delete
-#' @param show.update
-#' @param show.insert
-#' @param show.copy
-#' @param callback.delete
-#' @param callback.update
-#' @param callback.insert
+#' @param text.width width of text inputs.
+#' @param textarea.width the width of text area inputs.
+#' @param textarea.height the height of text area inputs.
+#' @param date.width the width of data inputs
+#' @param numeric.width the width of numeric inputs.
+#' @param select.width the width of drop down inputs.
+#' @param title.delete the title of the dialog box for deleting a row.
+#' @param title.edit the title of the dialog box for editing a row.
+#' @param title.add the title of the dialog box for inserting a new row.
+#' @param label.delete the label of the delete button.
+#' @param label.edit the label of the edit button.
+#' @param label.add the label of the add button.
+#' @param label.copy the label of the copy button.
+#' @param show.delete whether to show/enable the delete button.
+#' @param show.update whether to show/enable the update button.
+#' @param show.insert whether to show/enable the insert button.
+#' @param show.copy whether to show/enablre the copy button.
+#' @param callback.delete a function called when the user deletes a row. This function should
+#'        return an updated data.frame.
+#' @param callback.update a function called when the user updates a row. This function should
+#'        return an updated data.frame.
+#' @param callback.insert a function called when the user inserts a new row. This function should
+#'        return an updated data.frame.
 #' @param click.time.threshold This is to prevent duplicate entries usually by double clicking the
 #'        save or update buttons. If the user clicks the save button again within this amount of
 #'        time (in seconds), the subsequent click will be ignored. Set to zero to disable this
@@ -116,7 +123,7 @@ dtedit <- function(input, output, name, thedata,
 
 	DataTableName <- paste0(name, 'dt')
 
-	result <- reactiveValues()
+	result <- shiny::reactiveValues()
 	result$thedata <- thedata
 	result$view.cols <- view.cols
 	result$edit.cols <- edit.cols
@@ -124,7 +131,7 @@ dtedit <- function(input, output, name, thedata,
 	dt.proxy <- DT::dataTableProxy(DataTableName)
 
 	selectInputMultiple <- function(...) {
-		selectInput(multiple = TRUE, selectize = selectize, ...)
+		shiny::selectInput(multiple = TRUE, selectize = selectize, ...)
 	}
 
 	valid.input.types <- c('dateInput', 'selectInput', 'numericInput',
@@ -200,32 +207,32 @@ dtedit <- function(input, output, name, thedata,
 
 			} else if(inputTypes[i] == 'selectInput') {
 				value <- ifelse(missing(values), '', as.character(values[,edit.cols[i]]))
-				fields[[i]] <- selectInput(paste0(name, typeName, edit.cols[i]),
+				fields[[i]] <- shiny::selectInput(paste0(name, typeName, edit.cols[i]),
 										   label=edit.label.cols[i],
 										   choices=levels(result$thedata[,edit.cols[i]]),
 										   selected=value,
 										   width=select.width)
 			} else if(inputTypes[i] == 'numericInput') {
 				value <- ifelse(missing(values), 0, values[,edit.cols[i]])
-				fields[[i]] <- numericInput(paste0(name, typeName, edit.cols[i]),
+				fields[[i]] <- shiny::numericInput(paste0(name, typeName, edit.cols[i]),
 											label=edit.label.cols[i],
 											value=value,
 											width=numeric.width)
 			} else if(inputTypes[i] == 'textAreaInput') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
-				fields[[i]] <- textAreaInput(paste0(name, typeName, edit.cols[i]),
+				fields[[i]] <- shiny::textAreaInput(paste0(name, typeName, edit.cols[i]),
 											 label=edit.label.cols[i],
 											 value=value,
 											 width=textarea.width, height=textarea.height)
 			} else if(inputTypes[i] == 'textInput') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
-				fields[[i]] <- textInput(paste0(name, typeName, edit.cols[i]),
+				fields[[i]] <- shiny::textInput(paste0(name, typeName, edit.cols[i]),
 										 label=edit.label.cols[i],
 										 value=value,
 										 width=text.width)
 			} else if(inputTypes[i] == 'passwordInput') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
-				fields[[i]] <- passwordInput(paste0(name, typeName, edit.cols[i]),
+				fields[[i]] <- shiny::passwordInput(paste0(name, typeName, edit.cols[i]),
 										 label=edit.label.cols[i],
 										 value=value,
 										 width=text.width)
@@ -236,7 +243,7 @@ dtedit <- function(input, output, name, thedata,
 		return(fields)
 	}
 
-	output[[paste0(name, '_message')]] <- renderText('')
+	output[[paste0(name, '_message')]] <- shiny::renderText('')
 
 	updateData <- function(proxy, data, ...) {
 		# Convert any list columns to characters before displaying
@@ -252,7 +259,7 @@ dtedit <- function(input, output, name, thedata,
 
 	observeEvent(input[[paste0(name, '_add')]], {
 		if(!is.null(row)) {
-			showModal(addModal())
+			shiny::showModal(addModal())
 		}
 	})
 
@@ -288,22 +295,22 @@ dtedit <- function(input, output, name, thedata,
 			updateData(dt.proxy,
 						result$thedata[,view.cols],
 						rownames = FALSE)
-			removeModal()
+			shiny::removeModal()
 			return(TRUE)
 		}, error = function(e) {
-		 	output[[paste0(name, '_message')]] <<- renderText(geterrmessage())
+		 	output[[paste0(name, '_message')]] <<- shiny::renderText(geterrmessage())
 		 	return(FALSE)
 		})
 	})
 
 	addModal <- function(row, values) {
-		output[[paste0(name, '_message')]] <- renderText('')
+		output[[paste0(name, '_message')]] <- shiny::renderText('')
 		fields <- getFields('_add_', values)
-		modalDialog(title = title.add,
-					div(textOutput(paste0(name, '_message')), style='color:red'),
+		shiny::modalDialog(title = title.add,
+					shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 					fields,
-					footer = column(modalButton('Cancel'),
-									actionButton(paste0(name, '_insert'), 'Save'),
+					footer = shiny::column(shiny::modalButton('Cancel'),
+									shiny::actionButton(paste0(name, '_insert'), 'Save'),
 									width=12),
 					size = modal.size
 		)
@@ -315,11 +322,10 @@ dtedit <- function(input, output, name, thedata,
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
 			if(row > 0) {
-				showModal(addModal(values=result$thedata[row,]))
+				shiny::showModal(addModal(values=result$thedata[row,]))
 			}
 		}
 	})
-
 
 	##### Update functions #####################################################
 
@@ -327,7 +333,7 @@ dtedit <- function(input, output, name, thedata,
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
 			if(row > 0) {
-				showModal(editModal(row))
+				shiny::showModal(editModal(row))
 			}
 		}
 	})
@@ -367,10 +373,10 @@ dtedit <- function(input, output, name, thedata,
 					updateData(dt.proxy,
 								result$thedata[,view.cols],
 								rownames = FALSE)
-					removeModal()
+					shiny::removeModal()
 					return(TRUE)
 				}, error = function(e) {
-					output[[paste0(name, '_message')]] <<- renderText(geterrmessage())
+					output[[paste0(name, '_message')]] <<- shiny::renderText(geterrmessage())
 					return(FALSE)
 				})
 			}
@@ -381,11 +387,11 @@ dtedit <- function(input, output, name, thedata,
 	editModal <- function(row) {
 		output[[paste0(name, '_message')]] <- renderText('')
 		fields <- getFields('_edit_', values=result$thedata[row,])
-		modalDialog(title = title.edit,
-			div(textOutput(paste0(name, '_message')), style='color:red'),
+		shiny::modalDialog(title = title.edit,
+			shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 			fields,
-			footer = column(modalButton('Cancel'),
-							actionButton(paste0(name, '_update'), 'Save'),
+			footer = column(shiny::modalButton('Cancel'),
+							shiny::actionButton(paste0(name, '_update'), 'Save'),
 							width=12),
 			size = modal.size
 		)
@@ -397,7 +403,7 @@ dtedit <- function(input, output, name, thedata,
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
 			if(row > 0) {
-				showModal(deleteModal(row))
+				shiny::showModal(deleteModal(row))
 			}
 		}
 	})
@@ -415,7 +421,7 @@ dtedit <- function(input, output, name, thedata,
 				updateData(dt.proxy,
 							result$thedata[,view.cols],
 							rownames = FALSE)
-				removeModal()
+				shiny::removeModal()
 				return(TRUE)
 			}
 		}
@@ -427,11 +433,11 @@ dtedit <- function(input, output, name, thedata,
 		for(i in view.cols) {
 			fields[[i]] <- div(paste0(i, ' = ', result$thedata[row,i]))
 		}
-		modalDialog(title = title.delete,
-					p('Are you sure you want to delete this record?'),
+		shiny::modalDialog(title = title.delete,
+					shiny::p('Are you sure you want to delete this record?'),
 					fields,
-					footer = column(modalButton('Cancel'),
-									actionButton(paste0(name, '_delete'), 'Delete'),
+					footer = shiny::column(modalButton('Cancel'),
+									shiny::actionButton(paste0(name, '_delete'), 'Delete'),
 									width=12),
 					size = modal.size
 		)
@@ -439,14 +445,13 @@ dtedit <- function(input, output, name, thedata,
 
 	##### Build the UI for the DataTable and buttons ###########################
 
-	output[[name]] <- renderUI({
-		div(
-			if(show.insert) { actionButton(paste0(name, '_add'), label.add) },
-			if(show.update) { actionButton(paste0(name, '_edit'), label.edit) },
-			if(show.delete) { actionButton(paste0(name, '_remove'), label.delete) },
-			if(show.copy) { actionButton(paste0(name, '_copy'), label.copy) },
-			br(), br(), DT::dataTableOutput(DataTableName)
-
+	output[[name]] <- shiny::renderUI({
+		shiny::div(
+			if(show.insert) { shiny::actionButton(paste0(name, '_add'), label.add) },
+			if(show.update) { shiny::actionButton(paste0(name, '_edit'), label.edit) },
+			if(show.delete) { shiny::actionButton(paste0(name, '_remove'), label.delete) },
+			if(show.copy) { shiny::actionButton(paste0(name, '_copy'), label.copy) },
+			shiny::br(), shiny::br(), DT::dataTableOutput(DataTableName)
 		)
 	})
 

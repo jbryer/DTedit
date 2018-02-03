@@ -3,7 +3,7 @@ library(devtools)
 document()
 build()
 install()
-check()
+check(cran = TRUE)
 
 library(DTedit)
 

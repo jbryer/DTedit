@@ -34,6 +34,10 @@ This can be a subset of the full \code{data.frame}.}
 \item{edit.cols}{character vector with the column names the user can edit/add.
 This can be a subset of the full \code{data.frame}.}
 
+\item{edit.label.cols}{character vector with the labels to use on the edit
+and add dialogs. The length and order of \code{code.cols.labels} must
+correspond to \code{edit.cols}.}
+
 \item{input.types}{a character vector where the name corresponds to a column
 in \code{edit.cols} and the value is the input type. Possible values
 are \code{dateInput}, \code{selectInput}, \code{numericInput},
@@ -41,7 +45,58 @@ are \code{dateInput}, \code{selectInput}, \code{numericInput},
 The most common case where this parameter is desirable is when a text
 area is required instead of a simple text input.}
 
+\item{input.choices}{a list of character vectors. The names of each element in the list must
+correpsond to a column name in the data. The value, a character vector, are the options
+presented to the user for data entry.}
+
+\item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}
+
 \item{modal.size}{the size of the modal dialog. See \code{\link{modalDialog}}.}
+
+\item{text.width}{width of text inputs.}
+
+\item{textarea.width}{the width of text area inputs.}
+
+\item{textarea.height}{the height of text area inputs.}
+
+\item{date.width}{the width of data inputs}
+
+\item{numeric.width}{the width of numeric inputs.}
+
+\item{select.width}{the width of drop down inputs.}
+
+\item{defaultPageLength}{number of rows to show in the data table by default.}
+
+\item{title.delete}{the title of the dialog box for deleting a row.}
+
+\item{title.edit}{the title of the dialog box for editing a row.}
+
+\item{title.add}{the title of the dialog box for inserting a new row.}
+
+\item{label.delete}{the label of the delete button.}
+
+\item{label.edit}{the label of the edit button.}
+
+\item{label.add}{the label of the add button.}
+
+\item{label.copy}{the label of the copy button.}
+
+\item{show.delete}{whether to show/enable the delete button.}
+
+\item{show.update}{whether to show/enable the update button.}
+
+\item{show.insert}{whether to show/enable the insert button.}
+
+\item{show.copy}{whether to show/enablre the copy button.}
+
+\item{callback.delete}{a function called when the user deletes a row. This function should
+return an updated data.frame.}
+
+\item{callback.update}{a function called when the user updates a row. This function should
+return an updated data.frame.}
+
+\item{callback.insert}{a function called when the user inserts a new row. This function should
+return an updated data.frame.}
 
 \item{click.time.threshold}{This is to prevent duplicate entries usually by double clicking the
 save or update buttons. If the user clicks the save button again within this amount of
