@@ -1,0 +1,6 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+build.R
+.gitignore
+.Rhistory
+README.md
