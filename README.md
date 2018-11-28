@@ -5,13 +5,13 @@
 
 Use the `devtools` package to install the development version of `DTedit`:
 
-```
+```r
 devtools::install_github('jbryer/DTedit')
 ```
 
 The `dtedit_demo` will run a sample `shiny` app with to editable data tables.
 
-```
+```r
 DTedit::dtedit_demo()
 ```
 
@@ -25,7 +25,7 @@ There are three steps to using `DTedit` in your shiny application.
 
 1. Define callback function for inserting, updating, and deleting data.
 
-```
+```r
 my.insert.callback <- function(data, row) {
 	mydata <- rbind(data, mydata)
 	return(mydata)
@@ -46,7 +46,7 @@ Typically these functions would interact with a database. As written here, the d
 
 2. Create the `dtedit` object within your `server` function. 
 
-```
+```r
 DTedit::dtedit(input, output,
 	   name = 'mycontacts',
 	   thedata = mydata,
@@ -65,6 +65,6 @@ The `input` and `output` are passed from the `server` function. The `name` param
 
 The `name` you will pass to `uiOutput` is the name you passed to the `dtedit` created on the server side.
 
-```
+```r
 uiOutput('mycontacts')
 ```
