@@ -21,7 +21,7 @@ server <- function(input, output) {
 	}
 
 	my.delete.callback <- function(data, row) {
-		mydata[row,] <- NULL
+		mydata <- mydata[-row,]
 		return(mydata)
 	}
 
