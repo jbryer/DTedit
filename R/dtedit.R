@@ -338,7 +338,7 @@ dtedit <- function(input, output, name, thedata,
 		}
 	})
 
-	update.click <<- NA
+	update.click <- NA
 
 	observeEvent(input[[paste0(name, '_update')]], {
 		if(!is.na(update.click)) {
@@ -348,7 +348,7 @@ dtedit <- function(input, output, name, thedata,
 				return()
 			}
 		}
-		update.click <- Sys.time()
+		update.click <<- Sys.time()
 
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
