@@ -123,12 +123,12 @@ dtedit <- function(input, output, name, thedata,
 
 	DataTableName <- paste0(name, 'dt')
 
-	result <- shiny::reactiveValues()
+	result <<- shiny::reactiveValues()
 	result$thedata <- thedata
 	result$view.cols <- view.cols
 	result$edit.cols <- edit.cols
 
-	dt.proxy <- DT::dataTableProxy(DataTableName)
+	dt.proxy <<- DT::dataTableProxy(DataTableName)
 
 	selectInputMultiple <- function(...) {
 		shiny::selectInput(multiple = TRUE, selectize = selectize, ...)
