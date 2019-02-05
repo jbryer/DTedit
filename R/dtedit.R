@@ -78,6 +78,8 @@
 #'        save or update buttons. If the user clicks the save button again within this amount of
 #'        time (in seconds), the subsequent click will be ignored. Set to zero to disable this
 #'        feature. For developers, a message is printed using the warning function.
+#' @param datatable.options options passed to \code{\link{DT::renderDataTable}}.
+#'        See \link{https://rstudio.github.io/DT/options.html} for more information.
 #' @export
 dtedit <- function(input, output, name, thedata,
 				   view.cols = names(thedata),
@@ -108,7 +110,8 @@ dtedit <- function(input, output, name, thedata,
 				   callback.delete = function(data, row) { },
 				   callback.update = function(data, olddata, row) { },
 				   callback.insert = function(data, row) { },
-				   click.time.threshold = 2 # in seconds
+				   click.time.threshold = 2, # in seconds
+				   datatable.options = list(pageLength=defaultPageLength)
 ) {
 	# Some basic parameter checking
 	if(!is.data.frame(thedata) | ncol(thedata) < 1) {
@@ -168,7 +171,7 @@ dtedit <- function(input, output, name, thedata,
 
 	output[[DataTableName]] <- DT::renderDataTable({
 		thedata[,view.cols]
-	}, options = list(pageLength=defaultPageLength), server=TRUE, selection='single', rownames=FALSE)
+	}, options = datatable.options, server=TRUE, selection='single', rownames=FALSE)
 
 	getFields <- function(typeName, values) {
 		fields <- list()
@@ -338,7 +341,7 @@ dtedit <- function(input, output, name, thedata,
 		}
 	})
 
-	update.click <<- NA
+	update.click <- NA
 
 	observeEvent(input[[paste0(name, '_update')]], {
 		if(!is.na(update.click)) {

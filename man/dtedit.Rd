@@ -9,13 +9,15 @@ dtedit(input, output, name, thedata, view.cols = names(thedata),
   input.choices = NULL, selectize = TRUE, modal.size = "m",
   text.width = "100\%", textarea.width = "570px",
   textarea.height = "200px", date.width = "100px",
-  numeric.width = "100px", select.width = "100\%", defaultPageLength = 10,
-  title.delete = "Delete", title.edit = "Edit", title.add = "New",
-  label.delete = "Delete", label.edit = "Edit", label.add = "New",
-  label.copy = "Copy", show.delete = TRUE, show.update = TRUE,
-  show.insert = TRUE, show.copy = TRUE, callback.delete = function(data,
-  row) { }, callback.update = function(data, olddata, row) { },
-  callback.insert = function(data, row) { }, click.time.threshold = 2)
+  numeric.width = "100px", select.width = "100\%",
+  defaultPageLength = 10, title.delete = "Delete",
+  title.edit = "Edit", title.add = "New", label.delete = "Delete",
+  label.edit = "Edit", label.add = "New", label.copy = "Copy",
+  show.delete = TRUE, show.update = TRUE, show.insert = TRUE,
+  show.copy = TRUE, callback.delete = function(data, row) { },
+  callback.update = function(data, olddata, row) { },
+  callback.insert = function(data, row) { }, click.time.threshold = 2,
+  datatable.options = list(pageLength = defaultPageLength))
 }
 \arguments{
 \item{input}{Shiny input object passed from the server.}
@@ -102,6 +104,9 @@ return an updated data.frame.}
 save or update buttons. If the user clicks the save button again within this amount of
 time (in seconds), the subsequent click will be ignored. Set to zero to disable this
 feature. For developers, a message is printed using the warning function.}
+
+\item{datatable.options}{options passed to \code{\link{DT::renderDataTable}}.
+See \link{https://rstudio.github.io/DT/options.html} for more information.}
 }
 \description{
 This object will maintain data state. However, in order of the data to persist
