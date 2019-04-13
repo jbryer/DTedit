@@ -65,8 +65,8 @@ The `input` and `output` are passed from the `server` function. The `id` paramet
 
 3. Use `DTedit::dteditUI` in your UI to display the editable data table.
 
-The `name` you will pass to `dteditUI` is the id you passed to the `dtedit` created on the server side.
+The `id` you will pass to `dteditUI` is the id you passed to the `dtedit` created on the server side.
 
 ```r
-uiOutput('mycontacts')
+dteditUI('mycontacts')
 ```
