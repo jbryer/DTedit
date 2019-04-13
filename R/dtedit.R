@@ -79,11 +79,11 @@
 #'        See \link{https://rstudio.github.io/DT/options.html} for more information.
 #' @export
 dtedit <- function(input, output, session, thedataraw,
-                   view.cols = names(if(isolate(is.reactivevalues(thedataraw)))
+                   view.cols = names(if(isolate(is.reactive(thedataraw)))
                    {isolate(thedataraw())} 
                    else
                    {thedataraw}),
-                   edit.cols = names(if(isolate(is.reactivevalues(thedataraw)))
+                   edit.cols = names(if(isolate(is.reactive(thedataraw)))
                    {isolate(thedataraw())} 
                    else 
                    {thedataraw}),
@@ -116,7 +116,7 @@ dtedit <- function(input, output, session, thedataraw,
                    click.time.threshold = 2, # in seconds
                    datatable.options = list(pageLength=defaultPageLength)
 ) {
-  thedata <- if(is.reactivevalues(isolate(thedataraw)))
+  thedata <- if(is.reactive(isolate(thedataraw)))
   {isolate(thedataraw())} else {thedataraw}
   # if a reactive has been passed, obtain the value
   # Some basic parameter checking
@@ -137,7 +137,7 @@ dtedit <- function(input, output, session, thedataraw,
   result$thedata <- thedata
   result$view.cols <- view.cols
   result$edit.cols <- edit.cols
-  result$edit.count <- 0 # number of edits (Add/Delete/Edit/Copy)
+  result$edit.count <- 0 # number of edits (Add/Delete/Edit/Copy) through dtedit
   
   dt.proxy <- DT::dataTableProxy(DataTableName)
   
@@ -265,7 +265,6 @@ dtedit <- function(input, output, session, thedataraw,
       }
     }
     DT::replaceData(proxy, data, ...)
-    result$edit.count <- result$edit.count + 1
   }
   
   ##### Insert functions #####################################################
@@ -308,6 +307,7 @@ dtedit <- function(input, output, session, thedataraw,
       updateData(dt.proxy,
                  result$thedata[,view.cols],
                  rownames = FALSE)
+      result$edit.count <- result$edit.count + 1
       shiny::removeModal()
       return(TRUE)
     }, error = function(e) {
@@ -387,6 +387,7 @@ dtedit <- function(input, output, session, thedataraw,
           updateData(dt.proxy,
                      result$thedata[,view.cols],
                      rownames = FALSE)
+          result$edit.count <- result$edit.count + 1
           shiny::removeModal()
           return(TRUE)
         }, error = function(e) {
@@ -436,6 +437,7 @@ dtedit <- function(input, output, session, thedataraw,
         updateData(dt.proxy,
                    result$thedata[,view.cols],
                    rownames = FALSE)
+        result$edit.count <- result$edit.count + 1
         shiny::removeModal()
         return(TRUE)
       }
@@ -459,6 +461,17 @@ dtedit <- function(input, output, session, thedataraw,
     )
   }
   
+  ##### React to changes in 'thedataraw' if that variable is a reactive ######
+  
+  if (is.reactive(thedataraw)) {
+    observeEvent(thedataraw(), {
+      result$thedata <- isolate(thedataraw())
+      updateData(dt.proxy,
+                 result$thedata[,view.cols],
+                 rownames = FALSE)
+    })
+  }
+  
   ##### Build the UI for the DataTable and buttons ###########################
   
   output[[name]] <- shiny::renderUI({
@@ -472,7 +485,11 @@ dtedit <- function(input, output, session, thedataraw,
     )
   })
   
-  return(result)
+  return(list(thedata = reactive({result$thedata}),
+              edit.count = reactive({result$edit.count})))
+  # edit.count only incremented by changes made through dtedit GUI
+  # does not include edits created through response to changes in reactiveval 'thedataraw'
+  # this might help determine the source of changes in result$thedata
 }
 
 # Module UI function
