@@ -61,7 +61,7 @@ books.delete.callback <- function(data, row) {
 server <- function(input, output) {
 	books <- getBooks()
 	callModule(dtedit, 'books',
-		   thedataraw = books,
+		   thedataframe = books,
 		   edit.cols = c('Title', 'Authors', 'Date', 'Publisher'),
 		   edit.label.cols = c('Book Title', 'Authors', 'Publication Date', 'Publisher'),
 		   input.types = c(Title='textAreaInput'),
