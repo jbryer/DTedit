@@ -79,16 +79,46 @@ server <- function(input, output) {
 	
 	observe({
 	  print(namesdt$thedata())
-	  print(namesdt$edit.count())
+	  print(paste("Edit count:", namesdt$edit.count()))
+	})
+	
+	observeEvent(input$email_clean,{
+	  names(names()[0,]) # empty the dataframe
+	})
+	
+	observeEvent(input$email_add, {
+	  first <- c("April", "Bob", "Charles", "Deborah", "Elle", "Francis", "Grace", "Horace", "Indigo", "Jan", "Kel")
+	  second <- c("Zartus", "Yelland", "Xeron", "Wells", "Vorostek", "Ursida", "Tellus", "Smith", "Rose", "Quentin")
+	  email <- c("hotmail.com", "yahoo.com", "gmail.com", "outlook.com", "github.com", "bigpond.com", "medscape.com")
+	  extra_email <- data.frame( # create random user
+	    Name = paste(first[sample(1:length(first), 1)], second[sample(1:length(second), 1)]),
+	    Email = paste0(do.call(paste0, replicate(floor(runif(1, min=5, max=8)), sample(tolower(LETTERS), 1, TRUE), FALSE)),
+	                   '@',sample(email, 1)),
+	    Date = as.Date(Sys.Date()-sample(1:1000, 1), origin = "1970-01=01"),
+	    Type = factor(sample(c("Admin", "User"), 1), levels = c("Admin", "User")),
+	    stringsAsFactors = FALSE
+	  )
+	  names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))
 	})
 }
 
 ##### Create the shiny UI
 ui <- fluidPage(
-	h3('Books'),
-	dteditUI('books'),
-	hr(), h3('Email Addresses'),
-	dteditUI('names')
+  tabsetPanel(
+    type = "tabs",
+    tabPanel("Datatables",
+             h3('Books'),
+             dteditUI('books'),
+             hr(), h3('Email Addresses'),
+             dteditUI('names')
+    ),
+    tabPanel("Buttons",
+             wellPanel(
+               actionButton("email_add", "Add an email entry"),
+               actionButton("email_clean", "Delete entire email list")
+             )
+    )
+  )
 )
 
 shinyApp(ui = ui, server = server)
