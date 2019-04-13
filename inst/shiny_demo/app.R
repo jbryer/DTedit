@@ -1,6 +1,6 @@
 library(shiny)
 library(RSQLite)
-library(DTedit)
+source("../../R/dtedit.R")
 
 ##### Load books data.frame as a SQLite database
 conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
@@ -60,9 +60,8 @@ books.delete.callback <- function(data, row) {
 ##### Create the Shiny server
 server <- function(input, output) {
 	books <- getBooks()
-	dtedit(input, output,
-		   name = 'books',
-		   thedata = books,
+	callModule(dtedit, 'books',
+		   thedataraw = books,
 		   edit.cols = c('Title', 'Authors', 'Date', 'Publisher'),
 		   edit.label.cols = c('Book Title', 'Authors', 'Publication Date', 'Publisher'),
 		   input.types = c(Title='textAreaInput'),
@@ -76,15 +75,15 @@ server <- function(input, output) {
 						Type = factor(levels=c('Admin', 'User')),
 						stringsAsFactors=FALSE)
 	names$Date <- as.Date(names$Date, origin='1970-01-01')
-	namesdt <- dtedit(input, output, name = 'names', names)
+	namesdt <- callModule(dtedit, 'names', names)
 }
 
 ##### Create the shiny UI
 ui <- fluidPage(
 	h3('Books'),
-	uiOutput('books'),
+	dteditUI('books'),
 	hr(), h3('Email Addresses'),
-	uiOutput('names')
+	dteditUI('names')
 )
 
 shinyApp(ui = ui, server = server)
