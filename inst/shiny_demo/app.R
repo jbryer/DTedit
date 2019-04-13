@@ -79,6 +79,7 @@ server <- function(input, output) {
 	
 	observe({
 	  print(namesdt$thedata())
+	  names(as.data.frame(namesdt$thedata(), stringsasfactors = FALSE))
 	  print(paste("Edit count:", namesdt$edit.count()))
 	})
 	
@@ -92,7 +93,7 @@ server <- function(input, output) {
 	  email <- c("hotmail.com", "yahoo.com", "gmail.com", "outlook.com", "github.com", "bigpond.com", "medscape.com")
 	  extra_email <- data.frame( # create random user
 	    Name = paste(first[sample(1:length(first), 1)], second[sample(1:length(second), 1)]),
-	    Email = paste0(do.call(paste0, replicate(floor(runif(1, min=5, max=8)), sample(tolower(LETTERS), 1, TRUE), FALSE)),
+	    Email = paste0(do.call(paste0, replicate(sample(5:8, 1), sample(tolower(LETTERS), 1, TRUE), FALSE)),
 	                   '@',sample(email, 1)),
 	    Date = as.Date(Sys.Date()-sample(1:1000, 1), origin = "1970-01=01"),
 	    Type = factor(sample(c("Admin", "User"), 1), levels = c("Admin", "User")),
