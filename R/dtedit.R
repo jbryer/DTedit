@@ -1,4 +1,7 @@
-#' Function to create a DataTable with Add, Edit, and Delete buttons.
+#' Module to create a DataTable with Add, Edit, and Delete buttons.
+#'
+#' dtedit - server function
+#' dteditUI - ui function
 #'
 #' This object will maintain data state. However, in order of the data to persist
 #' between Shiny instances, data needs to be saved to some external format (e.g.
@@ -180,6 +183,8 @@ dtedit <- function(input, output, session, thedataframe,
   output[[DataTableName]] <- DT::renderDataTable({
     thedata[,view.cols]
   }, options = datatable.options, server=TRUE, selection='single', rownames=FALSE)
+  outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
+  # without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
   
   getFields <- function(typeName, values) {
     ns <- session$ns # need to use namespace for id elements in module
@@ -465,7 +470,7 @@ dtedit <- function(input, output, session, thedataframe,
   
   if (is.reactive(thedataframe)) {
     observeEvent(thedataframe(), {
-      result$thedata <- isolate(thedataframe())
+      result$thedata <- as.data.frame(isolate(thedataframe()))
       updateData(dt.proxy,
                  result$thedata[,view.cols],
                  rownames = FALSE)
@@ -484,6 +489,8 @@ dtedit <- function(input, output, session, thedataframe,
       shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
     )
   })
+  outputOptions(output, name, suspendWhenHidden = FALSE)
+  # if suspendWhenHidden is true, then the table is not rendered if the tab is hidden
   
   return(list(thedata = reactive({result$thedata}),
               edit.count = reactive({result$edit.count})))
