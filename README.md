@@ -1,5 +1,7 @@
 ## Editable DataTables for shiny apps.
 
+**Modularized version**
+
 **Author:** Jason Bryer, Ph.D.
 **Email:** jason@bryer.org
 
@@ -47,9 +49,9 @@ Typically these functions would interact with a database. As written here, the d
 2. Create the `dtedit` object within your `server` function. 
 
 ```r
-DTedit::dtedit(input, output,
-	   name = 'mycontacts',
-	   thedata = mydata,
+return_variables <- callModule(DTedit::dtedit, ,
+	   id = 'mycontacts',
+	   thedataframe = mydata,
 	   edit.cols = c('name', 'email', 'useR', 'notes'),
 	   edit.label.cols = c('Name', 'Email Address', 'Are they an R user?', 'Additional notes'),
 	   input.types = c(notes='textAreaInput'),
@@ -59,11 +61,11 @@ DTedit::dtedit(input, output,
 	   callback.delete = my.delete.callback)
 ```
 
-The `input` and `output` are passed from the `server` function. The `name` parameter will define the name of the object available to the `uiOutput`. The `thedata` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`. The structure of the `data.frame` will define the inputs (e.g. `factor`s will be drop down, `Date` will use `dateInput`, `numeric`s will use `numericInput`, etc.). There are many other parameters to custom the behavior of `dtedit`, see `?dtedit` for the full list.
+The `input` and `output` are passed from the `server` function. The `id` parameter will define the name of the object available to the `dteditUI`. The `thedataframe` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`. The structure of the `data.frame` will define the inputs (e.g. `factor`s will be drop down, `Date` will use `dateInput`, `numeric`s will use `numericInput`, etc.). `data.frame` can be a reactivevalue, in which case dtedit's own internal copy of the data will change when `data.frame` changes. Note that the reactivevalue object itself is passed, not the value (i.e. don't use '()' after the reactivevalue variable name). There are many other parameters to custom the behavior of `dtedit`, see `?dtedit` for the full list.
 
-3. Use `uiOutput` in your UI to display the editable data table.
+3. Use `DTedit::dteditUI` in your UI to display the editable data table.
 
-The `name` you will pass to `uiOutput` is the name you passed to the `dtedit` created on the server side.
+The `name` you will pass to `dteditUI` is the id you passed to the `dtedit` created on the server side.
 
 ```r
 uiOutput('mycontacts')
