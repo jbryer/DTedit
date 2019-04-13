@@ -71,11 +71,16 @@ server <- function(input, output) {
 		   callback.insert = books.insert.callback,
 		   callback.delete = books.delete.callback)
 
-	names <- data.frame(Name=character(), Email=character(), Date=numeric(),
-						Type = factor(levels=c('Admin', 'User')),
-						stringsAsFactors=FALSE)
-	names$Date <- as.Date(names$Date, origin='1970-01-01')
+	names <- reactiveVal()
+	names(data.frame(Name=character(), Email=character(), Date=as.Date(integer(), origin='1970-01-01'),
+	                 Type = factor(levels=c('Admin', 'User')),
+	                 stringsAsFactors=FALSE))
 	namesdt <- callModule(dtedit, 'names', names)
+	
+	observe({
+	  print(namesdt$thedata())
+	  print(namesdt$edit.count())
+	})
 }
 
 ##### Create the shiny UI
