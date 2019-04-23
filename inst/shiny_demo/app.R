@@ -71,11 +71,39 @@ server <- function(input, output) {
 		   callback.insert = books.insert.callback,
 		   callback.delete = books.delete.callback)
 
+	
+	names.Type <- reactiveVal()
+	names.Type(data.frame(Types = c("Admin", "User"), stringsAsFactors = FALSE))
+	names.Typedt <- callModule(dtedit, 'names.Type',
+	                           thedataframe = names.Type,
+	                           edit.cols = c("Types"),
+	                           input.types = c(Types = "textAreaInput"),
+	                           view.cols = c("Types"))
+
+	names.Types <- reactiveVal(isolate(names.Type()$Types))
+
 	names <- reactiveVal()
 	names(data.frame(Name=character(), Email=character(), Date=as.Date(integer(), origin='1970-01-01'),
-	                 Type = factor(levels=c('Admin', 'User')),
+	                 Type = isolate(factor(character(), levels = names.Types())),
 	                 stringsAsFactors=FALSE))
-	namesdt <- callModule(dtedit, 'names', names)
+	
+	observe({
+	        print(names.Typedt$thedata())
+	        names.Types(names.Typedt$thedata()$Types)
+	        isolate({
+	                print(names.Types())
+	                temp <- droplevels(names()) # names() factor levels cannot be altered directly
+	                levels(temp$Type) <- names.Types()
+	                names(temp)
+	        })
+	})
+	
+	namesdt <- callModule(dtedit, 'names', 
+	                      thedataframe = names,
+	                      input.types = c(Type = "selectInputReactive"),
+	                      input.choices = c(Type = "names.Types"),
+	                      input.choices.reactive = list(names.Types = names.Types)
+	                      )
 	
 	observe({
 	  print(namesdt$thedata())
@@ -96,7 +124,7 @@ server <- function(input, output) {
 	    Email = paste0(do.call(paste0, replicate(sample(5:8, 1), sample(tolower(LETTERS), 1, TRUE), FALSE)),
 	                   '@',sample(email, 1)),
 	    Date = as.Date(Sys.Date()-sample(1:1000, 1), origin = "1970-01=01"),
-	    Type = factor(sample(c("Admin", "User"), 1), levels = c("Admin", "User")),
+	    Type = factor(sample(names.Types(), 1), levels = names.Types()),
 	    stringsAsFactors = FALSE
 	  )
 	  names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))
@@ -107,16 +135,29 @@ server <- function(input, output) {
 ui <- fluidPage(
   tabsetPanel(
     type = "tabs",
-    tabPanel("Datatables",
+    tabPanel("Books",
              h3('Books'),
-             dteditUI('books'),
-             hr(), h3('Email Addresses'),
-             dteditUI('names')
+             dteditUI('books')
     ),
-    tabPanel("Buttons",
-             wellPanel(
-               actionButton("email_add", "Add an email entry"),
-               actionButton("email_clean", "Delete entire email list")
+    tabPanel("Emails",
+             tabsetPanel(
+                     type = "tabs",
+                     tabPanel("Users",
+                              h3('Email Addresses'),
+                              dteditUI('names')
+                     ),
+                     tabPanel("Add/Delete",
+                              wellPanel(
+                                      actionButton("email_add", "Add an email entry"),
+                                      actionButton("email_clean", "Delete entire email list")
+                              )
+                     ),
+                     tabPanel("User Types",
+                              wellPanel(
+                                      dteditUI("names.Type")
+                              )
+                
+                     )
              )
     )
   )

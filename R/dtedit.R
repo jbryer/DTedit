@@ -41,13 +41,19 @@
 #'        correspond to \code{edit.cols}.
 #' @param input.types a character vector where the name corresponds to a column
 #'        in \code{edit.cols} and the value is the input type. Possible values
-#'        are \code{dateInput}, \code{selectInput}, \code{numericInput},
-#'        \code{textInput}, \code{textAreaInput}, or \code{passwordInput}.
+#'        are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple}, 
+#'        \code{selectInputReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
+#'        or \code{passwordInput}.
 #'        The most common case where this parameter is desirable is when a text
 #'        area is required instead of a simple text input.
 #' @param input.choices a list of character vectors. The names of each element in the list must
-#'        correpsond to a column name in the data. The value, a character vector, are the options
-#'        presented to the user for data entry.
+#'        correspond to a column name in the data. The value, a character vector, are the options
+#'        presented to the user for data entry, in the case of input type \code{selectInput}).
+#'        In the case of input type \code{selectInputReactive}, the value is the name
+#'        of the reactive. in 'input.choices.reactive'
+#' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
+#'        to use for input type \code{selectInputReactive}. The reactive itself is a
+#'        character vector.
 #' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
@@ -93,6 +99,7 @@ dtedit <- function(input, output, session, thedataframe,
                    edit.label.cols = edit.cols,
                    input.types,
                    input.choices = NULL,
+                   input.choices.reactive = NULL,
                    selectize = TRUE,
                    modal.size = 'm',
                    text.width = '100%',
@@ -149,7 +156,8 @@ dtedit <- function(input, output, session, thedataframe,
         }
         
         valid.input.types <- c('dateInput', 'selectInput', 'numericInput',
-                               'textInput', 'textAreaInput', 'passwordInput', 'selectInputMultiple')
+                               'textInput', 'textAreaInput', 'passwordInput', 'selectInputMultiple',
+                               'selectInputReactive')
         inputTypes <- sapply(thedata[,edit.cols], FUN=function(x) {
                 switch(class(x),
                        list = 'selectInputMultiple',
@@ -157,7 +165,8 @@ dtedit <- function(input, output, session, thedataframe,
                        Date = 'dateInput',
                        factor = 'selectInput',
                        integer = 'numericInput',
-                       numeric = 'numericInput')
+                       numeric = 'numericInput',
+                       factor = 'selectInputReactive')
         })
         if(!missing(input.types)) {
                 if(!all(names(input.types) %in% edit.cols)) {
@@ -170,7 +179,6 @@ dtedit <- function(input, output, session, thedataframe,
                 }
                 inputTypes[names(input.types)] <- input.types
         }
-        
         # Convert any list columns to characters before displaying
         for(i in 1:ncol(thedata)) {
                 if(nrow(thedata) == 0) {
@@ -181,14 +189,18 @@ dtedit <- function(input, output, session, thedataframe,
         }
         
         output[[DataTableName]] <- DT::renderDataTable({
-                thedata[,view.cols]
+                subset(thedata, select = view.cols)
+                # was "thedata[,view.cols]", but that returns vector (not dataframe)
+                # if only one column in view.cols
         }, options = datatable.options, server=TRUE, selection='single', rownames=FALSE)
         outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
         # without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
         
         getFields <- function(typeName, values) {
+                # 'values' are current values of the row (if already existing, or being copied)
                 ns <- session$ns # need to use namespace for id elements in module
                 fields <- list()
+                print(paste("Data:", thedata))
                 for(i in seq_along(edit.cols)) {
                         if(inputTypes[i] == 'dateInput') {
                                 value <- ifelse(missing(values),
@@ -222,8 +234,28 @@ dtedit <- function(input, output, session, thedataframe,
                                                                    selected=value,
                                                                    width=select.width)
                                 
-                        } else if(inputTypes[i] == 'selectInput') {
+                        } else if (inputTypes[i] == 'selectInputReactive') {
                                 value <- ifelse(missing(values), '', as.character(values[,edit.cols[i]]))
+                                choices <- NULL
+                                if(!is.null(input.choices.reactive)) {
+                                        if(edit.cols[i] %in% names(input.choices)) {
+                                                choices <- input.choices.reactive[[input.choices[[edit.cols[i]]]]]()
+                                                # it is the responsiblity of the calling functions/reactive variable handlers
+                                                # that the list of choices includes all CURRENT choices that have already
+                                                # been chosen in the data.
+                                        }
+                                }
+                                if(is.null(choices)) {
+                                        warning(paste0("No choices available for ", edit.cols[i],
+                                                       '. Specify them using the input.choices and input.choices.reactive parameter'))
+                                }
+                                fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
+                                                                  label=edit.label.cols[i],
+                                                                  choices=choices,
+                                                                  selected=value,
+                                                                  width=select.width)
+                        } else if(inputTypes[i] == 'selectInput') {
+                                value <- ifelse(missing(values), '', as.character(subset(values, select = edit.cols[i])))
                                 fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
                                                                   label=edit.label.cols[i],
                                                                   choices=levels(result$thedata[,edit.cols[i]]),
@@ -264,6 +296,7 @@ dtedit <- function(input, output, session, thedataframe,
         
         updateData <- function(proxy, data, ...) {
                 # Convert any list columns to characters before displaying
+                
                 for(i in 1:ncol(data)) {
                         if(is.list(data[,i])) {
                                 data[,i] <- sapply(data[,i], FUN = function(x) { paste0(x, collapse = ', ') })
@@ -310,7 +343,9 @@ dtedit <- function(input, output, session, thedataframe,
                                 result$thedata <- newdata
                         }
                         updateData(dt.proxy,
-                                   result$thedata[,view.cols],
+                                   subset(result$thedata, select = view.cols),
+                                   # was "result$thedata[,view.cols]",
+                                   # but that returns vector if view.cols is a single column
                                    rownames = FALSE)
                         result$edit.count <- result$edit.count + 1
                         shiny::removeModal()
@@ -390,7 +425,10 @@ dtedit <- function(input, output, session, thedataframe,
                                                 result$thedata <- newdata
                                         }
                                         updateData(dt.proxy,
-                                                   result$thedata[,view.cols],
+                                                   subset(result$thedata, select = view.cols),
+                                                   # was "result$thedata[,view.cols]",
+                                                   # but that returns vector (not dataframe) if
+                                                   # view.cols is only a single column
                                                    rownames = FALSE)
                                         result$edit.count <- result$edit.count + 1
                                         shiny::removeModal()
@@ -407,7 +445,7 @@ dtedit <- function(input, output, session, thedataframe,
         editModal <- function(row) {
                 ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
                 output[[paste0(name, '_message')]] <- renderText('')
-                fields <- getFields('_edit_', values=result$thedata[row,])
+                fields <- getFields('_edit_', values=result$thedata[row,, drop=FALSE])
                 shiny::modalDialog(title = title.edit,
                                    shiny::div(shiny::textOutput(ns(paste0(name, '_message'))), style='color:red'),
                                    fields,
@@ -437,10 +475,15 @@ dtedit <- function(input, output, session, thedataframe,
                                 if(!is.null(newdata) & is.data.frame(newdata)) {
                                         result$thedata <- newdata
                                 } else {
-                                        result$thedata <- result$thedata[-row,]
+                                        result$thedata <- result$thedata[-row,,drop=FALSE]
+                                        # 'drop=FALSE' prevents the dataframe being reduced to a vector
+                                        # especially if only a single column
                                 }
                                 updateData(dt.proxy,
-                                           result$thedata[,view.cols],
+                                           subset(result$thedata, select = view.cols),
+                                           # was "result$thedata[,view.cols]",
+                                           # but this only returns a vector (instead of dataframe)
+                                           # if view.cols is single column
                                            rownames = FALSE)
                                 result$edit.count <- result$edit.count + 1
                                 shiny::removeModal()
@@ -472,7 +515,10 @@ dtedit <- function(input, output, session, thedataframe,
                 observeEvent(thedataframe(), {
                         result$thedata <- as.data.frame(isolate(thedataframe()))
                         updateData(dt.proxy,
-                                   result$thedata[,view.cols],
+                                   subset(result$thedata, select = view.cols),
+                                   # was "result$thedata[,view.cols]",
+                                   # but that returns vector (not dataframe)
+                                   # if view.cols is only a single column
                                    rownames = FALSE)
                 })
         }
