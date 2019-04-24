@@ -57,6 +57,40 @@ books.delete.callback <- function(data, row) {
 	return(getBooks())
 }
 
+names.Type.update.callback <- function(data, olddata, row) {
+  # update a user-type
+  # do not allow an updated user-type which is the same as another
+  ## if this is attempted, show a warning
+  if (data[row,] %in% data[-row,]) {
+    stop(paste0("Cannot change user-type to '", data[row,],"', that user-type already exists!"))
+  } 
+  return(data)
+}
+
+names.Type.insert.callback <- function(data, row) {
+  # insert a user-type
+  # do not allow a new user-type which is the same as an old one
+  ## if this is attempted, show a warning
+  if (data[row,] %in% data[-row,]) {
+    stop(paste0("Cannot add '", data[row,],"', that user-type already exists!"))
+  } 
+  return(data)
+}
+
+names.Type.delete.callback <- function(data, row) {
+  # remove a user-type
+  # it is possible for this user-type to be currently used
+  # by an entry in names()  (names has been explicitly passed by reference
+  # to the dtedit function), in which case this function will show a warning
+  if (data[row,] %in% get("input.choices.reactive", parent.frame())[["names"]]()$Type) {
+    stop(paste0("Cannot delete '", data[row,],
+                "', this user-type currently being used by a user."))
+  } else {
+    data <- data[-row,, drop = FALSE]
+  }
+  return(data)
+}
+
 ##### Create the Shiny server
 server <- function(input, output) {
 	books <- getBooks()
@@ -78,7 +112,14 @@ server <- function(input, output) {
 	                           thedataframe = names.Type,
 	                           edit.cols = c("Types"),
 	                           input.types = c(Types = "textAreaInput"),
-	                           view.cols = c("Types"))
+	                           view.cols = c("Types"),
+	                           input.choices.reactive = list(names = names),
+	                           # names is never used as an input, but will be checked
+	                           # during the callback.delete
+	                           callback.delete = names.Type.delete.callback,
+	                           callback.insert = names.Type.insert.callback,
+	                           callback.update = names.Type.update.callback
+	)
 
 	names.Types <- reactiveVal(isolate(names.Type()$Types))
 
@@ -88,12 +129,15 @@ server <- function(input, output) {
 	                 stringsAsFactors=FALSE))
 	
 	observe({
-	        print(names.Typedt$thedata())
 	        names.Types(names.Typedt$thedata()$Types)
 	        isolate({
-	                print(names.Types())
-	                temp <- droplevels(names()) # names() factor levels cannot be altered directly
-	                levels(temp$Type) <- names.Types()
+	          # names() factor levels cannot be altered directly
+	                temp <- droplevels(names()) # reduce levels to minimum required
+	                levels(temp$Type) <- names.Types() # re-define levels
+	                # cannot decrease levels with levels() assignment
+	                # this section does not check to see if names$Type is currently using
+	                # a level which is about to be removed. check will instead
+	                # be done in callback.delete within the dtedit function
 	                names(temp)
 	        })
 	})
