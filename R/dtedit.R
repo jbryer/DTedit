@@ -189,8 +189,9 @@ dtedit <- function(input, output, session, thedataframe,
         }
         
         output[[DataTableName]] <- DT::renderDataTable({
-                subset(thedata, select = view.cols)
-                # was "thedata[,view.cols]", but that returns vector (not dataframe)
+                thedata[,view.cols, drop=FALSE]
+                # was "thedata[,view.cols]", but requires drop=FALSE
+                # to prevent return of vector (instead of dataframe)
                 # if only one column in view.cols
         }, options = datatable.options, server=TRUE, selection='single', rownames=FALSE)
         outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
@@ -200,7 +201,6 @@ dtedit <- function(input, output, session, thedataframe,
                 # 'values' are current values of the row (if already existing, or being copied)
                 ns <- session$ns # need to use namespace for id elements in module
                 fields <- list()
-                print(paste("Data:", thedata))
                 for(i in seq_along(edit.cols)) {
                         if(inputTypes[i] == 'dateInput') {
                                 value <- ifelse(missing(values),
@@ -255,7 +255,7 @@ dtedit <- function(input, output, session, thedataframe,
                                                                   selected=value,
                                                                   width=select.width)
                         } else if(inputTypes[i] == 'selectInput') {
-                                value <- ifelse(missing(values), '', as.character(subset(values, select = edit.cols[i])))
+                                value <- ifelse(missing(values), '', as.character(values[, edit.cols[i], drop=FALSE]))
                                 fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
                                                                   label=edit.label.cols[i],
                                                                   choices=levels(result$thedata[,edit.cols[i]]),
@@ -343,7 +343,7 @@ dtedit <- function(input, output, session, thedataframe,
                                 result$thedata <- newdata
                         }
                         updateData(dt.proxy,
-                                   subset(result$thedata, select = view.cols),
+                                   result$thedata[,view.cols, drop=FALSE],
                                    # was "result$thedata[,view.cols]",
                                    # but that returns vector if view.cols is a single column
                                    rownames = FALSE)
@@ -376,7 +376,7 @@ dtedit <- function(input, output, session, thedataframe,
                 row <- input[[paste0(name, 'dt_rows_selected')]]
                 if(!is.null(row)) {
                         if(row > 0) {
-                                shiny::showModal(addModal(values=result$thedata[row,]))
+                                shiny::showModal(addModal(values=result$thedata[row,, drop=FALSE]))
                         }
                 }
         })
@@ -425,7 +425,7 @@ dtedit <- function(input, output, session, thedataframe,
                                                 result$thedata <- newdata
                                         }
                                         updateData(dt.proxy,
-                                                   subset(result$thedata, select = view.cols),
+                                                   result$thedata[,view.cols, drop=FALSE],
                                                    # was "result$thedata[,view.cols]",
                                                    # but that returns vector (not dataframe) if
                                                    # view.cols is only a single column
@@ -471,23 +471,29 @@ dtedit <- function(input, output, session, thedataframe,
                 row <- input[[paste0(name, 'dt_rows_selected')]]
                 if(!is.null(row)) {
                         if(row > 0) {
-                                newdata <- callback.delete(data = result$thedata, row = row)
-                                if(!is.null(newdata) & is.data.frame(newdata)) {
-                                        result$thedata <- newdata
-                                } else {
-                                        result$thedata <- result$thedata[-row,,drop=FALSE]
-                                        # 'drop=FALSE' prevents the dataframe being reduced to a vector
-                                        # especially if only a single column
-                                }
-                                updateData(dt.proxy,
-                                           subset(result$thedata, select = view.cols),
-                                           # was "result$thedata[,view.cols]",
-                                           # but this only returns a vector (instead of dataframe)
-                                           # if view.cols is single column
-                                           rownames = FALSE)
-                                result$edit.count <- result$edit.count + 1
-                                shiny::removeModal()
-                                return(TRUE)
+                                tryCatch({
+                                        newdata <- callback.delete(data = result$thedata, row = row)
+                                        if(!is.null(newdata) & is.data.frame(newdata)) {
+                                                result$thedata <- newdata
+                                        } else {
+                                                result$thedata <- result$thedata[-row,,drop=FALSE]
+                                                # 'drop=FALSE' prevents the dataframe being reduced to a vector
+                                                # especially if only a single column
+                                        }
+                                        updateData(dt.proxy,
+                                                   result$thedata[,view.cols, drop=FALSE],
+                                                   # was "result$thedata[,view.cols]",
+                                                   # but that only returns a vector (instead of dataframe)
+                                                   # if view.cols is single column
+                                                   rownames = FALSE)
+                                        result$edit.count <- result$edit.count + 1
+                                        shiny::removeModal()
+                                        return(TRUE)
+                                },
+                                error = function(e) {
+                                        output[[paste0(name, '_message')]] <<- shiny::renderText(geterrmessage())
+                                        return(FALSE)}
+                                )
                         }
                 }
                 return(FALSE)
@@ -499,7 +505,9 @@ dtedit <- function(input, output, session, thedataframe,
                 for(i in view.cols) {
                         fields[[i]] <- div(paste0(i, ' = ', result$thedata[row,i]))
                 }
+                output[[paste0(name, '_message')]] <- shiny::renderText('')
                 shiny::modalDialog(title = title.delete,
+                                   shiny::div(shiny::textOutput(ns(paste0(name, '_message'))), style='color:red'),
                                    shiny::p('Are you sure you want to delete this record?'),
                                    fields,
                                    footer = shiny::column(modalButton('Cancel'),
@@ -515,7 +523,7 @@ dtedit <- function(input, output, session, thedataframe,
                 observeEvent(thedataframe(), {
                         result$thedata <- as.data.frame(isolate(thedataframe()))
                         updateData(dt.proxy,
-                                   subset(result$thedata, select = view.cols),
+                                   result$thedata[,view.cols, drop=FALSE],
                                    # was "result$thedata[,view.cols]",
                                    # but that returns vector (not dataframe)
                                    # if view.cols is only a single column
