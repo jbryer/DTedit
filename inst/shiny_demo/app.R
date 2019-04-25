@@ -84,7 +84,41 @@ names.Type.delete.callback <- function(data, row) {
   # to the dtedit function), in which case this function will show a warning
   if (data[row,] %in% get("input.choices.reactive", parent.frame())[["names"]]()$Type) {
     stop(paste0("Cannot delete '", data[row,],
-                "', this user-type currently being used by a user."))
+                "', this user-type currently assigned to a user."))
+  } else {
+    data <- data[-row,, drop = FALSE]
+  }
+  return(data)
+}
+
+names.Like.update.callback <- function(data, olddata, row) {
+  # update a like
+  # do not allow an updated like which is the same as another
+  ## if this is attempted, show a warning
+  if (data[row,] %in% data[-row,]) {
+    stop(paste0("Cannot change like to '", data[row,],"', that like already exists!"))
+  } 
+  return(data)
+}
+
+names.Like.insert.callback <- function(data, row) {
+  # insert a like
+  # do not allow a like which is the same as an old one
+  ## if this is attempted, show a warning
+  if (data[row,] %in% data[-row,]) {
+    stop(paste0("Cannot add '", data[row,],"', that like already exists!"))
+  } 
+  return(data)
+}
+
+names.Like.delete.callback <- function(data, row) {
+  # remove a like
+  # it is possible for this like to be currently used
+  # by an entry in names()  (names has been explicitly passed by reference
+  # to the dtedit function), in which case this function will show a warning
+  if (data[row,] %in% unlist(get("input.choices.reactive", parent.frame())[["names"]]()$Like)) {
+    stop(paste0("Cannot delete '", data[row,],
+                "', this like currently assigned to a user."))
   } else {
     data <- data[-row,, drop = FALSE]
   }
@@ -105,6 +139,21 @@ server <- function(input, output) {
 		   callback.insert = books.insert.callback,
 		   callback.delete = books.delete.callback)
 
+	names.Like <- reactiveVal()
+	names.Like(data.frame(Likes = c("Apple", "Pear"), stringsAsFactors = FALSE))
+	names.Likedt <- callModule(dtedit, 'names.Like',
+	                           thedataframe = names.Like,
+	                           edit.cols = c("Likes"),
+	                           input.types = c(Likes = "textAreaInput"),
+	                           view.cols = c("Likes"),
+	                           input.choices.reactive = list(names = names),
+	                           # names is never used as an input, but will be checked
+	                           # during the callback.delete
+	                           callback.delete = names.Like.delete.callback,
+	                           callback.insert = names.Like.insert.callback,
+	                           callback.update = names.Like.update.callback
+	)
+	names.Likes <- reactiveVal(isolate(names.Like()$Likees))
 	
 	names.Type <- reactiveVal()
 	names.Type(data.frame(Types = c("Admin", "User"), stringsAsFactors = FALSE))
@@ -126,14 +175,19 @@ server <- function(input, output) {
 	names <- reactiveVal()
 	names(data.frame(Name=character(), Email=character(), Date=as.Date(integer(), origin='1970-01-01'),
 	                 Type = isolate(factor(character(), levels = names.Types())),
+	                 Like = character(),
+	                 # Like = I(list(isolate(factor(character(), levels = names.Likes())))),
 	                 stringsAsFactors=FALSE))
 	
 	observe({
 	        names.Types(names.Typedt$thedata()$Types)
+	  names.Likes(names.Likedt$thedata()$Likes)
+	  
 	        isolate({
 	          # names() factor levels cannot be altered directly
 	                temp <- droplevels(names()) # reduce levels to minimum required
-	                levels(temp$Type) <- names.Types() # re-define levels
+	                levels(temp$Type) <- isolate(names.Types()) # re-define levels
+	                levels(temp$Like) <- isolate(names.Likes()) # re-define levels
 	                # cannot decrease levels with levels() assignment
 	                # this section does not check to see if names$Type is currently using
 	                # a level which is about to be removed. check will instead
@@ -141,12 +195,12 @@ server <- function(input, output) {
 	                names(temp)
 	        })
 	})
-	
+
 	namesdt <- callModule(dtedit, 'names', 
 	                      thedataframe = names,
-	                      input.types = c(Type = "selectInputReactive"),
-	                      input.choices = c(Type = "names.Types"),
-	                      input.choices.reactive = list(names.Types = names.Types)
+	                      input.types = c(Type = "selectInputReactive", Like = "selectInputMultipleReactive"),
+	                      input.choices = c(Type = "names.Types", Like = "names.Likes"),
+	                      input.choices.reactive = list(names.Types = names.Types, names.Likes = names.Likes)
 	                      )
 	
 	observe({
@@ -169,6 +223,8 @@ server <- function(input, output) {
 	                   '@',sample(email, 1)),
 	    Date = as.Date(Sys.Date()-sample(1:1000, 1), origin = "1970-01=01"),
 	    Type = factor(sample(names.Types(), 1), levels = names.Types()),
+	    Like = I(list(factor(sample(names.Likes(), sample(1:length(names.Likes()), 1)),
+	                         levels = names.Likes()))),
 	    stringsAsFactors = FALSE
 	  )
 	  names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))
@@ -201,6 +257,12 @@ ui <- fluidPage(
                                       dteditUI("names.Type")
                               )
                 
+                     ),
+                     tabPanel("Likes",
+                              wellPanel(
+                                dteditUI("names.Like")
+                              )
+                              
                      )
              )
     )

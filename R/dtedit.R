@@ -42,18 +42,18 @@
 #' @param input.types a character vector where the name corresponds to a column
 #'        in \code{edit.cols} and the value is the input type. Possible values
 #'        are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple}, 
-#'        \code{selectInputReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
+#'        \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
 #'        or \code{passwordInput}.
 #'        The most common case where this parameter is desirable is when a text
 #'        area is required instead of a simple text input.
 #' @param input.choices a list of character vectors. The names of each element in the list must
 #'        correspond to a column name in the data. The value, a character vector, are the options
 #'        presented to the user for data entry, in the case of input type \code{selectInput}).
-#'        In the case of input type \code{selectInputReactive}, the value is the name
-#'        of the reactive. in 'input.choices.reactive'
+#'        In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive}, the value
+#'        is the name of the reactive. in 'input.choices.reactive'
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
-#'        to use for input type \code{selectInputReactive}. The reactive itself is a
-#'        character vector.
+#'        to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
+#'        The reactive itself is a character vector.
 #' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
@@ -157,7 +157,7 @@ dtedit <- function(input, output, session, thedataframe,
         
         valid.input.types <- c('dateInput', 'selectInput', 'numericInput',
                                'textInput', 'textAreaInput', 'passwordInput', 'selectInputMultiple',
-                               'selectInputReactive')
+                               'selectInputReactive', 'selectInputMultipleReactive')
         inputTypes <- sapply(thedata[,edit.cols], FUN=function(x) {
                 switch(class(x),
                        list = 'selectInputMultiple',
@@ -166,7 +166,8 @@ dtedit <- function(input, output, session, thedataframe,
                        factor = 'selectInput',
                        integer = 'numericInput',
                        numeric = 'numericInput',
-                       factor = 'selectInputReactive')
+                       factor = 'selectInputReactive',
+                       list = 'selectInputMultipleReactive')
         })
         if(!missing(input.types)) {
                 if(!all(names(input.types) %in% edit.cols)) {
@@ -234,6 +235,29 @@ dtedit <- function(input, output, session, thedataframe,
                                                                    selected=value,
                                                                    width=select.width)
                                 
+                        } else if(inputTypes[i] == 'selectInputMultipleReactive') {
+                          value <- ifelse(missing(values), '', values[,edit.cols[i]])
+                          if(is.list(value)) {
+                            value <- value[[1]]
+                          }
+                          choices <- NULL
+                          if(!is.null(input.choices.reactive)) {
+                            if(edit.cols[i] %in% names(input.choices)) {
+                              choices <- input.choices.reactive[[input.choices[[edit.cols[i]]]]]()
+                              # it is the responsiblity of the calling functions/reactive variable handlers
+                              # that the list of choices includes all CURRENT choices that have already
+                              # been chosen in the data.
+                            }
+                          }
+                          if(is.null(choices)) {
+                            warning(paste0("No choices available for ", edit.cols[i],
+                                           '. Specify them using the input.choices and input.choices.reactive parameter'))
+                          }
+                          fields[[i]] <- selectInputMultiple(ns(paste0(name, typeName, edit.cols[i])),
+                                                             label=edit.label.cols[i],
+                                                             choices=choices,
+                                                             selected=value,
+                                                             width=select.width)
                         } else if (inputTypes[i] == 'selectInputReactive') {
                                 value <- ifelse(missing(values), '', as.character(values[,edit.cols[i]]))
                                 choices <- NULL
@@ -329,7 +353,7 @@ dtedit <- function(input, output, session, thedataframe,
                 row <- nrow(newdata) + 1
                 newdata[row,] <- NA
                 for(i in edit.cols) {
-                        if(inputTypes[i] %in% c('selectInputMultiple')) {
+                        if(inputTypes[i] %in% c('selectInputMultiple', 'selectInputMultipleReactive')) {
                                 newdata[[i]][row] <- list(input[[paste0(name, '_add_', i)]])
                         } else {
                                 newdata[row,i] <- input[[paste0(name, '_add_', i)]]
@@ -409,7 +433,7 @@ dtedit <- function(input, output, session, thedataframe,
                         if(row > 0) {
                                 newdata <- result$thedata
                                 for(i in edit.cols) {
-                                        if(inputTypes[i] %in% c('selectInputMultiple')) {
+                                        if(inputTypes[i] %in% c('selectInputMultiple', 'selectInputMultipleReactive')) {
                                                 newdata[[i]][row] <- list(input[[paste0(name, '_edit_', i)]])
                                         } else {
                                                 newdata[row,i] <- input[[paste0(name, '_edit_', i)]]
