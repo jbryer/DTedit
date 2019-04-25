@@ -1,8 +1,11 @@
-#' Module to create a DataTable with Add, Edit, and Delete buttons.
+#' Create a DataTable with Add, Edit and Delete buttons.
 #'
 #' dtedit - server function
-#' dteditUI - ui function
-#'
+#' 
+#' Use in conjunction with \code{callModule} and \code{dteditUI} to create
+#' editable datatables. \code{dtedit} is used in the 'server' component of the
+#' shiny app.
+#' 
 #' This object will maintain data state. However, in order of the data to persist
 #' between Shiny instances, data needs to be saved to some external format (e.g.
 #' database or R data file). The callback functions provide a mechanism for this
@@ -29,8 +32,14 @@
 #' returned that will become the current state of the data table. If anything
 #' else is returned then the internal \code{data.frame} will be used.
 #'
+#' @return Returns a list of reactive values. \code{return_values$data()} contains
+#'  the current state of DTedit's copy of the data. \code{return_values$edit.count()} 
+#'  contains the number of edits done within DTedit (does not include changes to DTedit's
+#'  copy of the data secondary to changes in \code{thedataframe}, if \code{thedataframe} is a reactive)
+#'
 #' @param input Shiny input object passed from the server.
 #' @param output Shiny output object passed from the server.
+#' @param session Shiny session object passed from the server
 #' @param thedataframe a data frame to view and edit. can be a reactive
 #' @param view.cols character vector with the column names to show in the DataTable.
 #'        This can be a subset of the full \code{data.frame}.
@@ -85,17 +94,23 @@
 #'        time (in seconds), the subsequent click will be ignored. Set to zero to disable this
 #'        feature. For developers, a message is printed using the warning function.
 #' @param datatable.options options passed to \code{\link{DT::renderDataTable}}.
-#'        See \link{https://rstudio.github.io/DT/options.html} for more information.
+#'        See \url{https://rstudio.github.io/DT/options.html} for more information.
+#' @family Datatable Edit functions         
+#' @seealso \code{\link{dteditUI}} : the companion user-interface function.\cr
+#'
+#'  \itemize{
+#'  \item \code{example("dtedit")} for a simple example.
+#'  \item \code{dtedit_demo()} for a more complex example. Includes database interaction
+#'  and interactions between the data of multiple datatables.
+#'  }
+#' @example inst/examples/example.R       
+#'                           
 #' @export
 dtedit <- function(input, output, session, thedataframe,
-                   view.cols = names(if(isolate(is.reactive(thedataframe)))
-                   {isolate(thedataframe())} 
-                   else
-                   {thedataframe}),
-                   edit.cols = names(if(isolate(is.reactive(thedataframe)))
-                   {isolate(thedataframe())} 
-                   else 
-                   {thedataframe}),
+                   view.cols = names(isolate(if(is.reactive(thedataframe))
+                   {thedataframe()} else {thedataframe})),
+                   edit.cols = names(isolate(if(is.reactive(thedataframe))
+                   {thedataframe()} else {thedataframe})),
                    edit.label.cols = edit.cols,
                    input.types,
                    input.choices = NULL,
@@ -236,28 +251,28 @@ dtedit <- function(input, output, session, thedataframe,
                                                                    width=select.width)
                                 
                         } else if(inputTypes[i] == 'selectInputMultipleReactive') {
-                          value <- ifelse(missing(values), '', values[,edit.cols[i]])
-                          if(is.list(value)) {
-                            value <- value[[1]]
-                          }
-                          choices <- NULL
-                          if(!is.null(input.choices.reactive)) {
-                            if(edit.cols[i] %in% names(input.choices)) {
-                              choices <- input.choices.reactive[[input.choices[[edit.cols[i]]]]]()
-                              # it is the responsiblity of the calling functions/reactive variable handlers
-                              # that the list of choices includes all CURRENT choices that have already
-                              # been chosen in the data.
-                            }
-                          }
-                          if(is.null(choices)) {
-                            warning(paste0("No choices available for ", edit.cols[i],
-                                           '. Specify them using the input.choices and input.choices.reactive parameter'))
-                          }
-                          fields[[i]] <- selectInputMultiple(ns(paste0(name, typeName, edit.cols[i])),
-                                                             label=edit.label.cols[i],
-                                                             choices=choices,
-                                                             selected=value,
-                                                             width=select.width)
+                                value <- ifelse(missing(values), '', values[,edit.cols[i]])
+                                if(is.list(value)) {
+                                        value <- value[[1]]
+                                }
+                                choices <- NULL
+                                if(!is.null(input.choices.reactive)) {
+                                        if(edit.cols[i] %in% names(input.choices)) {
+                                                choices <- input.choices.reactive[[input.choices[[edit.cols[i]]]]]()
+                                                # it is the responsiblity of the calling functions/reactive variable handlers
+                                                # that the list of choices includes all CURRENT choices that have already
+                                                # been chosen in the data.
+                                        }
+                                }
+                                if(is.null(choices)) {
+                                        warning(paste0("No choices available for ", edit.cols[i],
+                                                       '. Specify them using the input.choices and input.choices.reactive parameter'))
+                                }
+                                fields[[i]] <- selectInputMultiple(ns(paste0(name, typeName, edit.cols[i])),
+                                                                   label=edit.label.cols[i],
+                                                                   choices=choices,
+                                                                   selected=value,
+                                                                   width=select.width)
                         } else if (inputTypes[i] == 'selectInputReactive') {
                                 value <- ifelse(missing(values), '', as.character(values[,edit.cols[i]]))
                                 choices <- NULL
@@ -577,7 +592,25 @@ dtedit <- function(input, output, session, thedataframe,
         # this might help determine the source of changes in result$thedata
 }
 
-# Module UI function
+#' Create a DataTable with Add, Edit and Delete buttons.
+#'
+#' dteditUI - user-interface function
+#'
+#' Use in conjunction with \code{callModule} and \code{dtedit} to create
+#' editable datatables. \code{dteditUI} is used in the 'user interface' component
+#' of the shiny app.
+#'
+#' @param id the namespace of the module
+#' @family Datatable Edit functions         
+#' @seealso \code{\link{dtedit}} : the companion server-component function.\cr
+#!
+#'  \itemize{
+#'  \item \code{example("dtedit")} for a simple example.
+#'  \item \code{dtedit_demo()} for a more complex example. Includes database interaction
+#'  and interactions between the data of multiple datatables.
+#'  }
+#' @example inst/examples/example.R       
+#' @export
 dteditUI <- function(id) {
         ns <- NS(id)
         

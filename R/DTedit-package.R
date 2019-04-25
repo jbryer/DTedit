@@ -8,5 +8,6 @@
 #' @importFrom shiny reactiveValues selectInput textInput dateInput numericInput
 #'             textAreaInput passwordInput renderText modalDialog div textOutput modalButton
 #'             actionButton showModal observeEvent p column br removeModal renderUI runApp
+#'             isolate is.reactive outputOptions reactive NS tagList uiOutput
 #' @importFrom DT dataTableOutput renderDataTable dataTableProxy replaceData
 NA
