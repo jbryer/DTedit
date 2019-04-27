@@ -1,5 +1,5 @@
 ##### Minimal DTedit example using reactive dataframe #####
-library(shiny)
+\donttest{library(shiny)
 library(DTedit)
 
 ##### Create the Shiny server #####
@@ -44,3 +44,4 @@ ui <- fluidPage(
 )
 
 shinyApp(ui = ui, server = server)
+}
