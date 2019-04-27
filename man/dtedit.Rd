@@ -44,7 +44,7 @@ correspond to \code{edit.cols}.}
 
 \item{input.types}{a character vector where the name corresponds to a column
 in \code{edit.cols} and the value is the input type. Possible values
-are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple}, 
+are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
 \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
 or \code{passwordInput}.
 The most common case where this parameter is desirable is when a text
@@ -119,7 +119,7 @@ See \url{https://rstudio.github.io/DT/options.html} for more information.}
 }
 \value{
 Returns a list of reactive values. \code{return_values$data()} contains
- the current state of DTedit's copy of the data. \code{return_values$edit.count()} 
+ the current state of DTedit's copy of the data. \code{return_values$edit.count()}
  contains the number of edits done within DTedit (does not include changes to DTedit's
  copy of the data secondary to changes in \code{thedataframe}, if \code{thedataframe} is a reactive)
 }
@@ -185,6 +185,7 @@ shinyApp(ui = ui, server = server)
 
  \itemize{
  \item \code{example("dtedit")} for a simple example.
+ \item \code{example("dteditUI")} for a simple example with reactive dataframe
  \item \code{dtedit_demo()} for a more complex example. Includes database interaction
  and interactions between the data of multiple datatables.
  }
