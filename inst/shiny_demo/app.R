@@ -63,7 +63,7 @@ names.Type.update.callback <- function(data, olddata, row) {
 	## if this is attempted, show a warning
 	if (data[row,] %in% data[-row,]) {
 		stop(paste0("Cannot change user-type to '", data[row,],"', that user-type already exists!"))
-	} 
+	}
 	return(data)
 }
 
@@ -73,7 +73,7 @@ names.Type.insert.callback <- function(data, row) {
 	## if this is attempted, show a warning
 	if (data[row,] %in% data[-row,]) {
 		stop(paste0("Cannot add '", data[row,],"', that user-type already exists!"))
-	} 
+	}
 	return(data)
 }
 
@@ -97,7 +97,7 @@ names.Like.update.callback <- function(data, olddata, row) {
 	## if this is attempted, show a warning
 	if (data[row,] %in% data[-row,]) {
 		stop(paste0("Cannot change like to '", data[row,],"', that like already exists!"))
-	} 
+	}
 	return(data)
 }
 
@@ -107,7 +107,7 @@ names.Like.insert.callback <- function(data, row) {
 	## if this is attempted, show a warning
 	if (data[row,] %in% data[-row,]) {
 		stop(paste0("Cannot add '", data[row,],"', that like already exists!"))
-	} 
+	}
 	return(data)
 }
 
@@ -138,7 +138,7 @@ server <- function(input, output) {
 		   callback.update = books.update.callback,
 		   callback.insert = books.insert.callback,
 		   callback.delete = books.delete.callback)
-	
+
 	names.Like <- reactiveVal()
 	names.Like(data.frame(Likes = c("Apple", "Pear"), stringsAsFactors = FALSE))
 	names.Likedt <- callModule(dtedit, 'names.Like',
@@ -154,7 +154,7 @@ server <- function(input, output) {
 				   callback.update = names.Like.update.callback
 	)
 	names.Likes <- reactiveVal(isolate(names.Like()$Likees))
-	
+
 	names.Type <- reactiveVal()
 	names.Type(data.frame(Types = c("Admin", "User"), stringsAsFactors = FALSE))
 	names.Typedt <- callModule(dtedit, 'names.Type',
@@ -169,50 +169,38 @@ server <- function(input, output) {
 				   callback.insert = names.Type.insert.callback,
 				   callback.update = names.Type.update.callback
 	)
-	
+
 	names.Types <- reactiveVal(isolate(names.Type()$Types))
-	
+
 	names <- reactiveVal()
 	names(data.frame(Name=character(), Email=character(), Date=as.Date(integer(), origin='1970-01-01'),
 			 Type = isolate(factor(character(), levels = names.Types())),
 			 Like = character(),
 			 # Like = I(list(isolate(factor(character(), levels = names.Likes())))),
 			 stringsAsFactors=FALSE))
-	
+
 	observe({
 		names.Types(names.Typedt$thedata()$Types)
 		names.Likes(names.Likedt$thedata()$Likes)
-		
-		isolate({
-			# names() factor levels cannot be altered directly
-			temp <- droplevels(names()) # reduce levels to minimum required
-			levels(temp$Type) <- isolate(names.Types()) # re-define levels
-			levels(temp$Like) <- isolate(names.Likes()) # re-define levels
-			# cannot decrease levels with levels() assignment
-			# this section does not check to see if names$Type is currently using
-			# a level which is about to be removed. check will instead
-			# be done in callback.delete within the dtedit function
-			names(temp)
-		})
 	})
-	
-	namesdt <- callModule(dtedit, 'names', 
+
+	namesdt <- callModule(dtedit, 'names',
 			      thedataframe = names,
 			      input.types = c(Type = "selectInputReactive", Like = "selectInputMultipleReactive"),
 			      input.choices = c(Type = "names.Types", Like = "names.Likes"),
 			      input.choices.reactive = list(names.Types = names.Types, names.Likes = names.Likes)
 	)
-	
+
 	observe({
 		print(namesdt$thedata())
 		names(as.data.frame(namesdt$thedata(), stringsasfactors = FALSE))
 		print(paste("Edit count:", namesdt$edit.count()))
 	})
-	
+
 	observeEvent(input$email_clean,{
 		names(names()[0,]) # empty the dataframe
 	})
-	
+
 	observeEvent(input$email_add, {
 		first <- c("April", "Bob", "Charles", "Deborah", "Elle", "Francis", "Grace", "Horace", "Indigo", "Jan", "Kel")
 		second <- c("Zartus", "Yelland", "Xeron", "Wells", "Vorostek", "Ursida", "Tellus", "Smith", "Rose", "Quentin")
@@ -256,13 +244,13 @@ ui <- fluidPage(
 			 		 wellPanel(
 			 		 	dteditUI("names.Type")
 			 		 )
-			 		 
+
 			 	),
 			 	tabPanel("Likes",
 			 		 wellPanel(
 			 		 	dteditUI("names.Like")
 			 		 )
-			 		 
+
 			 	)
 			 )
 		)

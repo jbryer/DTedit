@@ -100,6 +100,7 @@
 #'
 #'  \itemize{
 #'  \item \code{example("dtedit")} for a simple example.
+#'  \item \code{example("dteditUI")} for a simple example with reactive dataframe
 #'  \item \code{dtedit_demo()} for a more complex example. Includes database interaction
 #'  and interactions between the data of multiple datatables.
 #'  }
@@ -607,10 +608,11 @@ dtedit <- function(input, output, session, thedataframe,
 #!
 #'  \itemize{
 #'  \item \code{example("dtedit")} for a simple example.
+#'  \item \code{example("dteditUI")} for a simple example with reactive dataframe
 #'  \item \code{dtedit_demo()} for a more complex example. Includes database interaction
 #'  and interactions between the data of multiple datatables.
 #'  }
-#' @example inst/examples/example.R
+#' @example inst/examples/example_reactivedataframe.R
 #' @export
 dteditUI <- function(id) {
 	ns <- NS(id)
