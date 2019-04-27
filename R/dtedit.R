@@ -1,11 +1,11 @@
 #' Create a DataTable with Add, Edit and Delete buttons.
 #'
 #' dtedit - server function
-#' 
+#'
 #' Use in conjunction with \code{callModule} and \code{dteditUI} to create
 #' editable datatables. \code{dtedit} is used in the 'server' component of the
 #' shiny app.
-#' 
+#'
 #' This object will maintain data state. However, in order of the data to persist
 #' between Shiny instances, data needs to be saved to some external format (e.g.
 #' database or R data file). The callback functions provide a mechanism for this
@@ -33,7 +33,7 @@
 #' else is returned then the internal \code{data.frame} will be used.
 #'
 #' @return Returns a list of reactive values. \code{return_values$data()} contains
-#'  the current state of DTedit's copy of the data. \code{return_values$edit.count()} 
+#'  the current state of DTedit's copy of the data. \code{return_values$edit.count()}
 #'  contains the number of edits done within DTedit (does not include changes to DTedit's
 #'  copy of the data secondary to changes in \code{thedataframe}, if \code{thedataframe} is a reactive)
 #'
@@ -50,7 +50,7 @@
 #'        correspond to \code{edit.cols}.
 #' @param input.types a character vector where the name corresponds to a column
 #'        in \code{edit.cols} and the value is the input type. Possible values
-#'        are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple}, 
+#'        are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
 #'        \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
 #'        or \code{passwordInput}.
 #'        The most common case where this parameter is desirable is when a text
@@ -95,7 +95,7 @@
 #'        feature. For developers, a message is printed using the warning function.
 #' @param datatable.options options passed to \code{\link{DT::renderDataTable}}.
 #'        See \url{https://rstudio.github.io/DT/options.html} for more information.
-#' @family Datatable Edit functions         
+#' @family Datatable Edit functions
 #' @seealso \code{\link{dteditUI}} : the companion user-interface function.\cr
 #'
 #'  \itemize{
@@ -103,8 +103,8 @@
 #'  \item \code{dtedit_demo()} for a more complex example. Includes database interaction
 #'  and interactions between the data of multiple datatables.
 #'  }
-#' @example inst/examples/example.R       
-#'                           
+#' @example inst/examples/example.R
+#'
 #' @export
 dtedit <- function(input, output, session, thedataframe,
 		   view.cols = names(isolate(if(is.reactive(thedataframe))
@@ -154,22 +154,22 @@ dtedit <- function(input, output, session, thedataframe,
 	} else if(!all(edit.cols %in% names(thedata))) {
 		stop('Not all edit.cols are in the data.')
 	}
-	
+
 	name <- "editdt"
 	DataTableName <- paste0(name, 'dt')
-	
+
 	result <- shiny::reactiveValues()
 	result$thedata <- thedata
 	result$view.cols <- view.cols
 	result$edit.cols <- edit.cols
 	result$edit.count <- 0 # number of edits (Add/Delete/Edit/Copy) through dtedit
-	
+
 	dt.proxy <- DT::dataTableProxy(DataTableName)
-	
+
 	selectInputMultiple <- function(...) {
 		shiny::selectInput(multiple = TRUE, selectize = selectize, ...)
 	}
-	
+
 	valid.input.types <- c('dateInput', 'selectInput', 'numericInput',
 			       'textInput', 'textAreaInput', 'passwordInput', 'selectInputMultiple',
 			       'selectInputReactive', 'selectInputMultipleReactive')
@@ -203,7 +203,7 @@ dtedit <- function(input, output, session, thedataframe,
 			thedata[,i] <- sapply(thedata[,i], FUN = function(x) { paste0(x, collapse = ', ') })
 		}
 	}
-	
+
 	output[[DataTableName]] <- DT::renderDataTable({
 		thedata[,view.cols, drop=FALSE]
 		# was "thedata[,view.cols]", but requires drop=FALSE
@@ -212,7 +212,7 @@ dtedit <- function(input, output, session, thedataframe,
 	}, options = datatable.options, server=TRUE, selection='single', rownames=FALSE)
 	outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
 	# without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
-	
+
 	getFields <- function(typeName, values) {
 		# 'values' are current values of the row (if already existing, or being copied)
 		ns <- session$ns # need to use namespace for id elements in module
@@ -249,7 +249,7 @@ dtedit <- function(input, output, session, thedataframe,
 								   choices=choices,
 								   selected=value,
 								   width=select.width)
-				
+
 			} else if(inputTypes[i] == 'selectInputMultipleReactive') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
 				if(is.list(value)) {
@@ -330,9 +330,9 @@ dtedit <- function(input, output, session, thedataframe,
 		}
 		return(fields)
 	}
-	
+
 	output[[paste0(name, '_message')]] <- shiny::renderText('')
-	
+
 	updateData <- function(proxy, data, ...) {
 		# Convert any list columns to characters before displaying
 		for(i in 1:ncol(data)) {
@@ -344,17 +344,17 @@ dtedit <- function(input, output, session, thedataframe,
 		}
 		DT::replaceData(proxy, data, ...)
 	}
-	
+
 	##### Insert functions #####################################################
-	
+
 	observeEvent(input[[paste0(name, '_add')]], {
 		if(!is.null(row)) {
 			shiny::showModal(addModal())
 		}
 	})
-	
+
 	insert.click <- NA
-	
+
 	observeEvent(input[[paste0(name, '_insert')]], {
 		if(!is.na(insert.click)) {
 			lastclick <- as.numeric(Sys.time() - insert.click, units = 'secs')
@@ -364,7 +364,7 @@ dtedit <- function(input, output, session, thedataframe,
 			}
 		}
 		insert.click <<- Sys.time()
-		
+
 		newdata <- result$thedata
 		row <- nrow(newdata) + 1
 		newdata[row,] <- NA
@@ -395,7 +395,7 @@ dtedit <- function(input, output, session, thedataframe,
 			return(FALSE)
 		})
 	})
-	
+
 	addModal <- function(row, values) {
 		ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
 		output[[paste0(name, '_message')]] <- shiny::renderText('')
@@ -409,9 +409,9 @@ dtedit <- function(input, output, session, thedataframe,
 				   size = modal.size
 		)
 	}
-	
+
 	##### Copy functions #######################################################
-	
+
 	observeEvent(input[[paste0(name, '_copy')]], {
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
@@ -420,9 +420,9 @@ dtedit <- function(input, output, session, thedataframe,
 			}
 		}
 	})
-	
+
 	##### Update functions #####################################################
-	
+
 	observeEvent(input[[paste0(name, '_edit')]], {
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
@@ -431,9 +431,9 @@ dtedit <- function(input, output, session, thedataframe,
 			}
 		}
 	})
-	
+
 	update.click <- NA
-	
+
 	observeEvent(input[[paste0(name, '_update')]], {
 		if(!is.na(update.click)) {
 			lastclick <- as.numeric(Sys.time() - update.click, units = 'secs')
@@ -443,7 +443,7 @@ dtedit <- function(input, output, session, thedataframe,
 			}
 		}
 		update.click <- Sys.time()
-		
+
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
 			if(row > 0) {
@@ -481,7 +481,7 @@ dtedit <- function(input, output, session, thedataframe,
 		}
 		return(FALSE)
 	})
-	
+
 	editModal <- function(row) {
 		ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
 		output[[paste0(name, '_message')]] <- renderText('')
@@ -495,9 +495,9 @@ dtedit <- function(input, output, session, thedataframe,
 				   size = modal.size
 		)
 	}
-	
+
 	##### Delete functions #####################################################
-	
+
 	observeEvent(input[[paste0(name, '_remove')]], {
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
@@ -506,7 +506,7 @@ dtedit <- function(input, output, session, thedataframe,
 			}
 		}
 	})
-	
+
 	observeEvent(input[[paste0(name, '_delete')]], {
 		row <- input[[paste0(name, 'dt_rows_selected')]]
 		if(!is.null(row)) {
@@ -538,7 +538,7 @@ dtedit <- function(input, output, session, thedataframe,
 		}
 		return(FALSE)
 	})
-	
+
 	deleteModal <- function(row) {
 		ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
 		fields <- list()
@@ -556,9 +556,9 @@ dtedit <- function(input, output, session, thedataframe,
 				   size = modal.size
 		)
 	}
-	
+
 	##### React to changes in 'thedataframe' if that variable is a reactive ######
-	
+
 	if (is.reactive(thedataframe)) {
 		observeEvent(thedataframe(), {
 			result$thedata <- as.data.frame(isolate(thedataframe()))
@@ -570,9 +570,9 @@ dtedit <- function(input, output, session, thedataframe,
 				   rownames = FALSE)
 		})
 	}
-	
+
 	##### Build the UI for the DataTable and buttons ###########################
-	
+
 	output[[name]] <- shiny::renderUI({
 		ns <- session$ns # namespace for module
 		shiny::div(
@@ -585,7 +585,7 @@ dtedit <- function(input, output, session, thedataframe,
 	})
 	outputOptions(output, name, suspendWhenHidden = FALSE)
 	# if suspendWhenHidden is true, then the table is not rendered if the tab is hidden
-	
+
 	return(list(thedata = reactive({result$thedata}),
 		    edit.count = reactive({result$edit.count})))
 	# edit.count only incremented by changes made through dtedit GUI
@@ -602,7 +602,7 @@ dtedit <- function(input, output, session, thedataframe,
 #' of the shiny app.
 #'
 #' @param id the namespace of the module
-#' @family Datatable Edit functions         
+#' @family Datatable Edit functions
 #' @seealso \code{\link{dtedit}} : the companion server-component function.\cr
 #!
 #'  \itemize{
@@ -610,11 +610,11 @@ dtedit <- function(input, output, session, thedataframe,
 #'  \item \code{dtedit_demo()} for a more complex example. Includes database interaction
 #'  and interactions between the data of multiple datatables.
 #'  }
-#' @example inst/examples/example.R       
+#' @example inst/examples/example.R
 #' @export
 dteditUI <- function(id) {
 	ns <- NS(id)
-	
+
 	tagList(
 		uiOutput(ns("editdt"))
 	)

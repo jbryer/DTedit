@@ -2,19 +2,23 @@
 % Please edit documentation in R/dtedit.R
 \name{dtedit}
 \alias{dtedit}
-\title{Function to create a DataTable with Add, Edit, and Delete buttons.}
+\title{Create a DataTable with Add, Edit and Delete buttons.}
 \usage{
-dtedit(input, output, name, thedata, view.cols = names(thedata),
-  edit.cols = names(thedata), edit.label.cols = edit.cols, input.types,
-  input.choices = NULL, selectize = TRUE, modal.size = "m",
-  text.width = "100\%", textarea.width = "570px",
-  textarea.height = "200px", date.width = "100px",
-  numeric.width = "100px", select.width = "100\%",
-  defaultPageLength = 10, title.delete = "Delete",
-  title.edit = "Edit", title.add = "New", label.delete = "Delete",
-  label.edit = "Edit", label.add = "New", label.copy = "Copy",
-  show.delete = TRUE, show.update = TRUE, show.insert = TRUE,
-  show.copy = TRUE, callback.delete = function(data, row) { },
+dtedit(input, output, session, thedataframe, view.cols = names(isolate(if
+  (is.reactive(thedataframe)) {     thedataframe() } else {    
+  thedataframe })), edit.cols = names(isolate(if
+  (is.reactive(thedataframe)) {     thedataframe() } else {    
+  thedataframe })), edit.label.cols = edit.cols, input.types,
+  input.choices = NULL, input.choices.reactive = NULL,
+  selectize = TRUE, modal.size = "m", text.width = "100\%",
+  textarea.width = "570px", textarea.height = "200px",
+  date.width = "100px", numeric.width = "100px",
+  select.width = "100\%", defaultPageLength = 10,
+  title.delete = "Delete", title.edit = "Edit", title.add = "New",
+  label.delete = "Delete", label.edit = "Edit", label.add = "New",
+  label.copy = "Copy", show.delete = TRUE, show.update = TRUE,
+  show.insert = TRUE, show.copy = TRUE,
+  callback.delete = function(data, row) { },
   callback.update = function(data, olddata, row) { },
   callback.insert = function(data, row) { }, click.time.threshold = 2,
   datatable.options = list(pageLength = defaultPageLength))
@@ -24,11 +28,9 @@ dtedit(input, output, name, thedata, view.cols = names(thedata),
 
 \item{output}{Shiny output object passed from the server.}
 
-\item{name}{the name of the UI output. That is, put \code{uiOutput(name)} where
-you want the DataTable in \code{ui.R}. When using more that one \code{dtedit}
-within a Shiny application the name must be unique.}
+\item{session}{Shiny session object passed from the server}
 
-\item{thedata}{a data frame to view and edit.}
+\item{thedataframe}{a data frame to view and edit. can be a reactive}
 
 \item{view.cols}{character vector with the column names to show in the DataTable.
 This can be a subset of the full \code{data.frame}.}
@@ -42,14 +44,21 @@ correspond to \code{edit.cols}.}
 
 \item{input.types}{a character vector where the name corresponds to a column
 in \code{edit.cols} and the value is the input type. Possible values
-are \code{dateInput}, \code{selectInput}, \code{numericInput},
-\code{textInput}, \code{textAreaInput}, or \code{passwordInput}.
+are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple}, 
+\code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
+or \code{passwordInput}.
 The most common case where this parameter is desirable is when a text
 area is required instead of a simple text input.}
 
 \item{input.choices}{a list of character vectors. The names of each element in the list must
-correpsond to a column name in the data. The value, a character vector, are the options
-presented to the user for data entry.}
+correspond to a column name in the data. The value, a character vector, are the options
+presented to the user for data entry, in the case of input type \code{selectInput}).
+In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive}, the value
+is the name of the reactive. in 'input.choices.reactive'}
+
+\item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
+to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
+The reactive itself is a character vector.}
 
 \item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}
 
@@ -106,9 +115,22 @@ time (in seconds), the subsequent click will be ignored. Set to zero to disable 
 feature. For developers, a message is printed using the warning function.}
 
 \item{datatable.options}{options passed to \code{\link{DT::renderDataTable}}.
-See \link{https://rstudio.github.io/DT/options.html} for more information.}
+See \url{https://rstudio.github.io/DT/options.html} for more information.}
+}
+\value{
+Returns a list of reactive values. \code{return_values$data()} contains
+ the current state of DTedit's copy of the data. \code{return_values$edit.count()} 
+ contains the number of edits done within DTedit (does not include changes to DTedit's
+ copy of the data secondary to changes in \code{thedataframe}, if \code{thedataframe} is a reactive)
 }
 \description{
+dtedit - server function
+}
+\details{
+Use in conjunction with \code{callModule} and \code{dteditUI} to create
+editable datatables. \code{dtedit} is used in the 'server' component of the
+shiny app.
+
 This object will maintain data state. However, in order of the data to persist
 between Shiny instances, data needs to be saved to some external format (e.g.
 database or R data file). The callback functions provide a mechanism for this
@@ -122,8 +144,7 @@ the \code{data} represents the data table just before deleting the specified
 row. That is, if \code{callback.delete} returns a \code{data.frame}, that will
 be the new data table; otherwise this function will remove row \code{row} from
 \code{data} and that will become the current data table.
-}
-\details{
+
 The callback functions may throw errors (see e.g. \code{stop}) if there are
 problems with data. That is, if data validation checks indicate data problems
 before inserting or updating a row the function may throw an error. Note that
@@ -136,3 +157,38 @@ Callback functions may return a \code{data.frame}. When a \code{data.frame} is
 returned that will become the current state of the data table. If anything
 else is returned then the internal \code{data.frame} will be used.
 }
+\examples{
+# minimal DTedit example
+\donttest{
+library(shiny)
+library(DTedit)
+
+server <- function(input, output) {
+  
+  Grocery_List <- callModule(dtedit, 'Grocery_List',
+                             thedataframe = data.frame(Buy = c('Tea', 'Biscuits', 'Apples'),
+                                                       Quantity = c(7, 2, 5),
+                                                       stringsAsFactors = FALSE)
+                             )
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  dteditUI('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+}
+}
+\seealso{
+\code{\link{dteditUI}} : the companion user-interface function.\cr
+
+ \itemize{
+ \item \code{example("dtedit")} for a simple example.
+ \item \code{dtedit_demo()} for a more complex example. Includes database interaction
+ and interactions between the data of multiple datatables.
+ }
+
+Other Datatable Edit functions: \code{\link{dteditUI}}
+}
+\concept{Datatable Edit functions}
