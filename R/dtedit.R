@@ -241,7 +241,7 @@ dtedit <- function(input, output, session, thedataframe,
 						choices <- input.choices[[edit.cols[i]]]
 					}
 				}
-				if(length(choices) == 1 & choices == '') {
+				if(length(choices) == 1 & choices[[1]] == '') {
 					warning(paste0('No choices available for ', edit.cols[i],
 						       '. Specify them using the input.choices parameter'))
 				}
