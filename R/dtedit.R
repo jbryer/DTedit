@@ -111,9 +111,12 @@ dtedit <- function(input, output, name, thedata,
 				   callback.update = function(data, olddata, row) { },
 				   callback.insert = function(data, row) { },
 				   click.time.threshold = 2, # in seconds
-				   datatable.options = list(pageLength=defaultPageLength)
+				   datatable.options = list(pageLength=defaultPageLength),
+				   session = NULL
 ) {
-	# Some basic parameter checking
+
+  print(callback.update)
+  # Some basic parameter checking
 	if(!is.data.frame(thedata) | ncol(thedata) < 1) {
 		stop('Must provide a data frame with at least one column.')
 	} else if(length(edit.cols) != length(edit.label.cols)) {
@@ -123,8 +126,12 @@ dtedit <- function(input, output, name, thedata,
 	} else if(!all(edit.cols %in% names(thedata))) {
 		stop('Not all edit.cols are in the data.')
 	}
-
-	DataTableName <- paste0(name, 'dt')
+  
+  if(!is.null(session)) {
+    ns <- session$ns
+  }
+  
+  DataTableName <- paste0(name, 'dt')
 
 	result <- shiny::reactiveValues()
 	result$thedata <- thedata
@@ -229,7 +236,7 @@ dtedit <- function(input, output, name, thedata,
 											 width=textarea.width, height=textarea.height)
 			} else if(inputTypes[i] == 'textInput') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
-				fields[[i]] <- shiny::textInput(paste0(name, typeName, edit.cols[i]),
+				fields[[i]] <- shiny::textInput(ns(paste0(name, typeName, edit.cols[i])),
 										 label=edit.label.cols[i],
 										 value=value,
 										 width=text.width)
@@ -313,7 +320,7 @@ dtedit <- function(input, output, name, thedata,
 					shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 					fields,
 					footer = shiny::column(shiny::modalButton('Cancel'),
-									shiny::actionButton(paste0(name, '_insert'), 'Save'),
+									shiny::actionButton(ns(paste0(name, '_insert')), 'Save'),
 									width=12),
 					size = modal.size
 		)
@@ -361,7 +368,9 @@ dtedit <- function(input, output, name, thedata,
 					if(inputTypes[i] %in% c('selectInputMultiple')) {
 						newdata[[i]][row] <- list(input[[paste0(name, '_edit_', i)]])
 					} else {
+					  print("antes")
 						newdata[row,i] <- input[[paste0(name, '_edit_', i)]]
+						print("depois")
 					}
 				}
 				tryCatch({
@@ -394,7 +403,7 @@ dtedit <- function(input, output, name, thedata,
 			shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 			fields,
 			footer = column(shiny::modalButton('Cancel'),
-							shiny::actionButton(paste0(name, '_update'), 'Save'),
+							shiny::actionButton(ns(paste0(name, '_update')), 'Save'),
 							width=12),
 			size = modal.size
 		)
@@ -440,7 +449,7 @@ dtedit <- function(input, output, name, thedata,
 					shiny::p('Are you sure you want to delete this record?'),
 					fields,
 					footer = shiny::column(modalButton('Cancel'),
-									shiny::actionButton(paste0(name, '_delete'), 'Delete'),
+									shiny::actionButton(ns(paste0(name, '_delete')), 'Delete'),
 									width=12),
 					size = modal.size
 		)
@@ -449,12 +458,13 @@ dtedit <- function(input, output, name, thedata,
 	##### Build the UI for the DataTable and buttons ###########################
 
 	output[[name]] <- shiny::renderUI({
+	  ns <- session$ns
 		shiny::div(
-			if(show.insert) { shiny::actionButton(paste0(name, '_add'), label.add) },
-			if(show.update) { shiny::actionButton(paste0(name, '_edit'), label.edit) },
-			if(show.delete) { shiny::actionButton(paste0(name, '_remove'), label.delete) },
-			if(show.copy) { shiny::actionButton(paste0(name, '_copy'), label.copy) },
-			shiny::br(), shiny::br(), DT::dataTableOutput(DataTableName)
+			if(show.insert) { shiny::actionButton(ns(paste0(name, '_add')), label.add) },
+			if(show.update) { shiny::actionButton(ns(paste0(name, '_edit')), label.edit) },
+			if(show.delete) { shiny::actionButton(ns(paste0(name, '_remove')), label.delete) },
+			if(show.copy) { shiny::actionButton(ns(paste0(name, '_copy')), label.copy) },
+			shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
 		)
 	})
 
