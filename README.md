@@ -29,18 +29,22 @@ There are three steps to using `DTedit` in your shiny application.
 
 ```r
 my.insert.callback <- function(data, row) {
-	mydata <- rbind(data, mydata)
-	return(mydata)
+        # 'data' contains the dataframe *after* the row has been inserted/added
+        # 'row' is the row number where data has been inserted
+	return(data)
 }
 
 my.update.callback <- function(data, olddata, row) {
-	mydata[row,] <- data[1,]
-	return(mydata)
+        # 'data' contains the dataframe *after* the row has been updated
+        # 'row' is the row number where data has been updated
+        # 'olddata' is the previous version of the data
+	return(data)
 }
 
 my.delete.callback <- function(data, row) {
-	mydata[row,] <- NULL
-	return(mydata)
+        # 'data' contains the dataframe *before* the row has been deleted
+        # 'row' is the row number where data is to be deleted
+	return(data[-c(row),])
 }
 ```
 
@@ -61,7 +65,11 @@ return_values <- callModule(DTedit::dtedit,
 	   callback.delete = my.delete.callback)
 ```
 
-The `input` and `output` are passed from the `server` function. The `id` parameter will define the name of the object available to the `dteditUI`. The `thedataframe` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`. The structure of the `data.frame` will define the inputs (e.g. `factor`s will be drop down, `Date` will use `dateInput`, `numeric`s will use `numericInput`, etc.). `data.frame` can be a reactivevalue, in which case dtedit's own internal copy of the data will change when `data.frame` changes. Note that the reactivevalue object itself is passed, not the value (i.e. don't use '()' after the reactivevalue variable name). There are many other parameters to customize the behavior of `dtedit`, see `?dtedit` for the full list.
+The `input` and `output` are passed from the `server` function. The `id` parameter will define the name of the object available to the `dteditUI`. The `thedataframe` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`.
+
+The structure of the `data.frame` will define the inputs (e.g. `factor` will be drop down, `Date` will use `dateInput`, `numeric` will use `numericInput`, etc.).
+
+`data.frame` can be a reactivevalue, in which case dtedit's own internal copy of the data will change when `data.frame` changes. Note that the reactivevalue object itself is passed, not the value (i.e. don't use '()' after the reactivevalue variable name). There are many other parameters to customize the behavior of `dtedit`, see `?dtedit` for the full list.
 
 `return_values` is a list of reactivevalues. `return_values$thedata()` contains the current state of the DTedit's copy of the data. `return_values$edit.count()` contains the number of edits done within DTedit (not including changes to DTedit's copy of the data secondary to changes in `thedataframe`, if `thedataframe` is a reactivevalue).
 
