@@ -187,10 +187,12 @@ dtedit <- function(input, output, name, thedata,
 				value <- ifelse(missing(values),
 								as.character(Sys.Date()),
 								as.character(values[,edit.cols[i]]))
-				fields[[i]] <- dateInput(paste0(name, typeName, edit.cols[i]),
+				fields[[i]] <- dateInput(
+				             ns(paste0(name, typeName, edit.cols[i])),
 										 label=edit.label.cols[i],
 										 value=value,
-										 width=date.width)
+										 width=date.width
+										 )
 			} else if(inputTypes[i] == 'selectInputMultiple') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
 				if(is.list(value)) {
