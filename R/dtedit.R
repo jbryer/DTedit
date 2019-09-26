@@ -296,7 +296,7 @@ dtedit <- function(input, output, session, thedataframe,
 								  width=select.width)
 			} else if(inputTypes[i] == 'selectInput') {
 				value <- ifelse(missing(values), '', as.character(values[, edit.cols[i], drop=FALSE]))
-				fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
+				fields[[i]] <- shiny::selectInput(paste0(name, typeName, edit.cols[i]),
 								  label=edit.label.cols[i],
 								  choices=levels(result$thedata[,edit.cols[i]]),
 								  selected=value,
