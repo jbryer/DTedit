@@ -64,6 +64,8 @@
 #' @param label.edit the label of the edit button.
 #' @param label.add the label of the add button.
 #' @param label.copy the label of the copy button.
+#' @param label.cancel the label of the cancel button.
+#' @param label.confirm the label of the confirm button.
 #' @param show.delete whether to show/enable the delete button.
 #' @param show.update whether to show/enable the update button.
 #' @param show.insert whether to show/enable the insert button.
@@ -103,10 +105,14 @@ dtedit <- function(input, output, name, thedata,
 				   label.edit = 'Edit',
 				   label.add = 'New',
 				   label.copy = 'Copy',
-				   show.delete = TRUE,
+				   label.save = 'Save',
+				   label.cancel= 'Cancel',
+				   label.confirm = 'Confirm',
 				   show.update = TRUE,
 				   show.insert = TRUE,
 				   show.copy = TRUE,
+				   show.delete=TRUE,
+				   show.save=FALSE,
 				   callback.delete = function(data, row) { },
 				   callback.update = function(data, olddata, row) { },
 				   callback.insert = function(data, row) { },
@@ -321,8 +327,8 @@ dtedit <- function(input, output, name, thedata,
 		shiny::modalDialog(title = title.add,
 					shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 					fields,
-					footer = shiny::column(shiny::modalButton('Cancel'),
-									shiny::actionButton(ns(paste0(name, '_insert')), 'Save'),
+					footer = shiny::column(shiny::modalButton(label.cancel),
+									shiny::actionButton(ns(paste0(name, '_insert')), label.save),
 									width=12),
 					size = modal.size
 		)
@@ -404,8 +410,8 @@ dtedit <- function(input, output, name, thedata,
 		shiny::modalDialog(title = title.edit,
 			shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 			fields,
-			footer = column(shiny::modalButton('Cancel'),
-							shiny::actionButton(ns(paste0(name, '_update')), 'Save'),
+			footer = column(shiny::modalButton(label.cancel),
+							shiny::actionButton(ns(paste0(name, '_update')), label.save),
 							width=12),
 			size = modal.size
 		)
@@ -448,15 +454,30 @@ dtedit <- function(input, output, name, thedata,
 			fields[[i]] <- div(paste0(i, ' = ', result$thedata[row,i]))
 		}
 		shiny::modalDialog(title = title.delete,
-					shiny::p('Are you sure you want to delete this record?'),
+					shiny::p('Você tem certeza que quer deletar esse registro?'),
 					fields,
-					footer = shiny::column(modalButton('Cancel'),
-									shiny::actionButton(ns(paste0(name, '_delete')), 'Delete'),
+					footer = shiny::column(modalButton(label.cancel),
+									shiny::actionButton(ns(paste0(name, '_delete')), label.delete),
 									width=12),
 					size = modal.size
 		)
 	}
 
+	saveModal <- function(session) {
+	  ns <- session$ns
+	  shiny::modalDialog(shiny::p('Você tem certeza que quer atualizar o banco de dados?'),
+	                     footer = shiny::column(modalButton(label.cancel),
+	                                            shiny::actionButton(ns("confirm_save"), label.confirm),
+	                                            width=12),
+	                     size = 'm'
+	  )
+	}
+	
+	observeEvent(input[[paste0(name, '_save')]],{
+	  shiny::showModal(saveModal(session))
+	})
+	
+	
 	##### Build the UI for the DataTable and buttons ###########################
 
 	output[[name]] <- shiny::renderUI({
@@ -466,6 +487,7 @@ dtedit <- function(input, output, name, thedata,
 			if(show.update) { shiny::actionButton(ns(paste0(name, '_edit')), label.edit) },
 			if(show.delete) { shiny::actionButton(ns(paste0(name, '_remove')), label.delete) },
 			if(show.copy) { shiny::actionButton(ns(paste0(name, '_copy')), label.copy) },
+			if(show.save) { shiny::actionButton(ns(paste0(name, '_save')), label.save) },
 			shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
 		)
 	})
