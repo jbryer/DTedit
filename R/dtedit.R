@@ -95,6 +95,7 @@
 #'        feature. For developers, a message is printed using the warning function.
 #' @param datatable.options options passed to \code{\link{DT::renderDataTable}}.
 #'        See \url{https://rstudio.github.io/DT/options.html} for more information.
+#' @param ... extra options passed to DT::renderDataTable
 #' @family Datatable Edit functions
 #' @seealso \code{\link{dteditUI}} : the companion user-interface function.\cr
 #'
@@ -140,7 +141,8 @@ dtedit <- function(input, output, session, thedataframe,
 		   callback.update = function(data, olddata, row) { },
 		   callback.insert = function(data, row) { },
 		   click.time.threshold = 2, # in seconds
-		   datatable.options = list(pageLength=defaultPageLength)
+		   datatable.options = list(pageLength=defaultPageLength),
+		   ...
 ) {
 	thedata <- if(is.reactive(isolate(thedataframe)))
 	{isolate(thedataframe())} else {thedataframe}
@@ -210,7 +212,7 @@ dtedit <- function(input, output, session, thedataframe,
 		# was "thedata[,view.cols]", but requires drop=FALSE
 		# to prevent return of vector (instead of dataframe)
 		# if only one column in view.cols
-	}, options = datatable.options, server=TRUE, selection='single', rownames=FALSE)
+	}, options = datatable.options, server=TRUE, selection='single', rownames=FALSE, ...)
 	outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
 	# without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
 

@@ -21,7 +21,7 @@ dtedit(input, output, session, thedataframe, view.cols = names(isolate(if
   callback.delete = function(data, row) { },
   callback.update = function(data, olddata, row) { },
   callback.insert = function(data, row) { }, click.time.threshold = 2,
-  datatable.options = list(pageLength = defaultPageLength))
+  datatable.options = list(pageLength = defaultPageLength), ...)
 }
 \arguments{
 \item{input}{Shiny input object passed from the server.}
@@ -116,6 +116,8 @@ feature. For developers, a message is printed using the warning function.}
 
 \item{datatable.options}{options passed to \code{\link{DT::renderDataTable}}.
 See \url{https://rstudio.github.io/DT/options.html} for more information.}
+
+\item{...}{extra options passed to DT::renderDataTable}
 }
 \value{
 Returns a list of reactive values. \code{return_values$data()} contains
