@@ -59,7 +59,7 @@
 #'        correspond to a column name in the data. The value, a character vector, are the options
 #'        presented to the user for data entry, in the case of input type \code{selectInput}).
 #'        In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive}, the value
-#'        is the name of the reactive. in 'input.choices.reactive'
+#'        is the name of the reactive in 'input.choices.reactive'
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
 #'        to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 #'        The reactive itself is a character vector.
@@ -252,7 +252,29 @@ dtedit <- function(input, output, session, thedataframe,
 								   choices=choices,
 								   selected=value,
 								   width=select.width)
-
+			} else if(inputTypes[i] == 'selectInput') {
+			        value <- ifelse(missing(values), '', as.character(values[,edit.cols[i]]))
+			        if(is.list(value)) {
+			                value <- value[[1]]
+			        }
+			        choices <- ''
+			        if(!missing(values)) {
+			                choices <- unique(unlist(result$thedata[,edit.cols[i]]))
+			        }
+			        if(!is.null(input.choices)) {
+			                if(edit.cols[i] %in% names(input.choices)) {
+			                        choices <- input.choices[[edit.cols[i]]]
+			                }
+			        }
+			        if(length(choices) == 1 & choices[[1]] == '') {
+			                warning(paste0('No choices available for ', edit.cols[i],
+			                               '. Specify them using the input.choices parameter'))
+			        }
+			        fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
+			                                          label=edit.label.cols[i],
+			                                          choices=choices,
+			                                          selected=value,
+			                                          width=select.width)
 			} else if(inputTypes[i] == 'selectInputMultipleReactive') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
 				if(is.list(value)) {
@@ -294,13 +316,6 @@ dtedit <- function(input, output, session, thedataframe,
 				fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
 								  label=edit.label.cols[i],
 								  choices=choices,
-								  selected=value,
-								  width=select.width)
-			} else if(inputTypes[i] == 'selectInput') {
-				value <- ifelse(missing(values), '', as.character(values[,edit.cols[i]]))
-				fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
-								  label=edit.label.cols[i],
-								  choices=levels(result$thedata[,edit.cols[i]]),
 								  selected=value,
 								  width=select.width)
 			} else if(inputTypes[i] == 'numericInput') {

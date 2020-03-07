@@ -75,6 +75,7 @@ shinyApp(ui = ui, server = server)
  and interactions between the data of multiple datatables.
  }
 
-Other Datatable Edit functions: \code{\link{dtedit}}
+Other Datatable Edit functions: 
+\code{\link{dtedit}()}
 }
 \concept{Datatable Edit functions}
