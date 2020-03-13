@@ -148,7 +148,7 @@ dtedit <- function(input, output, session, thedataframe,
 	{shiny::isolate(thedataframe())} else {thedataframe}
 	# if a reactive has been passed, obtain the value
 	# Some basic parameter checking
-	if(!is.data.frame(thedata) | ncol(thedata) < 1) {
+	if(!is.data.frame(thedata) || ncol(thedata) < 1) {
 		stop('Must provide a data frame with at least one column.')
 	} else if(length(edit.cols) != length(edit.label.cols)) {
 		stop('edit.cols and edit.label.cols must be the same length.')
