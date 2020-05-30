@@ -51,15 +51,19 @@
 #' @param input.types a character vector where the name corresponds to a column
 #'        in \code{edit.cols} and the value is the input type. Possible values
 #'        are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
-#'        \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
-#'        or \code{passwordInput}.
+#'        \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput},
+#'        \code{textInput}, \code{textAreaInput}, \code{passwordInput} or \code{fileInput}.
 #'        The most common case where this parameter is desirable is when a text
 #'        area is required instead of a simple text input.
 #' @param input.choices a list of character vectors. The names of each element in the list must
 #'        correspond to a column name in the data. The value, a character vector, are the options
 #'        presented to the user for data entry, in the case of input type \code{selectInput}).
-#'        In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive}, the value
-#'        is the name of the reactive in 'input.choices.reactive'
+#'        In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive},
+#'        the value is the name of the reactive in 'input.choices.reactive'
+#'        In the case of input type \code{fileInput} this is the 'accept' argument,
+#'        which specifies the type of file which is acceptable. Can be a case insensitive
+#'        file extension (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
+#'        'application/pdf').
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
 #'        to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 #'        The reactive itself is a character vector.
@@ -72,6 +76,9 @@
 #' @param date.width the width of data inputs
 #' @param numeric.width the width of numeric inputs.
 #' @param select.width the width of drop down inputs.
+#' @param max.fileInputLength the maximum length (in bytes) of \code{fileInput}
+#'        Shiny itself has a default limit of 5 megabytes per file
+#'        The limit can be modified by using shiny.maxRequestSize option
 #' @param title.delete the title of the dialog box for deleting a row.
 #' @param title.edit the title of the dialog box for editing a row.
 #' @param title.add the title of the dialog box for inserting a new row.
@@ -132,6 +139,7 @@ dtedit <- function(input, output, session, thedataframe,
                    numeric.width = "100px",
                    select.width = "100%",
                    defaultPageLength = 10,
+                   max.fileInputLength = 100000000,
                    title.delete = "Delete",
                    title.edit = "Edit",
                    title.add = "New",
@@ -184,7 +192,7 @@ dtedit <- function(input, output, session, thedataframe,
   valid.input.types <- c(
     "dateInput", "selectInput", "numericInput",
     "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
-    "selectInputReactive", "selectInputMultipleReactive"
+    "selectInputReactive", "selectInputMultipleReactive", "fileInput"
   )
   inputTypes <- sapply(thedata[, edit.cols], FUN = function(x) {
     switch(class(x),
@@ -195,7 +203,8 @@ dtedit <- function(input, output, session, thedataframe,
       integer = "numericInput",
       numeric = "numericInput",
       factor = "selectInputReactive",
-      list = "selectInputMultipleReactive"
+      list = "selectInputMultipleReactive",
+      blob = "fileInput"
     )
   })
   if (!missing(input.types)) {
@@ -234,7 +243,10 @@ dtedit <- function(input, output, session, thedataframe,
   # without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
 
   getFields <- function(typeName, values) {
+    # creates input fields when adding or editing a row
+    # 'typeName' is either '_add_' or '_edit_'
     # 'values' are current values of the row (if already existing, or being copied)
+    # if adding a 'new' row, then 'values' will be 'missing'
     ns <- session$ns # need to use namespace for id elements in module
     fields <- list()
     for (i in seq_along(edit.cols)) {
@@ -243,7 +255,8 @@ dtedit <- function(input, output, session, thedataframe,
           as.character(Sys.Date()),
           as.character(values[, edit.cols[i]])
         )
-        fields[[i]] <- dateInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- dateInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = date.width
@@ -268,7 +281,8 @@ dtedit <- function(input, output, session, thedataframe,
             ". Specify them using the input.choices parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- selectInputMultiple(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           choices = choices,
           selected = value,
@@ -316,11 +330,12 @@ dtedit <- function(input, output, session, thedataframe,
         }
         if (is.null(choices)) {
           warning(paste0(
-            "No choices available for ", edit.cols[i],
-            ". Specify them using the input.choices and input.choices.reactive parameter"
+            "No choices available for ", edit.cols[i], ". ",
+            "Specify them using the input.choices and input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- selectInputMultiple(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           choices = choices,
           selected = value,
@@ -339,11 +354,12 @@ dtedit <- function(input, output, session, thedataframe,
         }
         if (is.null(choices)) {
           warning(paste0(
-            "No choices available for ", edit.cols[i],
-            ". Specify them using the input.choices and input.choices.reactive parameter"
+            "No choices available for ", edit.cols[i], ". ",
+            "Specify them using the input.choices and input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::selectInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           choices = choices,
           selected = value,
@@ -351,32 +367,47 @@ dtedit <- function(input, output, session, thedataframe,
         )
       } else if (inputTypes[i] == "numericInput") {
         value <- ifelse(missing(values), 0, values[, edit.cols[i]])
-        fields[[i]] <- shiny::numericInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::numericInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = numeric.width
         )
       } else if (inputTypes[i] == "textAreaInput") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
-        fields[[i]] <- shiny::textAreaInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::textAreaInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = textarea.width, height = textarea.height
         )
       } else if (inputTypes[i] == "textInput") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
-        fields[[i]] <- shiny::textInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::textInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = text.width
         )
       } else if (inputTypes[i] == "passwordInput") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
-        fields[[i]] <- shiny::passwordInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::passwordInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = text.width
         )
+      } else if (inputTypes[i] == "fileInput") {
+        # current value(if not 'missing') is actually irrelevant!
+        # will always present a file selector
+        fields[[i]] <- shiny::fileInput(
+          ns(paste0(name, typeName, edit.cols[i])),
+          label = edit.label.cols[i],
+          accept = input.choices[[edit.cols[i]]]
+          # acceptable file input choices
+          # e.g. case insensitive file extension '.csv'
+          #      MIME types "text/plain"
+          )
       } else {
         stop("Invalid input type!")
       }
@@ -419,13 +450,35 @@ dtedit <- function(input, output, session, thedataframe,
       }
     }
     insert.click <<- Sys.time()
-
+    
     newdata <- result$thedata
     row <- nrow(newdata) + 1
-    newdata[row, ] <- NA
+    new_row <- data.frame(matrix(nrow = 1, ncol = ncol(newdata)))
+    # new_row will be filled with NA by default
+    names(new_row) <- names(newdata)
+    for (i in edit.cols) {
+      if (inputTypes[i] == "fileInput") {
+        new_row[[i]] <- blob::as.blob(raw(0))
+        # unfortunately, there is no NA or NULL for 'blob'!
+        # need to add it as an raw(0)
+      }
+    }
+    newdata <- rbind(newdata, new_row)
+    # add the new row to newdata, ready for filling
     for (i in edit.cols) {
       if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
+      } else if (inputTypes[i] == "fileInput") {
+        datapath <- input[[paste0(name, "_add_", i)]]$datapath
+        if (!is.null(datapath)) {
+          newdata[[i]][row] <- blob::blob(
+            readBin(
+              datapath,
+              what = "raw",
+              n = max.fileInputLength
+            )
+          )
+        }
       } else {
         newdata[row, i] <- input[[paste0(name, "_add_", i)]]
       }
@@ -509,6 +562,18 @@ dtedit <- function(input, output, session, thedataframe,
         for (i in edit.cols) {
           if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
             newdata[[i]][row] <- list(input[[paste0(name, "_edit_", i)]])
+          } else if (inputTypes[i] == "fileInput") {
+            datapath <- input[[paste0(name, "_edit_", i)]]$datapath
+            if (!is.null(datapath) && file.exists(datapath)) {
+              # only if file actually uploaded, otherwise we won't update
+              newdata[[i]][row] <- blob::blob(
+                readBin(
+                  datapath,
+                  what = "raw",
+                  n = max.fileInputLength
+                )
+              )
+            }
           } else {
             newdata[row, i] <- input[[paste0(name, "_edit_", i)]]
           }

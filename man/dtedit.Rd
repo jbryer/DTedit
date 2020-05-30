@@ -9,10 +9,10 @@ dtedit(
   output,
   session,
   thedataframe,
-  view.cols = names(isolate(if (is.reactive(thedataframe)) {     thedataframe() } else {
-        thedataframe })),
-  edit.cols = names(isolate(if (is.reactive(thedataframe)) {     thedataframe() } else {
-        thedataframe })),
+  view.cols = names(shiny::isolate(if (shiny::is.reactive(thedataframe)) {    
+    thedataframe() } else {     thedataframe })),
+  edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedataframe)) {    
+    thedataframe() } else {     thedataframe })),
   edit.label.cols = edit.cols,
   input.types,
   input.choices = NULL,
@@ -26,6 +26,7 @@ dtedit(
   numeric.width = "100px",
   select.width = "100\%",
   defaultPageLength = 10,
+  max.fileInputLength = 1e+08,
   title.delete = "Delete",
   title.edit = "Edit",
   title.add = "New",
@@ -67,16 +68,20 @@ correspond to \code{edit.cols}.}
 \item{input.types}{a character vector where the name corresponds to a column
 in \code{edit.cols} and the value is the input type. Possible values
 are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
-\code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
-or \code{passwordInput}.
+\code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput},
+\code{textInput}, \code{textAreaInput}, \code{passwordInput} or \code{fileInput}.
 The most common case where this parameter is desirable is when a text
 area is required instead of a simple text input.}
 
 \item{input.choices}{a list of character vectors. The names of each element in the list must
 correspond to a column name in the data. The value, a character vector, are the options
 presented to the user for data entry, in the case of input type \code{selectInput}).
-In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive}, the value
-is the name of the reactive in 'input.choices.reactive'}
+In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive},
+the value is the name of the reactive in 'input.choices.reactive'
+In the case of input type \code{fileInput} this is the 'accept' argument,
+which specifies the type of file which is acceptable. Can be a case insensitive
+file extension (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
+'application/pdf').}
 
 \item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
 to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
@@ -99,6 +104,10 @@ The reactive itself is a character vector.}
 \item{select.width}{the width of drop down inputs.}
 
 \item{defaultPageLength}{number of rows to show in the data table by default.}
+
+\item{max.fileInputLength}{the maximum length (in bytes) of \code{fileInput}
+Shiny itself has a default limit of 5 megabytes per file
+The limit can be modified by using shiny.maxRequestSize option}
 
 \item{title.delete}{the title of the dialog box for deleting a row.}
 
@@ -189,11 +198,15 @@ library(DTedit)
 
 server <- function(input, output) {
   
-  Grocery_List <- callModule(dtedit, 'Grocery_List',
-                             thedataframe = data.frame(Buy = c('Tea', 'Biscuits', 'Apples'),
-                                                       Quantity = c(7, 2, 5),
-                                                       stringsAsFactors = FALSE)
-                             )
+  Grocery_List <- callModule(
+    dtedit,
+    'Grocery_List',
+    thedataframe = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    )
+  )
 }
 
 ui <- fluidPage(
