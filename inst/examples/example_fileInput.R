@@ -17,7 +17,14 @@
       ),
       view.cols = c("Buy", "Quantity"),
       edit.cols = c("Buy", "Quantity", "Picture"),
-      input.choices = list(Picture = "image/*")
+      input.choices = list(Picture = "image/*"),
+      action.button = list(
+        MyActionButton = list(
+          columnLabel = "Show Picture",
+          buttonLabel = "Show",
+          buttonPrefix = "button_",
+          afterColumn = "Quantity")
+      )
     )
   }
   
@@ -28,3 +35,4 @@
   
   shinyApp(ui = ui, server = server)
 }
+

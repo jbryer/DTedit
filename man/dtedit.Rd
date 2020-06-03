@@ -17,6 +17,7 @@ dtedit(
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
+  action.buttons = NULL,
   selectize = TRUE,
   modal.size = "m",
   text.width = "100\%",
@@ -86,6 +87,14 @@ file extension (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
 \item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
 to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 The reactive itself is a character vector.}
+
+\item{action.buttons}{a named list of action button columns.
+Each column description is a list of \code{columnLabel}, \code{buttonLabel}, \code{buttonPrefix}, \code{afterColumn}.
+\code{columnLabel} label used for the column.
+\code{buttonLabel} label used for each button
+\code{buttonPrefix} used as the prefix for action button IDs.
+  the suffix will be a number from '1' to the number of rows.
+\code{afterColumn} if provided, the action button column is placed after this named column.}
 
 \item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}
 

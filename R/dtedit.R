@@ -67,6 +67,13 @@
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
 #'        to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 #'        The reactive itself is a character vector.
+#' @param action.buttons a named list of action button columns.
+#'        Each column description is a list of \code{columnLabel}, \code{buttonLabel}, \code{buttonPrefix}, \code{afterColumn}.
+#'        \code{columnLabel} label used for the column.
+#'        \code{buttonLabel} label used for each button
+#'        \code{buttonPrefix} used as the prefix for action button IDs.
+#'          the suffix will be a number from '1' to the number of rows.
+#'        \code{afterColumn} if provided, the action button column is placed after this named column.
 #' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
@@ -116,20 +123,29 @@
 #'
 #' @export
 dtedit <- function(input, output, session, thedataframe,
-                   view.cols = names(shiny::isolate(if (shiny::is.reactive(thedataframe)) {
-                     thedataframe()
-                   } else {
-                     thedataframe
-                   })),
-                   edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedataframe)) {
-                     thedataframe()
-                   } else {
-                     thedataframe
-                   })),
+                   view.cols = names(
+                     shiny::isolate(
+                       if (shiny::is.reactive(thedataframe)) {
+                         thedataframe()
+                       } else {
+                         thedataframe
+                       }
+                     )
+                   ),
+                   edit.cols = names(
+                     shiny::isolate(
+                       if (shiny::is.reactive(thedataframe)) {
+                         thedataframe()
+                       } else {
+                         thedataframe
+                       }
+                     )
+                   ),
                    edit.label.cols = edit.cols,
                    input.types,
                    input.choices = NULL,
                    input.choices.reactive = NULL,
+                   action.buttons = NULL,
                    selectize = TRUE,
                    modal.size = "m",
                    text.width = "100%",
@@ -232,13 +248,98 @@ dtedit <- function(input, output, session, thedataframe,
       })
     }
   }
-
-  output[[DataTableName]] <- DT::renderDataTable({
-    thedata[, view.cols, drop = FALSE]
-    # was "thedata[,view.cols]", but requires drop=FALSE
-    # to prevent return of vector (instead of dataframe)
-    # if only one column in view.cols
-  }, options = datatable.options, server = TRUE, selection = "single", rownames = FALSE, ...)
+  
+  addActionButtons <- function(data, action.buttons) {
+    # data : dataframe
+    # action.buttons : named list of lists
+    #  each list contains 
+    #   $columnLabel - the name of the created column
+    #   $buttonLabel - the label to use for each button
+    #   $buttonPrefix - the prefix of the button ID
+    #    the suffix is a number
+    #   $afterColumn - (optional)
+    #    the name of the column after which created column is placed
+    # returns dataframe
+    
+    ns <- session$ns
+    
+    # create a vector of shiny inputs
+    # of length 'len'
+    # input IDs have prefix 'id', and a numeric suffix from '1' to 'len'
+    shinyInput <- function(FUN, len, id, ...) {
+      inputs <- character(len)
+      for (i in seq_len(len)) {
+        inputs[i] <- as.character(FUN(paste0(id, i), ...))
+      }
+      return(inputs)
+    }
+    # https://stackoverflow.com/questions/45739303/
+    #  r-shiny-handle-action-buttons-in-data-table
+    # https://stackoverflow.com/questions/57969103/
+    #  how-to-use-shiny-action-button-in-datatable-through-shiny-module
+    # https://community.rstudio.com/t/
+    #  how-to-use-shiny-action-button-in-datatable-through-shiny-module/39998
+    # if used in a module environment, usage looks like :
+    #  Actions = shinyInput(
+    #   actionButton, 5,
+    #   'button_',
+    #   label = "Fire",
+    #   onclick = paste0('Shiny.setInputValue(\"' , ns("select_button"), '\", this.id)')
+    #   )
+    
+    view.cols.andButtons <- names(data) # used to store the order of columns
+    # by default, view columns 'and buttons' are the same as view.cols
+    if (!is.null(action.buttons)) {
+      for (i in action.buttons) {
+        data[, i$columnLabel] <- shinyInput(
+          shiny::actionButton,
+          nrow(thedata),
+          i$buttonPrefix,
+          label = i$buttonLabel,
+          onclick = paste0(
+            'Shiny.setInputValue(\"',
+            ns("select_button"),
+            '\", this.id)'
+          )
+        )
+        if (is.null(i$afterColumn)) {
+          # this button column has no defined position, so place at end of view column vector
+          view.cols.andButtons <- append(
+            view.cols.andButtons,
+            i$columnLabel
+          )
+        } else {
+          # this button column has a defined position
+          view.cols.andButtons <- append(
+            view.cols.andButtons,
+            i$columnLabel,
+            after = which(view.cols.andButtons == i$afterColumn)
+          )
+        }
+      }
+    }
+    data <- data[, view.cols.andButtons]
+    # re-order columns as necessary
+    return(data)
+  }
+  
+  thedataWithButtons <- addActionButtons(
+    thedata[, view.cols, drop = FALSE], action.buttons)
+  # was "thedata[,view.cols]", but requires drop=FALSE
+  # to prevent return of vector (instead of dataframe)
+  # if only one column in view.cols
+  
+  output[[DataTableName]] <- DT::renderDataTable(
+    {thedataWithButtons},
+    options = datatable.options,
+    server = TRUE,
+    escape = which(names(thedataWithButtons) %in% names(thedata)),
+    # 'escaped' columns are those without HTML buttons etc.
+    # escape the 'data' columns
+    # but do not escape the columns which have been created by addActionButtons()
+    selection = "single",
+    rownames = FALSE, ...
+  )
   outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
   # without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
 
@@ -418,6 +519,11 @@ dtedit <- function(input, output, session, thedataframe,
   output[[paste0(name, "_message")]] <- shiny::renderText("")
 
   updateData <- function(proxy, data, ...) {
+    # updates data displayed in DT datatable
+    #
+    # will reference 'global' action.buttons variable
+    #  when callling function 'addActionButtons'
+
     # Convert any list columns to characters before displaying
     for (i in 1:ncol(data)) {
       if (is.list(data[, i])) {
@@ -428,7 +534,8 @@ dtedit <- function(input, output, session, thedataframe,
         # cannot assign empty list() to data[,i], because that causes data[,i] column to be deleted!
       }
     }
-    DT::replaceData(proxy, data, ...)
+    
+    DT::replaceData(proxy, addActionButtons(data, action.buttons), ...)
   }
 
   ##### Insert functions #####################################################
