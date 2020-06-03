@@ -42,6 +42,7 @@ dtedit(
   callback.delete = function(data, row) { },
   callback.update = function(data, olddata, row) { },
   callback.insert = function(data, row) { },
+  callback.actionButton = function(data, row, buttonID) { },
   click.time.threshold = 2,
   datatable.options = list(pageLength = defaultPageLength),
   ...
@@ -140,14 +141,19 @@ The limit can be modified by using shiny.maxRequestSize option}
 
 \item{show.copy}{whether to show/enablre the copy button.}
 
-\item{callback.delete}{a function called when the user deletes a row. This function should
-return an updated data.frame.}
+\item{callback.delete}{a function called when the user deletes a row.
+This function should return an updated data.frame.}
 
-\item{callback.update}{a function called when the user updates a row. This function should
-return an updated data.frame.}
+\item{callback.update}{a function called when the user updates a row.
+This function should return an updated data.frame.}
 
-\item{callback.insert}{a function called when the user inserts a new row. This function should
-return an updated data.frame.}
+\item{callback.insert}{a function called when the user inserts a new row.
+This function should return an updated data.frame.}
+
+\item{callback.actionButton}{a function called when the user clicks an action button.
+called with arguments 'data', 'row' and 'buttonID'.
+This function can return an updated data.frame,
+alternatively return NULL if data is not to be changed.}
 
 \item{click.time.threshold}{This is to prevent duplicate entries usually by double clicking the
 save or update buttons. If the user clicks the save button again within this amount of
