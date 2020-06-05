@@ -46,7 +46,7 @@
     }
     
     Grocery_List <- callModule(
-      dtedit,
+      dteditmod,
       'Grocery_List',
       thedata = data.frame(
         Buy = c('Tea', 'Biscuits', 'Apples'),
@@ -95,7 +95,7 @@
   ui <- fluidPage(
     shinyalert::useShinyalert(),
     h3("Grocery List"),
-    dteditUI("Grocery_List"),
+    dteditmodUI("Grocery_List"),
     uiOutput("listPicture"),
     DT::dataTableOutput("showSpreadsheet")
   )

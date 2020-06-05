@@ -2,138 +2,144 @@ library(shiny)
 library(RSQLite)
 library(DTedit)
 
-##### Load books data.frame as a SQLite database
-conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
-
-if(!'books' %in% dbListTables(conn)) {
-	books <- read.csv('books.csv', stringsAsFactors = FALSE)
-	books$Authors <- strsplit(books$Authors, ';')
-	books$Authors <- lapply(books$Authors, trimws) # Strip white space
-	books$Authors <- unlist(lapply(books$Authors, paste0, collapse = ';'))
-	books$id <- 1:nrow(books)
-	books$Date <- paste0(books$Date, '-01-01')
-	dbWriteTable(conn, "books", books, overwrite = TRUE)
-}
-
-getBooks <- function() {
-	res <- dbSendQuery(conn, "SELECT * FROM books")
-	books <- dbFetch(res)
-	dbClearResult(res)
-	books$Authors <- strsplit(books$Authors, ';')
-	books$Date <- as.Date(books$Date)
-	books$Publisher <- as.factor(books$Publisher)
-	return(books)
-}
-
-##### Callback functions.
-books.insert.callback <- function(data, row) {
-	query <- paste0(
-	  "INSERT INTO books (id, Authors, Date, Title, Publisher) VALUES (",
-	  "", max(getBooks()$id) + 1, ", ",
-	  "'", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
-	  "'", as.character(data[row,]$Date), "', ",
-	  "'", data[row,]$Title, "', ",
-	  "'", as.character(data[row,]$Publisher), "' ",
-	  ")"
-	)
-	print(query) # For debugging
-	dbSendQuery(conn, query)
-	return(getBooks())
-}
-
-books.update.callback <- function(data, olddata, row) {
-	query <- paste0(
-	  "UPDATE books SET ",
-	  "Authors = '", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
-	  "Date = '", as.character(data[row,]$Date), "', ",
-	  "Title = '", data[row,]$Title, "', ",
-	  "Publisher = '", as.character(data[row,]$Publisher), "' ",
-	  "WHERE id = ", data[row,]$id
-	)
-	print(query) # For debugging
-	dbSendQuery(conn, query)
-	return(getBooks())
-}
-
-books.delete.callback <- function(data, row) {
-	query <- paste0('DELETE FROM books WHERE id = ', data[row,]$id)
-	dbSendQuery(conn, query)
-	return(getBooks())
-}
-
-names.Type.update.callback <- function(data, olddata, row) {
-	# update a user-type
-	# do not allow an updated user-type which is the same as another
-	## if this is attempted, show a warning
-	if (data[row,] %in% data[-row,]) {
-		stop(paste0("Cannot change user-type to '", data[row,],"', that user-type already exists!"))
-	}
-	return(data)
-}
-
-names.Type.insert.callback <- function(data, row) {
-	# insert a user-type
-	# do not allow a new user-type which is the same as an old one
-	## if this is attempted, show a warning
-	if (data[row,] %in% data[-row,]) {
-		stop(paste0("Cannot add '", data[row,],"', that user-type already exists!"))
-	}
-	return(data)
-}
-
-names.Type.delete.callback <- function(data, row) {
-	# remove a user-type
-	# it is possible for this user-type to be currently used
-	# by an entry in names()  (names has been explicitly passed by reference
-	# to the dtedit function), in which case this function will show a warning
-	if (data[row,] %in% get("input.choices.reactive", parent.frame())[["names"]]()$Type) {
-		stop(paste0("Cannot delete '", data[row,],
-			    "', this user-type currently assigned to a user."))
-	} else {
-		data <- data[-row,, drop = FALSE]
-	}
-	return(data)
-}
-
-names.Like.update.callback <- function(data, olddata, row) {
-	# update a like
-	# do not allow an updated like which is the same as another
-	## if this is attempted, show a warning
-	if (data[row,] %in% data[-row,]) {
-		stop(paste0("Cannot change like to '", data[row,],"', that like already exists!"))
-	}
-	return(data)
-}
-
-names.Like.insert.callback <- function(data, row) {
-	# insert a like
-	# do not allow a like which is the same as an old one
-	## if this is attempted, show a warning
-	if (data[row,] %in% data[-row,]) {
-		stop(paste0("Cannot add '", data[row,],"', that like already exists!"))
-	}
-	return(data)
-}
-
-names.Like.delete.callback <- function(data, row) {
-	# remove a like
-	# it is possible for this like to be currently used
-	# by an entry in names()  (names has been explicitly passed by reference
-	# to the dtedit function), in which case this function will show a warning
-	if (data[row,] %in% unlist(get("input.choices.reactive", parent.frame())[["names"]]()$Like)) {
-		stop(paste0("Cannot delete '", data[row,],
-			    "', this like currently assigned to a user."))
-	} else {
-		data <- data[-row,, drop = FALSE]
-	}
-	return(data)
-}
 
 ##### Create the Shiny server
-server <- function(input, output) {
+server <- function(input, output, session) {
+  
+  ##### Load books data.frame as a SQLite database
+  conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
+  
+  if(!'books' %in% dbListTables(conn)) {
+    books <- read.csv('books.csv', stringsAsFactors = FALSE)
+    books$Authors <- strsplit(books$Authors, ';')
+    books$Authors <- lapply(books$Authors, trimws) # Strip white space
+    books$Authors <- unlist(lapply(books$Authors, paste0, collapse = ';'))
+    books$id <- 1:nrow(books)
+    books$Date <- paste0(books$Date, '-01-01')
+    dbWriteTable(conn, "books", books, overwrite = TRUE)
+  }
+  
+  getBooks <- function() {
+    res <- dbSendQuery(conn, "SELECT * FROM books")
+    books <- dbFetch(res)
+    dbClearResult(res)
+    books$Authors <- strsplit(books$Authors, ';')
+    books$Date <- as.Date(books$Date)
+    books$Publisher <- as.factor(books$Publisher)
+    return(books)
+  }
+  
 	books <- getBooks()
+	
+	##### Callback functions.
+	books.insert.callback <- function(data, row) {
+	  query <- paste0(
+	    "INSERT INTO books (id, Authors, Date, Title, Publisher) VALUES (",
+	    "", max(getBooks()$id) + 1, ", ",
+	    "'", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
+	    "'", as.character(data[row,]$Date), "', ",
+	    "'", data[row,]$Title, "', ",
+	    "'", as.character(data[row,]$Publisher), "' ",
+	    ")"
+	  )
+	  print(query) # For debugging
+	  res <- dbSendQuery(conn, query)
+	  dbClearResult(res)
+	  return(getBooks())
+	}
+	
+	books.update.callback <- function(data, olddata, row) {
+	  query <- paste0(
+	    "UPDATE books SET ",
+	    "Authors = '", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
+	    "Date = '", as.character(data[row,]$Date), "', ",
+	    "Title = '", data[row,]$Title, "', ",
+	    "Publisher = '", as.character(data[row,]$Publisher), "' ",
+	    "WHERE id = ", data[row,]$id
+	  )
+	  print(query) # For debugging
+	  res <- dbSendQuery(conn, query)
+	  dbClearResult(res)
+	  return(getBooks())
+	}
+	
+	books.delete.callback <- function(data, row) {
+	  query <- paste0('DELETE FROM books WHERE id = ', data[row,]$id)
+	  res <- dbSendQuery(conn, query)
+	  dbClearResult(res)
+	  return(getBooks())
+	}
+	
+	names.Type.update.callback <- function(data, olddata, row) {
+	  # update a user-type
+	  # do not allow an updated user-type which is the same as another
+	  ## if this is attempted, show a warning
+	  if (data[row,] %in% data[-row,]) {
+	    stop(paste0("Cannot change user-type to '", data[row,],"', that user-type already exists!"))
+	  }
+	  return(data)
+	}
+	
+	names.Type.insert.callback <- function(data, row) {
+	  # insert a user-type
+	  # do not allow a new user-type which is the same as an old one
+	  ## if this is attempted, show a warning
+	  if (data[row,] %in% data[-row,]) {
+	    stop(paste0("Cannot add '", data[row,],"', that user-type already exists!"))
+	  }
+	  return(data)
+	}
+	
+	names.Type.delete.callback <- function(data, row) {
+	  # remove a user-type
+	  # it is possible for this user-type to be currently used
+	  # by an entry in names()  (names has been explicitly passed by reference
+	  # to the dtedit function), in which case this function will show a warning
+	  if (data[row,] %in% get("input.choices.reactive", parent.frame())[["names"]]()$Type) {
+	    stop(paste0("Cannot delete '", data[row,],
+	      "', this user-type currently assigned to a user."))
+	  } else {
+	    data <- data[-row,, drop = FALSE]
+	  }
+	  return(data)
+	}
+	
+	names.Like.update.callback <- function(data, olddata, row) {
+	  # update a like
+	  # do not allow an updated like which is the same as another
+	  ## if this is attempted, show a warning
+	  if (data[row,] %in% data[-row,]) {
+	    stop(paste0("Cannot change like to '", data[row,],"', that like already exists!"))
+	  }
+	  return(data)
+	}
+	
+	names.Like.insert.callback <- function(data, row) {
+	  # insert a like
+	  # do not allow a like which is the same as an old one
+	  ## if this is attempted, show a warning
+	  if (data[row,] %in% data[-row,]) {
+	    stop(paste0("Cannot add '", data[row,],"', that like already exists!"))
+	  }
+	  return(data)
+	}
+	
+	names.Like.delete.callback <- function(data, row) {
+	  # remove a like
+	  # it is possible for this like to be currently used
+	  # by an entry in names()  (names has been explicitly passed by reference
+	  # to the dtedit function), in which case this function will show a warning
+	  if (data[row,] %in% unlist(get("input.choices.reactive", parent.frame())[["names"]]()$Like)) {
+	    stop(paste0("Cannot delete '", data[row,],
+	      "', this like currently assigned to a user."))
+	  } else {
+	    data <- data[-row,, drop = FALSE]
+	  }
+	  return(data)
+	}
+	
 	callModule(
-	  dtedit,
+	  dteditmod,
 	  'books',
 	  thedata = books,
 	  edit.cols = c('Title', 'Authors', 'Date', 'Publisher'),
@@ -149,7 +155,7 @@ server <- function(input, output) {
 	names.Like <- reactiveVal()
 	names.Like(data.frame(Likes = c("Apple", "Pear"), stringsAsFactors = FALSE))
 	names.Likedt <- callModule(
-	  dtedit,
+	  dteditmod,
 	  'names.Like',
 	  thedata = names.Like,
 	  edit.cols = c("Likes"),
@@ -167,7 +173,7 @@ server <- function(input, output) {
 	names.Type <- reactiveVal()
 	names.Type(data.frame(Types = c("Admin", "User"), stringsAsFactors = FALSE))
 	names.Typedt <- callModule(
-	  dtedit,
+	  dteditmod,
 	  'names.Type',
 	  thedata = names.Type,
 	  edit.cols = c("Types"),
@@ -201,7 +207,7 @@ server <- function(input, output) {
 	})
 	
 	namesdt <- callModule(
-	  dtedit,
+	  dteditmod,
 	  'names',
 	  thedata = names,
 	  input.types = c(Type = "selectInputReactive", Like = "selectInputMultipleReactive"),
@@ -235,6 +241,10 @@ server <- function(input, output) {
 		)
 		names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))
 	})
+	
+	session$onSessionEnded(function() {
+	  dbDisconnect(conn)
+	})
 }
 
 ##### Create the shiny UI
@@ -243,14 +253,14 @@ ui <- fluidPage(
 		type = "tabs",
 		tabPanel("Books",
 			 h3('Books'),
-			 dteditUI('books')
+			 dteditmodUI('books')
 		),
 		tabPanel("Emails",
 			 tabsetPanel(
 			 	type = "tabs",
 			 	tabPanel("Users",
 			 		 h3('Email Addresses'),
-			 		 dteditUI('names')
+			 		 dteditmodUI('names')
 			 	),
 			 	tabPanel("Add/Delete",
 			 		 wellPanel(
@@ -260,13 +270,13 @@ ui <- fluidPage(
 			 	),
 			 	tabPanel("User Types",
 			 		 wellPanel(
-			 		 	dteditUI("names.Type")
+			 		 	dteditmodUI("names.Type")
 			 		 )
 
 			 	),
 			 	tabPanel("Likes",
 			 		 wellPanel(
-			 		 	dteditUI("names.Like")
+			 		 	dteditmodUI("names.Like")
 			 		 )
 
 			 	)

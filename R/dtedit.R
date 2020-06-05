@@ -1,9 +1,23 @@
 #' Create a DataTable with Add, Edit and Delete buttons.
+#' 
+#' dtedit
+#' 
+#' @export
+dtedit <- function(
+  input, output,
+  name,
+  thedata,
+  ...
+) {
+  dteditmod(input, output, session = name, thedata = thedata, ...)
+}
+
+#' Create a DataTable with Add, Edit and Delete buttons.
 #'
-#' dtedit - server function
+#' dteditmod - server function
 #'
-#' Use in conjunction with \code{callModule} and \code{dteditUI} to create
-#' editable datatables. \code{dtedit} is used in the 'server' component of the
+#' Use in conjunction with \code{callModule} and \code{dteditmodUI} to create
+#' editable datatables. \code{dteditmod} is used in the 'server' component of the
 #' shiny app.
 #'
 #' This object will maintain data state. However, in order of the data to persist
@@ -40,6 +54,7 @@
 #' @param input Shiny input object passed from the server.
 #' @param output Shiny output object passed from the server.
 #' @param session Shiny session object passed from the server
+#'        alternatively, it is the 'name' of the output object
 #' @param thedata a data frame to view and edit. can be a reactive
 #' @param view.cols character vector with the column names to show in the DataTable.
 #'        This can be a subset of the full \code{data.frame}.
@@ -124,10 +139,9 @@
 #'  and interactions between the data of multiple datatables.
 #'  }
 #' @example inst/examples/example.R
-#' @example inst/examples/example_fileInput.R
 #'
 #' @export
-dtedit <- function(
+dteditmod <- function(
   input, output, session,
   thedata,
   view.cols = names(
@@ -182,7 +196,20 @@ dtedit <- function(
   datatable.options = list(pageLength = defaultPageLength),
   ...) {
   
-  ns <- session$ns
+  if (!missing(session) && is.environment(session)) {
+    # the function has been called as a module
+    ns <- session$ns
+    name <- "editdt"
+    moduleMode <- TRUE # in 'module' mode
+  } else if (is.character(session)) {
+    # the function has not been called as a module
+    # and 'session' is a character string,
+    # then 'session' is the 'name' of the output
+    name <- session
+    ns <- function(x) return(x)
+    # also, ns becomes a 'change nothing' function
+    moduleMode <- FALSE # not in 'module' mode
+  }
 
   thedataCopy <- if (shiny::is.reactive(shiny::isolate(thedata))) {
     shiny::isolate(thedata())
@@ -201,7 +228,6 @@ dtedit <- function(
     stop("Not all edit.cols are in the data.")
   }
 
-  name <- "editdt"
   DataTableName <- paste0(name, "dt")
 
   result <- shiny::reactiveValues()
@@ -412,13 +438,14 @@ dtedit <- function(
           value <- value[[1]]
         }
         choices <- ""
-        if (!missing(values)) {
+        if (!is.null(input.choices) && edit.cols[i] %in% names(input.choices)) {
+          choices <- input.choices[[edit.cols[i]]]
+        } else if (is.factor(result$thedata[, edit.cols[i]])) {
+          choices <- levels(result$thedata[, edit.cols[i]])
+        } else if (nrow(result$thedata) > 0) {
           choices <- unique(unlist(result$thedata[, edit.cols[i]]))
-        }
-        if (!is.null(input.choices)) {
-          if (edit.cols[i] %in% names(input.choices)) {
-            choices <- input.choices[[edit.cols[i]]]
-          }
+          # no choices explicitly defined
+          # use choices defined in other rows, if available
         }
         if (length(choices) == 1 & choices[[1]] == "") {
           warning(paste0(
@@ -576,19 +603,16 @@ dtedit <- function(
     insert.click <<- Sys.time()
 
     newdata <- result$thedata
-    row <- nrow(newdata) + 1
-    new_row <- data.frame(matrix(nrow = 1, ncol = ncol(newdata)))
-    # new_row will be filled with NA by default
-    names(new_row) <- names(newdata)
+    row <- nrow(newdata) + 1 # the new row number
+    newdata[row, ] <- NA
     for (i in edit.cols) {
       if (inputTypes[i] == "fileInput") {
-        new_row[[i]] <- blob::as.blob(raw(0))
+        newdata[row, i] <- blob::as.blob(raw(0))
         # unfortunately, there is no NA or NULL for 'blob'!
         # need to add it as an raw(0)
       }
     }
-    newdata <- rbind(newdata, new_row)
-    # add the new row to newdata, ready for filling
+    # the new row is ready for filling
     for (i in edit.cols) {
       if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
@@ -919,7 +943,7 @@ dtedit <- function(
 #'  }
 #' @example inst/examples/example_reactivedataframe.R
 #' @export
-dteditUI <- function(id) {
+dteditmodUI <- function(id) {
   ns <- shiny::NS(id)
 
   shiny::tagList(

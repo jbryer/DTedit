@@ -9,9 +9,11 @@ server <- function(input, output) {
 	data(data.frame(Column1 = c("Apple", "Cherry", "Frozen"),
 			Column2 = c("Pie", "Tart", "Yoghurt"),
 			stringsAsFactors = FALSE))
-	data_DT_gui <- callModule(dtedit, 'dataspace',
-				  thedata = data, 
-				  edit.cols = c("Column1", "Column2")
+	data_DT_gui <- callModule(
+	  dteditmod,
+	  'dataspace',
+	  thedata = data, 
+	  edit.cols = c("Column1", "Column2")
 	)
 	
 	observe({
@@ -39,7 +41,7 @@ server <- function(input, output) {
 ui <- fluidPage(
 	h3("DTedit using reactive dataframe"),
 	wellPanel(p("Try the 'Scramble' button!")),
-	dteditUI("dataspace"),
+	dteditmodUI("dataspace"),
 	actionButton("data_scramble", "Scramble an entry")
 )
 

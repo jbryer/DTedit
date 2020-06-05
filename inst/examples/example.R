@@ -6,7 +6,7 @@ library(DTedit)
 server <- function(input, output) {
   
   Grocery_List <- callModule(
-    dtedit,
+    dteditmod,
     'Grocery_List',
     thedata = data.frame(
       Buy = c('Tea', 'Biscuits', 'Apples'),
@@ -18,7 +18,7 @@ server <- function(input, output) {
 
 ui <- fluidPage(
   h3('Grocery List'),
-  dteditUI('Grocery_List')
+  dteditmodUI('Grocery_List')
 )
 
 shinyApp(ui = ui, server = server)
