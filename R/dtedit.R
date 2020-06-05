@@ -180,6 +180,9 @@ dtedit <- function(
   click.time.threshold = 2, # in seconds
   datatable.options = list(pageLength = defaultPageLength),
   ...) {
+  
+  ns <- session$ns
+
   thedata <- if (shiny::is.reactive(shiny::isolate(thedataframe))) {
     shiny::isolate(thedataframe())
   } else {
@@ -270,8 +273,6 @@ dtedit <- function(
     #  $dataframe
     #  $button.colNames - the column names of the action buttons
 
-    ns <- session$ns
-
     # create a vector of shiny inputs
     # of length 'len'
     # input IDs have prefix 'id', a numeric suffix from '1' to 'len'
@@ -361,7 +362,7 @@ dtedit <- function(
     # 'typeName' is either '_add_' or '_edit_'
     # 'values' are current values of the row (if already existing, or being copied)
     # if adding a 'new' row, then 'values' will be 'missing'
-    ns <- session$ns # need to use namespace for id elements in module
+    
     fields <- list()
     for (i in seq_along(edit.cols)) {
       if (inputTypes[i] == "dateInput") {
@@ -626,7 +627,7 @@ dtedit <- function(
   })
 
   addModal <- function(row, values) {
-    ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
+    
     output[[paste0(name, "_message")]] <- shiny::renderText("")
     fields <- getFields("_add_", values)
     shiny::modalDialog(
@@ -725,7 +726,7 @@ dtedit <- function(
   })
 
   editModal <- function(row) {
-    ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
+    
     output[[paste0(name, "_message")]] <- renderText("")
     fields <- getFields("_edit_", values = result$thedata[row, , drop = FALSE])
     shiny::modalDialog(
@@ -784,7 +785,7 @@ dtedit <- function(
   })
 
   deleteModal <- function(row) {
-    ns <- session$ns # necessary to use namespace for id elements in modaldialogs within modules
+    
     fields <- list()
     for (i in view.cols) {
       fields[[i]] <- div(paste0(i, " = ", result$thedata[row, i]))
@@ -863,7 +864,6 @@ dtedit <- function(
   ##### Build the UI for the DataTable and buttons ###########################
 
   output[[name]] <- shiny::renderUI({
-    ns <- session$ns # namespace for module
     shiny::div(
       if (show.insert) {
         shiny::actionButton(ns(paste0(name, "_add")), label.add)
