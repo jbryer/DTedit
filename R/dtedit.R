@@ -126,7 +126,9 @@
 #' @example inst/examples/example.R
 #'
 #' @export
-dtedit <- function(input, output, session, thedataframe,
+dtedit <- function(
+  input, output, session,
+  thedataframe,
   view.cols = names(
     shiny::isolate(
       if (shiny::is.reactive(thedataframe)) {
@@ -264,17 +266,20 @@ dtedit <- function(input, output, session, thedataframe,
     #    the suffix is a number
     #   $afterColumn - (optional)
     #    the name of the column after which created column is placed
-    # returns dataframe
+    # returns list 
+    #  $dataframe
+    #  $button.colNames - the column names of the action buttons
 
     ns <- session$ns
 
     # create a vector of shiny inputs
     # of length 'len'
-    # input IDs have prefix 'id', and a numeric suffix from '1' to 'len'
+    # input IDs have prefix 'id', a numeric suffix from '1' to 'len'
+    #  separated by an underscore '_'
     shinyInput <- function(FUN, len, id, ...) {
       inputs <- character(len)
       for (i in seq_len(len)) {
-        inputs[i] <- as.character(FUN(paste0(id, i), ...))
+        inputs[i] <- as.character(FUN(paste0(id, "_", i), ...))
       }
       return(inputs)
     }
@@ -287,7 +292,7 @@ dtedit <- function(input, output, session, thedataframe,
     # if used in a module environment, usage looks like :
     #  Actions = shinyInput(
     #   actionButton, 5,
-    #   'button_',
+    #   'button',
     #   label = "Fire",
     #   onclick = paste0('Shiny.setInputValue(\"' ,
     #    ns("select_button"),
@@ -296,8 +301,10 @@ dtedit <- function(input, output, session, thedataframe,
 
     view.cols.andButtons <- names(data) # used to store the order of columns
     # by default, view columns 'and buttons' are the same as view.cols
+    button.colNames <- NULL # later will store vector of button column names
     if (!is.null(action.buttons)) {
       for (i in action.buttons) {
+        button.colNames <- append(button.colNames, i$columnLabel)
         data[, i$columnLabel] <- shinyInput(
           shiny::actionButton,
           nrow(data),
@@ -327,7 +334,7 @@ dtedit <- function(input, output, session, thedataframe,
     }
     data <- data[, view.cols.andButtons]
     # re-order columns as necessary
-    return(data)
+    return(list(data = data, button.colNames = button.colNames))
   }
 
   thedataWithButtons <- addActionButtons(
@@ -335,12 +342,11 @@ dtedit <- function(input, output, session, thedataframe,
   # was "thedata[,view.cols]", but requires drop=FALSE
   # to prevent return of vector (instead of dataframe)
   # if only one column in view.cols
-
   output[[DataTableName]] <- DT::renderDataTable(
-    {thedataWithButtons},
+    {thedataWithButtons$data},
     options = datatable.options,
     server = TRUE,
-    escape = which(names(thedataWithButtons) %in% names(thedata)),
+    escape = which(!names(thedataWithButtons$data) %in% thedataWithButtons$button.colNames),
     # 'escaped' columns are those without HTML buttons etc.
     # escape the 'data' columns
     # but do not escape the columns which have been created by addActionButtons()
@@ -542,7 +548,7 @@ dtedit <- function(input, output, session, thedataframe,
       }
     }
 
-    DT::replaceData(proxy, addActionButtons(data, action.buttons), ...)
+    DT::replaceData(proxy, addActionButtons(data, action.buttons)$data, ...)
   }
 
   ##### Insert functions #####################################################
@@ -800,14 +806,18 @@ dtedit <- function(input, output, session, thedataframe,
   ##### Action button callbacks ################################################
 
   observeEvent(input$select_button, {
-    ns <- session$ns
-
-    row <- input[[paste0(name, "dt_rows_selected")]]
+    # row <- input[[paste0(name, "dt_rows_selected")]]
+    # unfortunately, the 'row' selected this way seems to be unreliable
+    # determine the row number from the button selected
+    #  the buttons have been 'numbered' in the suffix
+    x <- strsplit(input$select_button, "_")[[1]]
+    selectedRow <- as.numeric(x[length(x)]) 
+    
     newdata <- result$thedata
     tryCatch({
       callback.data <- callback.actionButton(
         data = result$thedata,
-        row = row,
+        row = selectedRow,
         buttonID = input$select_button
       )
       if (!is.null(callback.data) && is.data.frame(callback.data)) {
@@ -833,7 +843,6 @@ dtedit <- function(input, output, session, thedataframe,
         return(FALSE)
       }
     )
-
   })
 
   ##### React to changes in 'thedataframe' if that variable is a reactive ######
