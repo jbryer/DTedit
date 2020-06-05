@@ -10,7 +10,7 @@ dteditmodUI(id)
 \item{id}{the namespace of the module}
 }
 \description{
-dteditUI - user-interface function
+dteditUI - user-interface function for module use
 }
 \details{
 Use in conjunction with \code{callModule} and \code{dtedit} to create
@@ -69,15 +69,15 @@ shinyApp(ui = ui, server = server)
 }
 }
 \seealso{
-\code{\link{dtedit}} : the companion server-component function.\cr
+\code{\link{dteditmod}} : the companion server-component function.\cr
  \itemize{
- \item \code{example("dtedit")} for a simple example.
- \item \code{example("dteditUI")} for a simple example with reactive dataframe
- \item \code{dtedit_demo()} for a more complex example. Includes database interaction
+ \item \code{example("dteditmod")} for a simple example.
+ \item \code{example("dteditmodUI")} for a simple example with reactive dataframe
+ \item \code{dteditmod_demo()} for a more complex example. Includes database interaction
  and interactions between the data of multiple datatables.
  }
 
 Other Datatable Edit functions: 
-\code{\link{dteditmod}()}
+\code{\link{dtedit}()}
 }
 \concept{Datatable Edit functions}
