@@ -51,18 +51,29 @@
 #' @param input.types a character vector where the name corresponds to a column
 #'        in \code{edit.cols} and the value is the input type. Possible values
 #'        are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
-#'        \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
-#'        or \code{passwordInput}.
+#'        \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput},
+#'        \code{textInput}, \code{textAreaInput}, \code{passwordInput} or \code{fileInput}.
 #'        The most common case where this parameter is desirable is when a text
 #'        area is required instead of a simple text input.
 #' @param input.choices a list of character vectors. The names of each element in the list must
 #'        correspond to a column name in the data. The value, a character vector, are the options
 #'        presented to the user for data entry, in the case of input type \code{selectInput}).
-#'        In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive}, the value
-#'        is the name of the reactive in 'input.choices.reactive'
+#'        In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive},
+#'        the value is the name of the reactive in 'input.choices.reactive'
+#'        In the case of input type \code{fileInput} this is the 'accept' argument,
+#'        which specifies the type of file which is acceptable. Can be a case insensitive
+#'        file extension (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
+#'        'application/pdf').
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
 #'        to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 #'        The reactive itself is a character vector.
+#' @param action.buttons a named list of action button columns.
+#'        Each column description is a list of \code{columnLabel}, \code{buttonLabel}, \code{buttonPrefix}, \code{afterColumn}.
+#'        \code{columnLabel} label used for the column.
+#'        \code{buttonLabel} label used for each button
+#'        \code{buttonPrefix} used as the prefix for action button IDs.
+#'          the suffix will be a number from '1' to the number of rows.
+#'        \code{afterColumn} if provided, the action button column is placed after this named column.
 #' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
@@ -72,6 +83,9 @@
 #' @param date.width the width of data inputs
 #' @param numeric.width the width of numeric inputs.
 #' @param select.width the width of drop down inputs.
+#' @param max.fileInputLength the maximum length (in bytes) of \code{fileInput}
+#'        Shiny itself has a default limit of 5 megabytes per file
+#'        The limit can be modified by using shiny.maxRequestSize option
 #' @param title.delete the title of the dialog box for deleting a row.
 #' @param title.edit the title of the dialog box for editing a row.
 #' @param title.add the title of the dialog box for inserting a new row.
@@ -83,12 +97,16 @@
 #' @param show.update whether to show/enable the update button.
 #' @param show.insert whether to show/enable the insert button.
 #' @param show.copy whether to show/enablre the copy button.
-#' @param callback.delete a function called when the user deletes a row. This function should
-#'        return an updated data.frame.
-#' @param callback.update a function called when the user updates a row. This function should
-#'        return an updated data.frame.
-#' @param callback.insert a function called when the user inserts a new row. This function should
-#'        return an updated data.frame.
+#' @param callback.delete a function called when the user deletes a row.
+#'        This function should return an updated data.frame.
+#' @param callback.update a function called when the user updates a row.
+#'        This function should return an updated data.frame.
+#' @param callback.insert a function called when the user inserts a new row.
+#'        This function should return an updated data.frame.
+#' @param callback.actionButton a function called when the user clicks an action button.
+#'        called with arguments 'data', 'row' and 'buttonID'.
+#'        This function can return an updated data.frame,
+#'        alternatively return NULL if data is not to be changed.
 #' @param click.time.threshold This is to prevent duplicate entries usually by double clicking the
 #'        save or update buttons. If the user clicks the save button again within this amount of
 #'        time (in seconds), the subsequent click will be ignored. Set to zero to disable this
@@ -108,47 +126,60 @@
 #' @example inst/examples/example.R
 #'
 #' @export
-dtedit <- function(input, output, session, thedataframe,
-                   view.cols = names(shiny::isolate(if (shiny::is.reactive(thedataframe)) {
-                     thedataframe()
-                   } else {
-                     thedataframe
-                   })),
-                   edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedataframe)) {
-                     thedataframe()
-                   } else {
-                     thedataframe
-                   })),
-                   edit.label.cols = edit.cols,
-                   input.types,
-                   input.choices = NULL,
-                   input.choices.reactive = NULL,
-                   selectize = TRUE,
-                   modal.size = "m",
-                   text.width = "100%",
-                   textarea.width = "570px",
-                   textarea.height = "200px",
-                   date.width = "100px",
-                   numeric.width = "100px",
-                   select.width = "100%",
-                   defaultPageLength = 10,
-                   title.delete = "Delete",
-                   title.edit = "Edit",
-                   title.add = "New",
-                   label.delete = "Delete",
-                   label.edit = "Edit",
-                   label.add = "New",
-                   label.copy = "Copy",
-                   show.delete = TRUE,
-                   show.update = TRUE,
-                   show.insert = TRUE,
-                   show.copy = TRUE,
-                   callback.delete = function(data, row) { },
-                   callback.update = function(data, olddata, row) { },
-                   callback.insert = function(data, row) { },
-                   click.time.threshold = 2, # in seconds
-                   datatable.options = list(pageLength = defaultPageLength),
-                   ...) {
+dtedit <- function(
+  input, output, session,
+  thedataframe,
+  view.cols = names(
+    shiny::isolate(
+      if (shiny::is.reactive(thedataframe)) {
+        thedataframe()
+      } else {
+        thedataframe
+      }
+    )
+  ),
+  edit.cols = names(
+    shiny::isolate(
+      if (shiny::is.reactive(thedataframe)) {
+        thedataframe()
+      } else {
+        thedataframe
+      }
+    )
+  ),
+  edit.label.cols = edit.cols,
+  input.types,
+  input.choices = NULL,
+  input.choices.reactive = NULL,
+  action.buttons = NULL,
+  selectize = TRUE,
+  modal.size = "m",
+  text.width = "100%",
+  textarea.width = "570px",
+  textarea.height = "200px",
+  date.width = "100px",
+  numeric.width = "100px",
+  select.width = "100%",
+  defaultPageLength = 10,
+  max.fileInputLength = 100000000,
+  title.delete = "Delete",
+  title.edit = "Edit",
+  title.add = "New",
+  label.delete = "Delete",
+  label.edit = "Edit",
+  label.add = "New",
+  label.copy = "Copy",
+  show.delete = TRUE,
+  show.update = TRUE,
+  show.insert = TRUE,
+  show.copy = TRUE,
+  callback.delete = function(data, row) { },
+  callback.update = function(data, olddata, row) { },
+  callback.insert = function(data, row) { },
+  callback.actionButton = function(data, row, buttonID) { },
+  click.time.threshold = 2, # in seconds
+  datatable.options = list(pageLength = defaultPageLength),
+  ...) {
   thedata <- if (shiny::is.reactive(shiny::isolate(thedataframe))) {
     shiny::isolate(thedataframe())
   } else {
@@ -184,7 +215,7 @@ dtedit <- function(input, output, session, thedataframe,
   valid.input.types <- c(
     "dateInput", "selectInput", "numericInput",
     "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
-    "selectInputReactive", "selectInputMultipleReactive"
+    "selectInputReactive", "selectInputMultipleReactive", "fileInput"
   )
   inputTypes <- sapply(thedata[, edit.cols], FUN = function(x) {
     switch(class(x),
@@ -195,7 +226,8 @@ dtedit <- function(input, output, session, thedataframe,
       integer = "numericInput",
       numeric = "numericInput",
       factor = "selectInputReactive",
-      list = "selectInputMultipleReactive"
+      list = "selectInputMultipleReactive",
+      blob = "fileInput"
     )
   })
   if (!missing(input.types)) {
@@ -224,17 +256,111 @@ dtedit <- function(input, output, session, thedataframe,
     }
   }
 
-  output[[DataTableName]] <- DT::renderDataTable({
-    thedata[, view.cols, drop = FALSE]
-    # was "thedata[,view.cols]", but requires drop=FALSE
-    # to prevent return of vector (instead of dataframe)
-    # if only one column in view.cols
-  }, options = datatable.options, server = TRUE, selection = "single", rownames = FALSE, ...)
+  addActionButtons <- function(data, action.buttons) {
+    # data : dataframe
+    # action.buttons : named list of lists
+    #  each list contains
+    #   $columnLabel - the name of the created column
+    #   $buttonLabel - the label to use for each button
+    #   $buttonPrefix - the prefix of the button ID
+    #    the suffix is a number
+    #   $afterColumn - (optional)
+    #    the name of the column after which created column is placed
+    # returns list 
+    #  $dataframe
+    #  $button.colNames - the column names of the action buttons
+
+    ns <- session$ns
+
+    # create a vector of shiny inputs
+    # of length 'len'
+    # input IDs have prefix 'id', a numeric suffix from '1' to 'len'
+    #  separated by an underscore '_'
+    shinyInput <- function(FUN, len, id, ...) {
+      inputs <- character(len)
+      for (i in seq_len(len)) {
+        inputs[i] <- as.character(FUN(paste0(id, "_", i), ...))
+      }
+      return(inputs)
+    }
+    # https://stackoverflow.com/questions/45739303/
+    #  r-shiny-handle-action-buttons-in-data-table
+    # https://stackoverflow.com/questions/57969103/
+    #  how-to-use-shiny-action-button-in-datatable-through-shiny-module
+    # https://community.rstudio.com/t/
+    #  how-to-use-shiny-action-button-in-datatable-through-shiny-module/39998
+    # if used in a module environment, usage looks like :
+    #  Actions = shinyInput(
+    #   actionButton, 5,
+    #   'button',
+    #   label = "Fire",
+    #   onclick = paste0('Shiny.setInputValue(\"' ,
+    #    ns("select_button"),
+    #    '\", this.id, {priority: \"event\"})')
+    #   )
+
+    view.cols.andButtons <- names(data) # used to store the order of columns
+    # by default, view columns 'and buttons' are the same as view.cols
+    button.colNames <- NULL # later will store vector of button column names
+    if (!is.null(action.buttons)) {
+      for (i in action.buttons) {
+        button.colNames <- append(button.colNames, i$columnLabel)
+        data[, i$columnLabel] <- shinyInput(
+          shiny::actionButton,
+          nrow(data),
+          i$buttonPrefix,
+          label = i$buttonLabel,
+          onclick = paste0(
+            'Shiny.setInputValue(\"',
+            ns("select_button"),
+            '\", this.id, {priority: \"event\"})'
+          )
+        )
+        if (is.null(i$afterColumn)) {
+          # this button column has no defined position, so place at end of view column vector
+          view.cols.andButtons <- append(
+            view.cols.andButtons,
+            i$columnLabel
+          )
+        } else {
+          # this button column has a defined position
+          view.cols.andButtons <- append(
+            view.cols.andButtons,
+            i$columnLabel,
+            after = which(view.cols.andButtons == i$afterColumn)
+          )
+        }
+      }
+    }
+    data <- data[, view.cols.andButtons]
+    # re-order columns as necessary
+    return(list(data = data, button.colNames = button.colNames))
+  }
+
+  thedataWithButtons <- addActionButtons(
+    thedata[, view.cols, drop = FALSE], action.buttons)
+  # was "thedata[,view.cols]", but requires drop=FALSE
+  # to prevent return of vector (instead of dataframe)
+  # if only one column in view.cols
+  output[[DataTableName]] <- DT::renderDataTable(
+    {thedataWithButtons$data},
+    options = datatable.options,
+    server = TRUE,
+    escape = which(!names(thedataWithButtons$data) %in% thedataWithButtons$button.colNames),
+    # 'escaped' columns are those without HTML buttons etc.
+    # escape the 'data' columns
+    # but do not escape the columns which have been created by addActionButtons()
+    selection = "single",
+    rownames = FALSE, ...
+  )
   outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
   # without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
 
   getFields <- function(typeName, values) {
+    # creates input fields when adding or editing a row
+    # 'typeName' is either '_add_' or '_edit_'
     # 'values' are current values of the row (if already existing, or being copied)
+    # if adding a 'new' row, then 'values' will be 'missing'
     ns <- session$ns # need to use namespace for id elements in module
     fields <- list()
     for (i in seq_along(edit.cols)) {
@@ -243,7 +369,8 @@ dtedit <- function(input, output, session, thedataframe,
           as.character(Sys.Date()),
           as.character(values[, edit.cols[i]])
         )
-        fields[[i]] <- dateInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- dateInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = date.width
@@ -268,7 +395,8 @@ dtedit <- function(input, output, session, thedataframe,
             ". Specify them using the input.choices parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- selectInputMultiple(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           choices = choices,
           selected = value,
@@ -316,11 +444,12 @@ dtedit <- function(input, output, session, thedataframe,
         }
         if (is.null(choices)) {
           warning(paste0(
-            "No choices available for ", edit.cols[i],
-            ". Specify them using the input.choices and input.choices.reactive parameter"
+            "No choices available for ", edit.cols[i], ". ",
+            "Specify them using the input.choices and input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- selectInputMultiple(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           choices = choices,
           selected = value,
@@ -339,11 +468,12 @@ dtedit <- function(input, output, session, thedataframe,
         }
         if (is.null(choices)) {
           warning(paste0(
-            "No choices available for ", edit.cols[i],
-            ". Specify them using the input.choices and input.choices.reactive parameter"
+            "No choices available for ", edit.cols[i], ". ",
+            "Specify them using the input.choices and input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::selectInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           choices = choices,
           selected = value,
@@ -351,31 +481,46 @@ dtedit <- function(input, output, session, thedataframe,
         )
       } else if (inputTypes[i] == "numericInput") {
         value <- ifelse(missing(values), 0, values[, edit.cols[i]])
-        fields[[i]] <- shiny::numericInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::numericInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = numeric.width
         )
       } else if (inputTypes[i] == "textAreaInput") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
-        fields[[i]] <- shiny::textAreaInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::textAreaInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = textarea.width, height = textarea.height
         )
       } else if (inputTypes[i] == "textInput") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
-        fields[[i]] <- shiny::textInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::textInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = text.width
         )
       } else if (inputTypes[i] == "passwordInput") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
-        fields[[i]] <- shiny::passwordInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::passwordInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
           width = text.width
+        )
+      } else if (inputTypes[i] == "fileInput") {
+        # current value(if not 'missing') is actually irrelevant!
+        # will always present a file selector
+        fields[[i]] <- shiny::fileInput(
+          ns(paste0(name, typeName, edit.cols[i])),
+          label = edit.label.cols[i],
+          accept = input.choices[[edit.cols[i]]]
+          # acceptable file input choices
+          # e.g. case insensitive file extension '.csv'
+          #      MIME types "text/plain"
         )
       } else {
         stop("Invalid input type!")
@@ -387,6 +532,11 @@ dtedit <- function(input, output, session, thedataframe,
   output[[paste0(name, "_message")]] <- shiny::renderText("")
 
   updateData <- function(proxy, data, ...) {
+    # updates data displayed in DT datatable
+    #
+    # will reference 'global' action.buttons variable
+    #  when callling function 'addActionButtons'
+
     # Convert any list columns to characters before displaying
     for (i in 1:ncol(data)) {
       if (is.list(data[, i])) {
@@ -397,7 +547,8 @@ dtedit <- function(input, output, session, thedataframe,
         # cannot assign empty list() to data[,i], because that causes data[,i] column to be deleted!
       }
     }
-    DT::replaceData(proxy, data, ...)
+
+    DT::replaceData(proxy, addActionButtons(data, action.buttons)$data, ...)
   }
 
   ##### Insert functions #####################################################
@@ -422,17 +573,39 @@ dtedit <- function(input, output, session, thedataframe,
 
     newdata <- result$thedata
     row <- nrow(newdata) + 1
-    newdata[row, ] <- NA
+    new_row <- data.frame(matrix(nrow = 1, ncol = ncol(newdata)))
+    # new_row will be filled with NA by default
+    names(new_row) <- names(newdata)
+    for (i in edit.cols) {
+      if (inputTypes[i] == "fileInput") {
+        new_row[[i]] <- blob::as.blob(raw(0))
+        # unfortunately, there is no NA or NULL for 'blob'!
+        # need to add it as an raw(0)
+      }
+    }
+    newdata <- rbind(newdata, new_row)
+    # add the new row to newdata, ready for filling
     for (i in edit.cols) {
       if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
+      } else if (inputTypes[i] == "fileInput") {
+        datapath <- input[[paste0(name, "_add_", i)]]$datapath
+        if (!is.null(datapath)) {
+          newdata[[i]][row] <- blob::blob(
+            readBin(
+              datapath,
+              what = "raw",
+              n = max.fileInputLength
+            )
+          )
+        }
       } else {
         newdata[row, i] <- input[[paste0(name, "_add_", i)]]
       }
     }
     tryCatch({
       callback.data <- callback.insert(data = newdata, row = row)
-      if (!is.null(callback.data) & is.data.frame(callback.data)) {
+      if (!is.null(callback.data) && is.data.frame(callback.data)) {
         result$thedata <- callback.data
       } else {
         result$thedata <- newdata
@@ -483,10 +656,8 @@ dtedit <- function(input, output, session, thedataframe,
 
   observeEvent(input[[paste0(name, "_edit")]], {
     row <- input[[paste0(name, "dt_rows_selected")]]
-    if (!is.null(row)) {
-      if (row > 0) {
-        shiny::showModal(editModal(row))
-      }
+    if (!is.null(row) && row > 0) {
+      shiny::showModal(editModal(row))
     }
   })
 
@@ -503,42 +674,52 @@ dtedit <- function(input, output, session, thedataframe,
     update.click <- Sys.time()
 
     row <- input[[paste0(name, "dt_rows_selected")]]
-    if (!is.null(row)) {
-      if (row > 0) {
-        newdata <- result$thedata
-        for (i in edit.cols) {
-          if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
-            newdata[[i]][row] <- list(input[[paste0(name, "_edit_", i)]])
-          } else {
-            newdata[row, i] <- input[[paste0(name, "_edit_", i)]]
+    if (!is.null(row) && row > 0) {
+      newdata <- result$thedata
+      for (i in edit.cols) {
+        if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
+          newdata[[i]][row] <- list(input[[paste0(name, "_edit_", i)]])
+        } else if (inputTypes[i] == "fileInput") {
+          datapath <- input[[paste0(name, "_edit_", i)]]$datapath
+          if (!is.null(datapath) && file.exists(datapath)) {
+            # only if file actually uploaded, otherwise we won't update
+            newdata[[i]][row] <- blob::blob(
+              readBin(
+                datapath,
+                what = "raw",
+                n = max.fileInputLength
+              )
+            )
           }
+        } else {
+          newdata[row, i] <- input[[paste0(name, "_edit_", i)]]
         }
-        tryCatch({
-          callback.data <- callback.update(
-            data = newdata,
-            olddata = result$thedata,
-            row = row
-          )
-          if (!is.null(callback.data) & is.data.frame(callback.data)) {
-            result$thedata <- callback.data
-          } else {
-            result$thedata <- newdata
-          }
-          updateData(dt.proxy,
-            result$thedata[, view.cols, drop = FALSE],
-            # was "result$thedata[,view.cols]",
-            # but that returns vector (not dataframe) if
-            # view.cols is only a single column
-            rownames = FALSE
-          )
-          result$edit.count <- result$edit.count + 1
-          shiny::removeModal()
-          return(TRUE)
-        }, error = function(e) {
-          output[[paste0(name, "_message")]] <<- shiny::renderText(geterrmessage())
-          return(FALSE)
-        })
       }
+      tryCatch({
+        callback.data <- callback.update(
+          data = newdata,
+          olddata = result$thedata,
+          row = row
+        )
+        if (!is.null(callback.data) && is.data.frame(callback.data)) {
+          result$thedata <- callback.data
+        } else {
+          result$thedata <- newdata
+        }
+        updateData(dt.proxy,
+          result$thedata[, view.cols, drop = FALSE],
+          # was "result$thedata[,view.cols]",
+          # but that returns vector (not dataframe) if
+          # view.cols is only a single column
+          rownames = FALSE
+        )
+        result$edit.count <- result$edit.count + 1
+        shiny::removeModal()
+        return(TRUE)
+      }, error = function(e) {
+        output[[paste0(name, "_message")]] <<- shiny::renderText(geterrmessage())
+        return(FALSE)
+      })
     }
     return(FALSE)
   })
@@ -572,34 +753,32 @@ dtedit <- function(input, output, session, thedataframe,
 
   observeEvent(input[[paste0(name, "_delete")]], {
     row <- input[[paste0(name, "dt_rows_selected")]]
-    if (!is.null(row)) {
-      if (row > 0) {
-        tryCatch({
-          newdata <- callback.delete(data = result$thedata, row = row)
-          if (!is.null(newdata) & is.data.frame(newdata)) {
-            result$thedata <- newdata
-          } else {
-            result$thedata <- result$thedata[-row, , drop = FALSE]
-            # 'drop=FALSE' prevents the dataframe being reduced to a vector
-            # especially if only a single column
-          }
-          updateData(dt.proxy,
-            result$thedata[, view.cols, drop = FALSE],
-            # was "result$thedata[,view.cols]",
-            # but that only returns a vector (instead of dataframe)
-            # if view.cols is single column
-            rownames = FALSE
-          )
-          result$edit.count <- result$edit.count + 1
-          shiny::removeModal()
-          return(TRUE)
-        },
+    if (!is.null(row) && row > 0) {
+      tryCatch({
+        callback.data <- callback.delete(data = result$thedata, row = row)
+        if (!is.null(callback.data) && is.data.frame(callback.data)) {
+          result$thedata <- callback.data
+        } else {
+          result$thedata <- result$thedata[-row, , drop = FALSE]
+          # 'drop=FALSE' prevents the dataframe being reduced to a vector
+          # especially if only a single column
+        }
+        updateData(dt.proxy,
+          result$thedata[, view.cols, drop = FALSE],
+          # was "result$thedata[,view.cols]",
+          # but that only returns a vector (instead of dataframe)
+          # if view.cols is single column
+          rownames = FALSE
+        )
+        result$edit.count <- result$edit.count + 1
+        shiny::removeModal()
+        return(TRUE)
+      },
         error = function(e) {
           output[[paste0(name, "_message")]] <<- shiny::renderText(geterrmessage())
           return(FALSE)
         }
-        )
-      }
+      )
     }
     return(FALSE)
   })
@@ -623,6 +802,48 @@ dtedit <- function(input, output, session, thedataframe,
       size = modal.size
     )
   }
+
+  ##### Action button callbacks ################################################
+
+  observeEvent(input$select_button, {
+    # row <- input[[paste0(name, "dt_rows_selected")]]
+    # unfortunately, the 'row' selected this way seems to be unreliable
+    # determine the row number from the button selected
+    #  the buttons have been 'numbered' in the suffix
+    x <- strsplit(input$select_button, "_")[[1]]
+    selectedRow <- as.numeric(x[length(x)]) 
+    
+    newdata <- result$thedata
+    tryCatch({
+      callback.data <- callback.actionButton(
+        data = result$thedata,
+        row = selectedRow,
+        buttonID = input$select_button
+      )
+      if (!is.null(callback.data) && is.data.frame(callback.data)) {
+        result$thedata <- callback.data
+      } else {
+        result$thedata <- newdata
+        # 'drop=FALSE' prevents the dataframe being reduced to a vector
+        # especially if only a single column
+      }
+      updateData(dt.proxy,
+        result$thedata[, view.cols, drop = FALSE],
+        # was "result$thedata[,view.cols]",
+        # but that only returns a vector (instead of dataframe)
+        # if view.cols is single column
+        rownames = FALSE
+      )
+      result$edit.count <- result$edit.count + 1
+      shiny::removeModal()
+      return(TRUE)
+    },
+      error = function(e) {
+        output[[paste0(name, "_message")]] <<- shiny::renderText(geterrmessage())
+        return(FALSE)
+      }
+    )
+  })
 
   ##### React to changes in 'thedataframe' if that variable is a reactive ######
 
