@@ -1,4 +1,4 @@
-# minimal DTedit file input example, using blobs
+# DTedit file input example, using blobs
 \donttest{
   library(shiny)
   library(DTedit)
@@ -48,7 +48,7 @@
     Grocery_List <- callModule(
       dtedit,
       'Grocery_List',
-      thedataframe = data.frame(
+      thedata = data.frame(
         Buy = c('Tea', 'Biscuits', 'Apples'),
         Quantity = c(7, 2, 5),
         Picture = c(as.blob(raw(0)), as.blob(raw(0)), as.blob(raw(0))),

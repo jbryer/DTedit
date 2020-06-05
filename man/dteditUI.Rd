@@ -30,7 +30,7 @@ server <- function(input, output) {
 			Column2 = c("Pie", "Tart", "Yoghurt"),
 			stringsAsFactors = FALSE))
 	data_DT_gui <- callModule(dtedit, 'dataspace',
-				  thedataframe = data, 
+				  thedata = data, 
 				  edit.cols = c("Column1", "Column2")
 	)
 	

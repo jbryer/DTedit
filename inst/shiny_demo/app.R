@@ -27,25 +27,29 @@ getBooks <- function() {
 
 ##### Callback functions.
 books.insert.callback <- function(data, row) {
-	query <- paste0("INSERT INTO books (id, Authors, Date, Title, Publisher) VALUES (",
-			"", max(getBooks()$id) + 1, ", ",
-			"'", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
-			"'", as.character(data[row,]$Date), "', ",
-			"'", data[row,]$Title, "', ",
-			"'", as.character(data[row,]$Publisher), "' ",
-			")")
+	query <- paste0(
+	  "INSERT INTO books (id, Authors, Date, Title, Publisher) VALUES (",
+	  "", max(getBooks()$id) + 1, ", ",
+	  "'", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
+	  "'", as.character(data[row,]$Date), "', ",
+	  "'", data[row,]$Title, "', ",
+	  "'", as.character(data[row,]$Publisher), "' ",
+	  ")"
+	)
 	print(query) # For debugging
 	dbSendQuery(conn, query)
 	return(getBooks())
 }
 
 books.update.callback <- function(data, olddata, row) {
-	query <- paste0("UPDATE books SET ",
-			"Authors = '", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
-			"Date = '", as.character(data[row,]$Date), "', ",
-			"Title = '", data[row,]$Title, "', ",
-			"Publisher = '", as.character(data[row,]$Publisher), "' ",
-			"WHERE id = ", data[row,]$id)
+	query <- paste0(
+	  "UPDATE books SET ",
+	  "Authors = '", paste0(data[row,]$Authors[[1]], collapse = ';'), "', ",
+	  "Date = '", as.character(data[row,]$Date), "', ",
+	  "Title = '", data[row,]$Title, "', ",
+	  "Publisher = '", as.character(data[row,]$Publisher), "' ",
+	  "WHERE id = ", data[row,]$id
+	)
 	print(query) # For debugging
 	dbSendQuery(conn, query)
 	return(getBooks())
@@ -128,69 +132,83 @@ names.Like.delete.callback <- function(data, row) {
 ##### Create the Shiny server
 server <- function(input, output) {
 	books <- getBooks()
-	callModule(dtedit, 'books',
-		   thedataframe = books,
-		   edit.cols = c('Title', 'Authors', 'Date', 'Publisher'),
-		   edit.label.cols = c('Book Title', 'Authors', 'Publication Date', 'Publisher'),
-		   input.types = c(Title='textAreaInput'),
-		   input.choices = list(Authors = unique(unlist(books$Authors))),
-		   view.cols = names(books)[c(5,1,3)],
-		   callback.update = books.update.callback,
-		   callback.insert = books.insert.callback,
-		   callback.delete = books.delete.callback)
+	callModule(
+	  dtedit,
+	  'books',
+	  thedata = books,
+	  edit.cols = c('Title', 'Authors', 'Date', 'Publisher'),
+	  edit.label.cols = c('Book Title', 'Authors', 'Publication Date', 'Publisher'),
+	  input.types = c(Title='textAreaInput'),
+	  input.choices = list(Authors = unique(unlist(books$Authors))),
+	  view.cols = names(books)[c(5,1,3)],
+	  callback.update = books.update.callback,
+	  callback.insert = books.insert.callback,
+	  callback.delete = books.delete.callback
+	)
 
 	names.Like <- reactiveVal()
 	names.Like(data.frame(Likes = c("Apple", "Pear"), stringsAsFactors = FALSE))
-	names.Likedt <- callModule(dtedit, 'names.Like',
-				   thedataframe = names.Like,
-				   edit.cols = c("Likes"),
-				   input.types = c(Likes = "textAreaInput"),
-				   view.cols = c("Likes"),
-				   input.choices.reactive = list(names = names),
-				   # names is never used as an input, but will be checked
-				   # during the callback.delete
-				   callback.delete = names.Like.delete.callback,
-				   callback.insert = names.Like.insert.callback,
-				   callback.update = names.Like.update.callback
+	names.Likedt <- callModule(
+	  dtedit,
+	  'names.Like',
+	  thedata = names.Like,
+	  edit.cols = c("Likes"),
+	  input.types = c(Likes = "textAreaInput"),
+	  view.cols = c("Likes"),
+	  input.choices.reactive = list(names = names),
+	  # names is never used as an input, but will be checked
+	  # during the callback.delete
+	  callback.delete = names.Like.delete.callback,
+	  callback.insert = names.Like.insert.callback,
+	  callback.update = names.Like.update.callback
 	)
 	names.Likes <- reactiveVal(isolate(names.Like()$Likees))
 
 	names.Type <- reactiveVal()
 	names.Type(data.frame(Types = c("Admin", "User"), stringsAsFactors = FALSE))
-	names.Typedt <- callModule(dtedit, 'names.Type',
-				   thedataframe = names.Type,
-				   edit.cols = c("Types"),
-				   input.types = c(Types = "textAreaInput"),
-				   view.cols = c("Types"),
-				   input.choices.reactive = list(names = names),
-				   # names is never used as an input, but will be checked
-				   # during the callback.delete
-				   callback.delete = names.Type.delete.callback,
-				   callback.insert = names.Type.insert.callback,
-				   callback.update = names.Type.update.callback
+	names.Typedt <- callModule(
+	  dtedit,
+	  'names.Type',
+	  thedata = names.Type,
+	  edit.cols = c("Types"),
+	  input.types = c(Types = "textAreaInput"),
+	  view.cols = c("Types"),
+	  input.choices.reactive = list(names = names),
+	  # names is never used as an input, but will be checked
+	  # during the callback.delete
+	  callback.delete = names.Type.delete.callback,
+	  callback.insert = names.Type.insert.callback,
+	  callback.update = names.Type.update.callback
 	)
-
+	
 	names.Types <- reactiveVal(isolate(names.Type()$Types))
 
 	names <- reactiveVal()
-	names(data.frame(Name=character(), Email=character(), Date=as.Date(integer(), origin='1970-01-01'),
-			 Type = isolate(factor(character(), levels = names.Types())),
-			 Like = character(),
-			 # Like = I(list(isolate(factor(character(), levels = names.Likes())))),
-			 stringsAsFactors=FALSE))
-
+	names(
+	  data.frame(
+	    Name=character(), Email=character(),
+	    Date=as.Date(integer(), origin='1970-01-01'),
+	    Type = isolate(factor(character(), levels = names.Types())),
+	    Like = character(),
+	    # Like = I(list(isolate(factor(character(), levels = names.Likes())))),
+	    stringsAsFactors=FALSE
+	  )
+	)
+	
 	observe({
 		names.Types(names.Typedt$thedata()$Types)
 		names.Likes(names.Likedt$thedata()$Likes)
 	})
-
-	namesdt <- callModule(dtedit, 'names',
-			      thedataframe = names,
-			      input.types = c(Type = "selectInputReactive", Like = "selectInputMultipleReactive"),
-			      input.choices = c(Type = "names.Types", Like = "names.Likes"),
-			      input.choices.reactive = list(names.Types = names.Types, names.Likes = names.Likes)
+	
+	namesdt <- callModule(
+	  dtedit,
+	  'names',
+	  thedata = names,
+	  input.types = c(Type = "selectInputReactive", Like = "selectInputMultipleReactive"),
+	  input.choices = c(Type = "names.Types", Like = "names.Likes"),
+	  input.choices.reactive = list(names.Types = names.Types, names.Likes = names.Likes)
 	)
-
+	
 	observe({
 		print(namesdt$thedata())
 		names(as.data.frame(namesdt$thedata(), stringsasfactors = FALSE))

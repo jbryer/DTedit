@@ -55,7 +55,7 @@ Typically these functions would interact with a database. As written here, the d
 ```r
 return_values <- callModule(DTedit::dtedit,
 	   id = 'mycontacts',
-	   thedataframe = mydata,
+	   thedata = mydata,
 	   edit.cols = c('name', 'email', 'useR', 'notes'),
 	   edit.label.cols = c('Name', 'Email Address', 'Are they an R user?', 'Additional notes'),
 	   input.types = c(notes='textAreaInput'),
@@ -65,13 +65,13 @@ return_values <- callModule(DTedit::dtedit,
 	   callback.delete = my.delete.callback)
 ```
 
-The `input` and `output` are passed from the `server` function. The `id` parameter will define the name of the object available to the `dteditUI`. The `thedataframe` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`.
+The `input` and `output` are passed from the `server` function. The `id` parameter will define the name of the object available to the `dteditUI`. The `thedata` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`.
 
 The structure of the `data.frame` will define the inputs (e.g. `factor` will be drop down, `Date` will use `dateInput`, `numeric` will use `numericInput`, etc.).
 
 `data.frame` can be a reactivevalue, in which case dtedit's own internal copy of the data will change when `data.frame` changes. Note that the reactivevalue object itself is passed, not the value (i.e. don't use '()' after the reactivevalue variable name). There are many other parameters to customize the behavior of `dtedit`, see `?dtedit` for the full list.
 
-`return_values` is a list of reactivevalues. `return_values$thedata()` contains the current state of the DTedit's copy of the data. `return_values$edit.count()` contains the number of edits done within DTedit (not including changes to DTedit's copy of the data secondary to changes in `thedataframe`, if `thedataframe` is a reactivevalue).
+`return_values` is a list of reactivevalues. `return_values$thedata()` contains the current state of the DTedit's copy of the data. `return_values$edit.count()` contains the number of edits done within DTedit (not including changes to DTedit's copy of the data secondary to changes in `thedata`, if `thedata` is a reactivevalue).
 
 3. Use `DTedit::dteditUI` in your UI to display the editable data table.
 

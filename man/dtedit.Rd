@@ -8,11 +8,11 @@ dtedit(
   input,
   output,
   session,
-  thedataframe,
-  view.cols = names(shiny::isolate(if (shiny::is.reactive(thedataframe)) {    
-    thedataframe() } else {     thedataframe })),
-  edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedataframe)) {    
-    thedataframe() } else {     thedataframe })),
+  thedata,
+  view.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
+    else {     thedata })),
+  edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
+    else {     thedata })),
   edit.label.cols = edit.cols,
   input.types,
   input.choices = NULL,
@@ -55,7 +55,7 @@ dtedit(
 
 \item{session}{Shiny session object passed from the server}
 
-\item{thedataframe}{a data frame to view and edit. can be a reactive}
+\item{thedata}{a data frame to view and edit. can be a reactive}
 
 \item{view.cols}{character vector with the column names to show in the DataTable.
 This can be a subset of the full \code{data.frame}.}
@@ -169,7 +169,7 @@ See \url{https://rstudio.github.io/DT/options.html} for more information.}
 Returns a list of reactive values. \code{return_values$data()} contains
  the current state of DTedit's copy of the data. \code{return_values$edit.count()}
  contains the number of edits done within DTedit (does not include changes to DTedit's
- copy of the data secondary to changes in \code{thedataframe}, if \code{thedataframe} is a reactive)
+ copy of the data secondary to changes in \code{thedata}, if \code{thedata} is a reactive)
 }
 \description{
 dtedit - server function
@@ -216,7 +216,7 @@ server <- function(input, output) {
   Grocery_List <- callModule(
     dtedit,
     'Grocery_List',
-    thedataframe = data.frame(
+    thedata = data.frame(
       Buy = c('Tea', 'Biscuits', 'Apples'),
       Quantity = c(7, 2, 5),
       stringsAsFactors = FALSE
@@ -231,6 +231,111 @@ ui <- fluidPage(
 
 shinyApp(ui = ui, server = server)
 }
+# DTedit file input example, using blobs
+\donttest{
+  library(shiny)
+  library(DTedit)
+  library(blob)
+  
+  server <- function(input, output) {
+    
+    picture <- reactiveVal(NULL)
+    spreadsheet <- reactiveVal(NULL)
+    
+    my.actionButton.callback <- function(data, row, buttonID) {
+      if (substr(buttonID, 1, nchar("picture")) == "picture") {
+        if (length(unlist(data[row, "Picture"])) > 0) {
+          outfile <- tempfile(fileext = ".png")
+          # create temporary filename
+          zz <- file(outfile, "wb") # create temporary file
+          writeBin(object = unlist(data[row, "Picture"]), con = zz)
+          close(zz)
+          
+          picture(base64enc::dataURI(file = outfile))
+          
+          # cleanup
+          file.remove(outfile)
+        } else {
+          picture(NULL)
+        }
+      }
+      if (substr(buttonID, 1, nchar("spreadsheet")) == "spreadsheet") {
+        if (length(unlist(data[row, "Spreadsheet"])) > 0) {
+          outfile <- tempfile(fileext = ".csv")
+          # create temporary filename
+          zz <- file(outfile, "wb") # create temporary file
+          writeBin(object = unlist(data[row, "Spreadsheet"]), con = zz)
+          close(zz)
+          
+          spreadsheet(read.csv(outfile))
+          
+          # cleanup
+          file.remove(outfile)
+        } else {
+          spreadsheet(NULL)
+        }
+      }
+      return(NULL)
+    }
+    
+    Grocery_List <- callModule(
+      dtedit,
+      'Grocery_List',
+      thedata = data.frame(
+        Buy = c('Tea', 'Biscuits', 'Apples'),
+        Quantity = c(7, 2, 5),
+        Picture = c(as.blob(raw(0)), as.blob(raw(0)), as.blob(raw(0))),
+        Spreadsheet = c(as.blob(raw(0)), as.blob(raw(0)), as.blob(raw(0))),
+        stringsAsFactors = FALSE
+      ),
+      view.cols = c("Buy", "Quantity"),
+      edit.cols = c("Buy", "Quantity", "Picture", "Spreadsheet"),
+      edit.label.cols = c(
+        "Item to buy", "Quantity",
+        "Picture (.png)", "Spreadsheet (.csv)"
+      ),
+      input.choices = list(Picture = ".png", Spreadsheet = ".csv"),
+      # unfortunately, RStudio's 'browser' doesn't actually respect
+      #  file-name/type restrictions. A 'real' browser does respect
+      #  the restrictions.
+      action.button = list(
+        MyActionButton = list(
+          columnLabel = "Picture",
+          buttonLabel = "Show Picture",
+          buttonPrefix = "picture",
+          afterColumn = "Quantity"),
+        MyOtherActionButton = list(
+          columnLabel = "Spreadsheet",
+          buttonLabel = "Show Spreadsheet",
+          buttonPrefix = "spreadsheet"
+        )
+      ),
+      callback.actionButton = my.actionButton.callback
+    )
+    
+    output$listPicture <- shiny::renderUI({
+      shiny::tags$img(
+        src = picture(),
+        width = "100\%"
+      )
+    })
+    
+    output$showSpreadsheet <- DT::renderDataTable({
+      spreadsheet()
+    })
+  }
+  
+  ui <- fluidPage(
+    shinyalert::useShinyalert(),
+    h3("Grocery List"),
+    dteditUI("Grocery_List"),
+    uiOutput("listPicture"),
+    DT::dataTableOutput("showSpreadsheet")
+  )
+  
+  shinyApp(ui = ui, server = server)
+}
+
 }
 \seealso{
 \code{\link{dteditUI}} : the companion user-interface function.\cr

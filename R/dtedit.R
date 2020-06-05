@@ -35,12 +35,12 @@
 #' @return Returns a list of reactive values. \code{return_values$data()} contains
 #'  the current state of DTedit's copy of the data. \code{return_values$edit.count()}
 #'  contains the number of edits done within DTedit (does not include changes to DTedit's
-#'  copy of the data secondary to changes in \code{thedataframe}, if \code{thedataframe} is a reactive)
+#'  copy of the data secondary to changes in \code{thedata}, if \code{thedata} is a reactive)
 #'
 #' @param input Shiny input object passed from the server.
 #' @param output Shiny output object passed from the server.
 #' @param session Shiny session object passed from the server
-#' @param thedataframe a data frame to view and edit. can be a reactive
+#' @param thedata a data frame to view and edit. can be a reactive
 #' @param view.cols character vector with the column names to show in the DataTable.
 #'        This can be a subset of the full \code{data.frame}.
 #' @param edit.cols character vector with the column names the user can edit/add.
@@ -124,26 +124,27 @@
 #'  and interactions between the data of multiple datatables.
 #'  }
 #' @example inst/examples/example.R
+#' @example inst/examples/example_fileInput.R
 #'
 #' @export
 dtedit <- function(
   input, output, session,
-  thedataframe,
+  thedata,
   view.cols = names(
     shiny::isolate(
-      if (shiny::is.reactive(thedataframe)) {
-        thedataframe()
+      if (shiny::is.reactive(thedata)) {
+        thedata()
       } else {
-        thedataframe
+        thedata
       }
     )
   ),
   edit.cols = names(
     shiny::isolate(
-      if (shiny::is.reactive(thedataframe)) {
-        thedataframe()
+      if (shiny::is.reactive(thedata)) {
+        thedata()
       } else {
-        thedataframe
+        thedata
       }
     )
   ),
@@ -183,20 +184,20 @@ dtedit <- function(
   
   ns <- session$ns
 
-  thedata <- if (shiny::is.reactive(shiny::isolate(thedataframe))) {
-    shiny::isolate(thedataframe())
+  thedataCopy <- if (shiny::is.reactive(shiny::isolate(thedata))) {
+    shiny::isolate(thedata())
   } else {
-    thedataframe
+    thedata
   }
   # if a reactive has been passed, obtain the value
   # Some basic parameter checking
-  if (!is.data.frame(thedata) || ncol(thedata) < 1) {
+  if (!is.data.frame(thedataCopy) || ncol(thedataCopy) < 1) {
     stop("Must provide a data frame with at least one column.")
   } else if (length(edit.cols) != length(edit.label.cols)) {
     stop("edit.cols and edit.label.cols must be the same length.")
-  } else if (!all(view.cols %in% names(thedata))) {
+  } else if (!all(view.cols %in% names(thedataCopy))) {
     stop("Not all view.cols are in the data.")
-  } else if (!all(edit.cols %in% names(thedata))) {
+  } else if (!all(edit.cols %in% names(thedataCopy))) {
     stop("Not all edit.cols are in the data.")
   }
 
@@ -204,7 +205,7 @@ dtedit <- function(
   DataTableName <- paste0(name, "dt")
 
   result <- shiny::reactiveValues()
-  result$thedata <- thedata
+  result$thedata <- thedataCopy
   result$view.cols <- view.cols
   result$edit.cols <- edit.cols
   result$edit.count <- 0 # number of edits (Add/Delete/Edit/Copy) through dtedit
@@ -220,7 +221,7 @@ dtedit <- function(
     "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
     "selectInputReactive", "selectInputMultipleReactive", "fileInput"
   )
-  inputTypes <- sapply(thedata[, edit.cols], FUN = function(x) {
+  inputTypes <- sapply(thedataCopy[, edit.cols], FUN = function(x) {
     switch(class(x),
       list = "selectInputMultiple",
       character = "textInput",
@@ -249,11 +250,11 @@ dtedit <- function(
     inputTypes[names(input.types)] <- input.types
   }
   # Convert any list columns to characters before displaying
-  for (i in 1:ncol(thedata)) {
-    if (nrow(thedata) == 0) {
-      thedata[, i] <- character()
-    } else if (is.list(thedata[, i])) {
-      thedata[, i] <- sapply(thedata[, i], FUN = function(x) {
+  for (i in 1:ncol(thedataCopy)) {
+    if (nrow(thedataCopy) == 0) {
+      thedataCopy[, i] <- character()
+    } else if (is.list(thedataCopy[, i])) {
+      thedataCopy[, i] <- sapply(thedataCopy[, i], FUN = function(x) {
         paste0(x, collapse = ", ")
       })
     }
@@ -333,13 +334,15 @@ dtedit <- function(
         }
       }
     }
-    data <- data[, view.cols.andButtons]
+    data <- data[, view.cols.andButtons, drop = FALSE]
     # re-order columns as necessary
+    # drop = FALSE necessary to stop converting single column
+    #  data-frame to a vector
     return(list(data = data, button.colNames = button.colNames))
   }
 
   thedataWithButtons <- addActionButtons(
-    thedata[, view.cols, drop = FALSE], action.buttons)
+    thedataCopy[, view.cols, drop = FALSE], action.buttons)
   # was "thedata[,view.cols]", but requires drop=FALSE
   # to prevent return of vector (instead of dataframe)
   # if only one column in view.cols
@@ -846,11 +849,11 @@ dtedit <- function(
     )
   })
 
-  ##### React to changes in 'thedataframe' if that variable is a reactive ######
+  ##### React to changes in 'thedata' if that variable is a reactive ######
 
-  if (shiny::is.reactive(thedataframe)) {
-    observeEvent(thedataframe(), {
-      result$thedata <- as.data.frame(shiny::isolate(thedataframe()))
+  if (shiny::is.reactive(thedata)) {
+    observeEvent(thedata(), {
+      result$thedata <- as.data.frame(shiny::isolate(thedata()))
       updateData(dt.proxy,
         result$thedata[, view.cols, drop = FALSE],
         # was "result$thedata[,view.cols]",
@@ -892,7 +895,7 @@ dtedit <- function(
     })
   ))
   # edit.count only incremented by changes made through dtedit GUI
-  # does not include edits created through response to changes in reactiveval 'thedataframe'
+  # does not include edits created through response to changes in reactiveval 'thedata'
   # this might help determine the source of changes in result$thedata
 }
 
@@ -917,9 +920,9 @@ dtedit <- function(
 #' @example inst/examples/example_reactivedataframe.R
 #' @export
 dteditUI <- function(id) {
-  ns <- NS(id)
+  ns <- shiny::NS(id)
 
-  tagList(
-    uiOutput(ns("editdt"))
+  shiny::tagList(
+    shiny::uiOutput(ns("editdt"))
   )
 }

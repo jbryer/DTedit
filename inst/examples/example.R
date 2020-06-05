@@ -8,7 +8,7 @@ server <- function(input, output) {
   Grocery_List <- callModule(
     dtedit,
     'Grocery_List',
-    thedataframe = data.frame(
+    thedata = data.frame(
       Buy = c('Tea', 'Biscuits', 'Apples'),
       Quantity = c(7, 2, 5),
       stringsAsFactors = FALSE
