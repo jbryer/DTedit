@@ -1,4 +1,10 @@
-# minimal DTedit example
+# minimal DTedit example 'dteditmod'
+# this is a separate application from the 'dtedit' example!
+#
+# unfortunately, this application cannot be
+# tried with 'example("dteditmod")', but you can copy
+# the lines below into an '.R' file, or copy and paste to
+# execute in 'interactive' console mode.
 \donttest{
   library(shiny)
   library(DTedit)

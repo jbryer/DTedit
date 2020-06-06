@@ -2,6 +2,8 @@
 
 export(dtedit)
 export(dtedit_demo)
+export(dtedit_reactive_demo)
+export(dtedit_selectInputReactive_demo)
 export(dteditmod)
 export(dteditmodUI)
 export(dteditmod_demo)

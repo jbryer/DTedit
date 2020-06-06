@@ -1,6 +1,6 @@
 #' Create a DataTable with Add, Edit and Delete buttons.
 #'
-#' dtedit
+#' dtedit - editable DataTable
 #' 
 #' \code{dtedit} is used in conjunction with \code{uiOutput} to create editable datatables.
 #' \code{dtedit} is used in a shiny application's server definition, \code{uiOutput} is used
@@ -22,8 +22,13 @@
 #' @seealso
 #'
 #'  \itemize{
+#'  \item \code{example("dtedit")} a simple example.
 #'  \item \code{dtedit_demo()} demonstration of dtedit.
+#'  \item \code{dtedit_reactive_demo()} reactive dataframe
+#'  \item \code{dtedit_selectInputReactive_demo()} reactive selectInput
 #'  }
+#' 
+#' @example inst/examples/example.R
 #'
 #' @export
 dtedit <- function(input, output,
@@ -35,7 +40,7 @@ dtedit <- function(input, output,
 
 #' Create a DataTable with Add, Edit and Delete buttons.
 #'
-#' dteditmod - server function for module use
+#' dteditmod - editable DataTable, adapted for use in modules
 #'
 #' \code{dteditmod} is used in conjunction with \code{callModule} and
 #' \code{dteditmodUI} to create editable datatables in a module environment.
@@ -162,15 +167,15 @@ dtedit <- function(input, output,
 #' @seealso
 #'
 #'  \itemize{
-#'  \item  \code{\link{dteditmodUI}} : the companion user-interface function for \code{dteditmod}.\cr
-#'  \item \code{example("dteditmod")} a simple module example.
+#'  \item \code{\link{dteditmodUI}} : the companion user-interface function for \code{dteditmod}.\cr
 #'  \item \code{example("dteditmodUI")} a simple module example with reactive dataframe
 #'  \item \code{dteditmod_demo()} a more complex module example. Database interaction
 #'    and interactions between the data of multiple datatables.
 #'  \item \code{dteditmod_fileInput_demo()} a modular example including binary file input and action buttons.
 #'  }
 #'  
-#' @describeIn dtedit Editable datatable in module environment. 
+#' @rdname dtedit
+#' 
 #' @example inst/examples/example_mod.R
 #'
 #' @export

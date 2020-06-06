@@ -92,7 +92,7 @@ There are three steps to using `DTedit` in your modularized shiny application.
 
 1. Define callback functions, as for `dtedit`.
 
-2. `callModule` in the server function, wwith `dteditmod` as the shiny module server function.
+2. `callModule` in the server function, with `dteditmod` as the shiny module server function.
 
 ```r
 return_values <- callModule(
@@ -109,7 +109,7 @@ return_values <- callModule(
   )
 ```
 
-The `id` parameter will define the name of the object available to the `dteditmodUI`. The `thedata` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`.
+The `id` parameter will define the name of the object available to the `dteditmodUI`. `thedata` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`.
 
 3. Use `DTedit::dteditmodUI` in your UI to display the editable data table.
 
@@ -121,11 +121,19 @@ dteditmodUI('mycontacts')
 
 #### More examples
 
-DTedit example with two datatables : [inst/shiny_demo/app.R](inst/shiny_demo/app.R).<br/>
+A very simple example : [inst/examples/example.R](inst/examples/example.R).<br/>
+This example can be seen with `example("dtedit")`
+
+Example with two datatables : [inst/shiny_demo/app.R](inst/shiny_demo/app.R).<br/>
 This demonstration can be seen with `DTedit::dtedit_demo()`
 
+Example with reactive dataframe : [inst/shiny_demo/app_reactivedataframe.R](inst/shiny_demo/app_reactivedataframe.R).<br/>
+This demonstration can be seen with `DTedit::dtedit_reactive_demo()`
+
+Example with reactive input choices : [inst/shiny_demo/app_selectInputReactive.R](inst/shiny_demo/app_selectInputReactive.R).<br/>
+This demonstration can be seen with `DTedit::dtedit_selectInputReactive_demo()`
+
 A very simple modularized example : [inst/examples/example_mod.R](inst/examples/example_mod.R).<br/>
-This example can be seen with `example("dteditmod")`
 
 A modularized example with reactive dataframes : [inst/examples/example_mod_reactivedataframe.R](inst/examples/example_mod_reactivedataframe.R).<br/>
 This example can be seen with `example("dteditmodUI")`

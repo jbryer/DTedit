@@ -192,9 +192,9 @@ Returns a list of reactive values.
   }
 }
 \description{
-dtedit
+dtedit - editable DataTable
 
-dteditmod - server function for module use
+dteditmod - editable DataTable, adapted for use in modules
 }
 \details{
 \code{dtedit} is used in conjunction with \code{uiOutput} to create editable datatables.
@@ -233,13 +233,41 @@ Callback functions may return a \code{data.frame}. When a \code{data.frame} is
 returned that will become the current state of the data table. If anything
 else is returned then the internal \code{data.frame} will be used.
 }
-\section{Functions}{
-\itemize{
-\item \code{dteditmod}: Editable datatable in module environment.
-}}
-
 \examples{
-# minimal DTedit example
+# minimal DTedit example 'dtedit'
+# you can try this example in interactive mode
+# with 'example("dtedit")'
+\donttest{
+  library(shiny)
+  library(DTedit)
+  
+  server <- function(input, output) {
+    
+    Grocery_List <- dtedit(
+      input, output,
+      name = 'Grocery_List',
+      thedata = data.frame(
+        Buy = c('Tea', 'Biscuits', 'Apples'),
+        Quantity = c(7, 2, 5),
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+  
+  ui <- fluidPage(
+    h3('Grocery List'),
+    uiOutput('Grocery_List')
+  )
+  
+  shinyApp(ui = ui, server = server)
+}
+# minimal DTedit example 'dteditmod'
+# this is a separate application from the 'dtedit' example!
+#
+# unfortunately, this application cannot be
+# tried with 'example("dteditmod")', but you can copy
+# the lines below into an '.R' file, or copy and paste to
+# execute in 'interactive' console mode.
 \donttest{
   library(shiny)
   library(DTedit)
@@ -267,12 +295,14 @@ else is returned then the internal \code{data.frame} will be used.
 }
 \seealso{
 \itemize{
+ \item \code{example("dtedit")} a simple example.
  \item \code{dtedit_demo()} demonstration of dtedit.
+ \item \code{dtedit_reactive_demo()} reactive dataframe
+ \item \code{dtedit_selectInputReactive_demo()} reactive selectInput
  }
 
 \itemize{
- \item  \code{\link{dteditmodUI}} : the companion user-interface function for \code{dteditmod}.\cr
- \item \code{example("dteditmod")} a simple module example.
+ \item \code{\link{dteditmodUI}} : the companion user-interface function for \code{dteditmod}.\cr
  \item \code{example("dteditmodUI")} a simple module example with reactive dataframe
  \item \code{dteditmod_demo()} a more complex module example. Database interaction
    and interactions between the data of multiple datatables.

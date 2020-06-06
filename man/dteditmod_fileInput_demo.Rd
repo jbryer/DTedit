@@ -9,3 +9,6 @@ dteditmod_fileInput_demo()
 \description{
 modularized version
 }
+\details{
+file input, blobs and action buttons
+}

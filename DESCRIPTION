@@ -7,7 +7,7 @@ Authors@R: c(person("Jason", "Bryer", email = "jason@bryer.org", role = c("aut",
 Description: This package extends the DT::DataTable to allow users to create, edit, and delete
     rows from the data table.
 Depends: R (>= 3.3.2), DT, shiny, blob
-Suggests: RSQLite, base64enc
+Suggests: RSQLite, base64enc, randomNames
 License: LGPL
 Encoding: UTF-8
 LazyData: true
