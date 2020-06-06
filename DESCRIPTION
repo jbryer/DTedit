@@ -1,11 +1,13 @@
 Package: DTedit
 Title: Editable DataTables for shiny apps
 Version: 2.0.0
-Authors@R: person("Jason", "Bryer", email = "jason@bryer.org", role = c("aut", "cre"))
+Authors@R: c(person("Jason", "Bryer", email = "jason@bryer.org", role = c("aut", "cre")),
+             person("David", "Fong", email = "vkelim@bigpond.com", role = c("aut")),
+             person("Klodian", "Dhana", role = c("ctb")))
 Description: This package extends the DT::DataTable to allow users to create, edit, and delete
     rows from the data table.
 Depends: R (>= 3.3.2), DT, shiny, blob
-Suggests: RSQLite
+Suggests: RSQLite, base64enc
 License: LGPL
 Encoding: UTF-8
 LazyData: true

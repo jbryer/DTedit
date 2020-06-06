@@ -92,7 +92,6 @@ server <- function(input, output) {
 }
 
 ui <- fluidPage(
-  shinyalert::useShinyalert(),
   h3("Grocery List"),
   "Pictures must be in PNG (.png) format, and spreadsheets must be",
   "in comma-separated-value (.csv) format!",
