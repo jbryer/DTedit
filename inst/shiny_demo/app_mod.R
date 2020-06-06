@@ -210,9 +210,15 @@ server <- function(input, output, session) {
 	  dteditmod,
 	  'names',
 	  thedata = names,
-	  input.types = c(Type = "selectInputReactive", Like = "selectInputMultipleReactive"),
+	  input.types = c(
+	    Type = "selectInputReactive",
+	    Like = "selectInputMultipleReactive"
+	  ),
 	  input.choices = c(Type = "names.Types", Like = "names.Likes"),
-	  input.choices.reactive = list(names.Types = names.Types, names.Likes = names.Likes)
+	  input.choices.reactive = list(
+	    names.Types = names.Types,
+	    names.Likes = names.Likes
+	  )
 	)
 	
 	observe({
@@ -226,17 +232,38 @@ server <- function(input, output, session) {
 	})
 
 	observeEvent(input$email_add, {
-		first <- c("April", "Bob", "Charles", "Deborah", "Elle", "Francis", "Grace", "Horace", "Indigo", "Jan", "Kel")
-		second <- c("Zartus", "Yelland", "Xeron", "Wells", "Vorostek", "Ursida", "Tellus", "Smith", "Rose", "Quentin")
-		email <- c("hotmail.com", "yahoo.com", "gmail.com", "outlook.com", "github.com", "bigpond.com", "medscape.com")
+		first <- c("April", "Bob", "Charles", "Deborah", "Elle",
+		           "Francis", "Grace", "Horace", "Indigo", "Jan", "Kel")
+		second <- c("Zartus", "Yelland", "Xeron", "Wells", "Vorostek",
+		            "Ursida", "Tellus", "Smith", "Rose", "Quentin")
+		email <- c("hotmail.com", "yahoo.com", "gmail.com", "outlook.com",
+		           "github.com", "bigpond.com", "medscape.com")
 		extra_email <- data.frame( # create random user
-			Name = paste(first[sample(1:length(first), 1)], second[sample(1:length(second), 1)]),
-			Email = paste0(do.call(paste0, replicate(sample(5:8, 1), sample(tolower(LETTERS), 1, TRUE), FALSE)),
-				       '@',sample(email, 1)),
+			Name = paste(
+			  first[sample(1:length(first), 1)],
+			  second[sample(1:length(second), 1)]
+			),
+			Email = paste0(
+			  do.call(
+			    paste0,
+			    replicate(
+			      sample(5:8, 1),
+			      sample(tolower(LETTERS), 1, TRUE),
+			      FALSE
+			    )
+			  ),
+			  '@',sample(email, 1)
+			),
 			Date = as.Date(Sys.Date()-sample(1:1000, 1), origin = "1970-01=01"),
 			Type = factor(sample(names.Types(), 1), levels = names.Types()),
-			Like = I(list(factor(sample(names.Likes(), sample(1:length(names.Likes()), 1)),
-					     levels = names.Likes()))),
+			Like = I(
+			  list(
+			    factor(sample(names.Likes(),
+			                  sample(1:length(names.Likes()), 1)),
+			           levels = names.Likes()
+			    )
+			  )
+			),
 			stringsAsFactors = FALSE
 		)
 		names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))

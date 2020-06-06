@@ -429,6 +429,8 @@ dteditmod <- function(input, output, session,
     # 'typeName' is either '_add_' or '_edit_'
     # 'values' are current values of the row (if already existing, or being copied)
     # if adding a 'new' row, then 'values' will be 'missing'
+    #
+    # returns a list of shiny inputs, 'fields'
 
     fields <- list()
     for (i in seq_along(edit.cols)) {
@@ -612,8 +614,10 @@ dteditmod <- function(input, output, session,
         data[, i] <- as.character(sapply(data[, i], FUN = function(x) {
           paste0(x, collapse = ", ")
         }))
-        # convert to as.character, because if data[,i] is empty, sapply can return an empty list
-        # cannot assign empty list() to data[,i], because that causes data[,i] column to be deleted!
+        # convert to as.character, because if data[,i] is empty,
+        # sapply can return an empty list
+        # cannot assign empty list() to data[,i], because that
+        # causes data[,i] column to be deleted!
       }
     }
 
@@ -623,18 +627,51 @@ dteditmod <- function(input, output, session,
   ##### Insert functions #####################################################
 
   observeEvent(input[[paste0(name, "_add")]], {
+    # if the 'Add' button is clicked then
+    # the 'addModal' popup is generated, with 'missing' values
     if (!is.null(row)) {
       shiny::showModal(addModal())
     }
   })
-
-  insert.click <- NA
+  
+  addModal <- function(row, values) {
+    # 'addModal' popup is generated when
+    # the '_add' button event is observed (with missing 'values')
+    # the '_copy' button event is observed (with prefilled 'values')
+    #
+    # other than being closed/cancelled
+    # the 'addModal' popup can create an '_insert' event
+    output[[paste0(name, "_message")]] <- shiny::renderText("")
+    fields <- getFields("_add_", values)
+    shiny::modalDialog(
+      title = title.add,
+      shiny::div(
+        shiny::textOutput(
+          ns(paste0(name, "_message"))
+        ),
+        style = "color:red"
+      ),
+      fields,
+      footer = shiny::column(
+        shiny::modalButton("Cancel"),
+        shiny::actionButton(ns(paste0(name, "_insert")), "Save"),
+        width = 12
+      ),
+      size = modal.size
+    )
+  }
+  
+  insert.click <- NA # click timer (to avoid overly fast double-click)
 
   observeEvent(input[[paste0(name, "_insert")]], {
+    # '_insert' event generated from the 'addModal' popup
+    
     if (!is.na(insert.click)) {
       lastclick <- as.numeric(Sys.time() - insert.click, units = "secs")
       if (lastclick < click.time.threshold) {
-        warning(paste0("Double click detected. Ignoring insert call for ", name, "."))
+        warning(
+          paste0("Double click detected. Ignoring insert call for ",
+                 name, "."))
         return()
       }
     }
@@ -642,7 +679,7 @@ dteditmod <- function(input, output, session,
 
     newdata <- result$thedata
     row <- nrow(newdata) + 1 # the new row number
-    newdata[row, ] <- NA
+    newdata[row, ] <- NA # create a new empty row
     for (i in edit.cols) {
       if (inputTypes[i] == "fileInput") {
         newdata[row, i] <- blob::as.blob(raw(0))
@@ -654,7 +691,7 @@ dteditmod <- function(input, output, session,
     for (i in edit.cols) {
       if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
-      } else if (inputTypes[i] == "fileInput") {
+      } else if (inputTypes[i] == "fileInput") { # file read into binary blob
         datapath <- input[[paste0(name, "_add_", i)]]$datapath
         if (!is.null(datapath)) {
           newdata[[i]][row] <- blob::blob(
@@ -691,24 +728,12 @@ dteditmod <- function(input, output, session,
     })
   })
 
-  addModal <- function(row, values) {
-    output[[paste0(name, "_message")]] <- shiny::renderText("")
-    fields <- getFields("_add_", values)
-    shiny::modalDialog(
-      title = title.add,
-      shiny::div(shiny::textOutput(ns(paste0(name, "_message"))), style = "color:red"),
-      fields,
-      footer = shiny::column(shiny::modalButton("Cancel"),
-        shiny::actionButton(ns(paste0(name, "_insert")), "Save"),
-        width = 12
-      ),
-      size = modal.size
-    )
-  }
-
   ##### Copy functions #######################################################
 
   observeEvent(input[[paste0(name, "_copy")]], {
+    # if '_copy' event is observed, call the 'addModal' popup
+    # with pre-filled values
+    # (the same 'addModal' popup is used with missing values for '_insert')
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row)) {
       if (row > 0) {
@@ -720,19 +745,46 @@ dteditmod <- function(input, output, session,
   ##### Update functions #####################################################
 
   observeEvent(input[[paste0(name, "_edit")]], {
+    # if '_edit' event is observed, call the 'editModal' popup
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       shiny::showModal(editModal(row))
     }
   })
-
-  update.click <- NA
+  
+  editModal <- function(row) {
+    # 'editModal' popup created when '_edit' event is observed
+    # 
+    # other than being closed/cancelled, the 'editModal' popup
+    # can also be closed when the '_update' event is observed
+    output[[paste0(name, "_message")]] <- renderText("")
+    fields <- getFields("_edit_", values = result$thedata[row, , drop = FALSE])
+    shiny::modalDialog(
+      title = title.edit,
+      shiny::div(
+        shiny::textOutput(
+          ns(paste0(name, "_message"))),
+        style = "color:red"),
+      fields,
+      footer = column(
+        shiny::modalButton("Cancel"),
+        shiny::actionButton(ns(paste0(name, "_update")), "Save"),
+        width = 12
+      ),
+      size = modal.size
+    )
+  }
+  
+  update.click <- NA # a timer to avoid 'double-clicks'
 
   observeEvent(input[[paste0(name, "_update")]], {
+    # the '_update' event is observed from the 'editModal' popup
+    
     if (!is.na(update.click)) {
       lastclick <- as.numeric(Sys.time() - update.click, units = "secs")
       if (lastclick < click.time.threshold) {
-        warning(paste0("Double click detected. Ignoring update call for ", name, "."))
+        warning(paste0("Double click detected. Ignoring update call for ",
+                       name, "."))
         return()
       }
     }
@@ -742,14 +794,15 @@ dteditmod <- function(input, output, session,
     if (!is.null(row) && row > 0) {
       newdata <- result$thedata
       for (i in edit.cols) {
-        if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
+        if (inputTypes[i] %in% c("selectInputMultiple",
+                                 "selectInputMultipleReactive")) {
           newdata[[i]][row] <- list(input[[paste0(name, "_edit_", i)]])
         } else if (inputTypes[i] == "fileInput") {
           datapath <- input[[paste0(name, "_edit_", i)]]$datapath
           if (!is.null(datapath) && file.exists(datapath)) {
             # only if file actually uploaded, otherwise we won't update
             newdata[[i]][row] <- blob::blob(
-              readBin(
+              readBin( # file read into binary raw (blob) column
                 datapath,
                 what = "raw",
                 n = max.fileInputLength
@@ -789,24 +842,10 @@ dteditmod <- function(input, output, session,
     return(FALSE)
   })
 
-  editModal <- function(row) {
-    output[[paste0(name, "_message")]] <- renderText("")
-    fields <- getFields("_edit_", values = result$thedata[row, , drop = FALSE])
-    shiny::modalDialog(
-      title = title.edit,
-      shiny::div(shiny::textOutput(ns(paste0(name, "_message"))), style = "color:red"),
-      fields,
-      footer = column(shiny::modalButton("Cancel"),
-        shiny::actionButton(ns(paste0(name, "_update")), "Save"),
-        width = 12
-      ),
-      size = modal.size
-    )
-  }
-
   ##### Delete functions #####################################################
 
   observeEvent(input[[paste0(name, "_remove")]], {
+    # if the '_remove' event is observed, the 'deleteModal' popup is opened
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row)) {
       if (row > 0) {
@@ -814,8 +853,38 @@ dteditmod <- function(input, output, session,
       }
     }
   })
-
+  
+  deleteModal <- function(row) {
+    # if the '_remove' event is observed, the 'deleteModal' popup is opened
+    # 
+    # other than being closed/cancelled, the 'deleteModal' popup
+    # can also be closed if the '_delete' event is observed
+    fields <- list()
+    for (i in view.cols) {
+      fields[[i]] <- div(paste0(i, " = ", result$thedata[row, i]))
+    }
+    output[[paste0(name, "_message")]] <- shiny::renderText("")
+    shiny::modalDialog(
+      title = title.delete,
+      shiny::div(
+        shiny::textOutput(
+          ns(paste0(name, "_message"))), style = "color:red"
+      ),
+      shiny::p("Are you sure you want to delete this record?"),
+      fields,
+      footer = shiny::column(modalButton("Cancel"),
+                             shiny::actionButton(
+                               ns(paste0(name, "_delete")), "Delete"
+                             ),
+                             width = 12
+      ),
+      size = modal.size
+    )
+  }
+  
   observeEvent(input[[paste0(name, "_delete")]], {
+    # the '_delete' event is observed from the 'deleteModal' popup
+    
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       tryCatch({
@@ -847,28 +916,11 @@ dteditmod <- function(input, output, session,
     return(FALSE)
   })
 
-  deleteModal <- function(row) {
-    fields <- list()
-    for (i in view.cols) {
-      fields[[i]] <- div(paste0(i, " = ", result$thedata[row, i]))
-    }
-    output[[paste0(name, "_message")]] <- shiny::renderText("")
-    shiny::modalDialog(
-      title = title.delete,
-      shiny::div(shiny::textOutput(ns(paste0(name, "_message"))), style = "color:red"),
-      shiny::p("Are you sure you want to delete this record?"),
-      fields,
-      footer = shiny::column(modalButton("Cancel"),
-        shiny::actionButton(ns(paste0(name, "_delete")), "Delete"),
-        width = 12
-      ),
-      size = modal.size
-    )
-  }
-
   ##### Action button callbacks ################################################
 
   observeEvent(input$select_button, {
+    # triggered by an 'action' button being clicked
+    
     # row <- input[[paste0(name, "dt_rows_selected")]]
     # unfortunately, the 'row' selected this way seems to be unreliable
     # determine the row number from the button selected

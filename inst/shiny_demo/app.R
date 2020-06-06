@@ -63,7 +63,8 @@ books.delete.callback <- function(data, row) {
 ##### Create the Shiny server
 server <- function(input, output) {
   books <- getBooks()
-  dtedit(input, output,
+  dtedit(
+    input, output,
     name = 'books',
     thedata = books,
     edit.cols = c('Title', 'Authors', 'Date', 'Publisher'),
@@ -73,7 +74,8 @@ server <- function(input, output) {
     view.cols = names(books)[c(5,1,3)],
     callback.update = books.update.callback,
     callback.insert = books.insert.callback,
-    callback.delete = books.delete.callback)
+    callback.delete = books.delete.callback
+  )
   
   names <- data.frame(Name=character(), Email=character(), Date=numeric(),
     Type = factor(levels=c('Admin', 'User')),
