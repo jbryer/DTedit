@@ -2,21 +2,25 @@
 % Please edit documentation in R/dtedit.R
 \name{dtedit}
 \alias{dtedit}
+\alias{dteditmod}
 \title{Create a DataTable with Add, Edit and Delete buttons.}
 \usage{
-dtedit(
+dtedit(input, output, name, thedata, ...)
+
+dteditmod(
   input,
   output,
   session,
-  thedataframe,
-  view.cols = names(isolate(if (is.reactive(thedataframe)) {     thedataframe() } else {
-        thedataframe })),
-  edit.cols = names(isolate(if (is.reactive(thedataframe)) {     thedataframe() } else {
-        thedataframe })),
+  thedata,
+  view.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
+    else {     thedata })),
+  edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
+    else {     thedata })),
   edit.label.cols = edit.cols,
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
+  action.buttons = NULL,
   selectize = TRUE,
   modal.size = "m",
   text.width = "100\%",
@@ -26,6 +30,7 @@ dtedit(
   numeric.width = "100px",
   select.width = "100\%",
   defaultPageLength = 10,
+  max.fileInputLength = 1e+08,
   title.delete = "Delete",
   title.edit = "Edit",
   title.add = "New",
@@ -40,6 +45,7 @@ dtedit(
   callback.delete = function(data, row) { },
   callback.update = function(data, olddata, row) { },
   callback.insert = function(data, row) { },
+  callback.actionButton = function(data, row, buttonID) { },
   click.time.threshold = 2,
   datatable.options = list(pageLength = defaultPageLength),
   ...
@@ -50,9 +56,21 @@ dtedit(
 
 \item{output}{Shiny output object passed from the server.}
 
-\item{session}{Shiny session object passed from the server}
+\item{name}{(\code{name} is available in \code{dtedit} only). The \code{name} of the
+outputted editable datatable. The \code{name} passed to \code{dtedit} is the same
+as the name passed to \code{uiOutput}. Put \code{uiOutput(name)} where you want the
+editable datatable in the \code{ui.R}. When using more than one \code{dtedit} within a Shiny
+application the name must be unique. (\code{name} is converted
+to the \code{session} argument of dteditmod.)}
 
-\item{thedataframe}{a data frame to view and edit. can be a reactive}
+\item{thedata}{a data frame to view and edit. can be a reactive}
+
+\item{...}{\code{dtedit} passes options to \code{dteditmod},
+re-labelling \code{name} to \code{session}.
+Extra options not defined by \code{dteditmod} are passed to \code{DT::renderDataTable}.}
+
+\item{session}{Shiny session object (an environment) passed from the server.
+Alternatively, the 'name' (character) of the outputted editable datatable.}
 
 \item{view.cols}{character vector with the column names to show in the DataTable.
 This can be a subset of the full \code{data.frame}.}
@@ -65,22 +83,38 @@ and add dialogs. The length and order of \code{code.cols.labels} must
 correspond to \code{edit.cols}.}
 
 \item{input.types}{a character vector where the name corresponds to a column
-in \code{edit.cols} and the value is the input type. Possible values
-are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
-\code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput}, \code{textInput}, \code{textAreaInput},
-or \code{passwordInput}.
-The most common case where this parameter is desirable is when a text
-area is required instead of a simple text input.}
+       in \code{edit.cols} and the value is the input type. Possible values
+       are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
+       \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput},
+       \code{textInput}, \code{textAreaInput}, \code{passwordInput} or \code{fileInput}.
+
+       One case where this parameter is desirable is when a text
+       area is required instead of a simple text input.}
 
 \item{input.choices}{a list of character vectors. The names of each element in the list must
-correspond to a column name in the data. The value, a character vector, are the options
-presented to the user for data entry, in the case of input type \code{selectInput}).
-In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive}, the value
-is the name of the reactive in 'input.choices.reactive'}
+       correspond to a column name in the data. The value, a character vector, are the options
+       presented to the user for data entry, in the case of input type \code{selectInput}).
+
+       In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive},
+       the value is the name of the reactive in 'input.choices.reactive'
+
+       In the case of input type \code{fileInput} this is the 'accept' argument,
+       which specifies the type of file which is acceptable. Can be a case insensitive
+       file extension (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
+       'application/pdf').}
 
 \item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
 to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 The reactive itself is a character vector.}
+
+\item{action.buttons}{a named list of action button columns.
+Each column description is a list of \code{columnLabel}, \code{buttonLabel}, \code{buttonPrefix}, \code{afterColumn}.
+\code{columnLabel} label used for the column.
+\code{buttonLabel} label used for each button
+\code{buttonPrefix} used as the prefix for action button IDs.
+  The suffix will be a number from '1' to the number of rows.
+  Prefix and suffix will be separated with an underscore '_'.
+\code{afterColumn} if provided, the action button column is placed after this named column.}
 
 \item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}
 
@@ -99,6 +133,10 @@ The reactive itself is a character vector.}
 \item{select.width}{the width of drop down inputs.}
 
 \item{defaultPageLength}{number of rows to show in the data table by default.}
+
+\item{max.fileInputLength}{the maximum length (in bytes) of \code{fileInput}.
+Shiny itself has a default limit of 5 megabytes per file.
+The limit can be modified by using shiny.maxRequestSize option.}
 
 \item{title.delete}{the title of the dialog box for deleting a row.}
 
@@ -122,14 +160,19 @@ The reactive itself is a character vector.}
 
 \item{show.copy}{whether to show/enablre the copy button.}
 
-\item{callback.delete}{a function called when the user deletes a row. This function should
-return an updated data.frame.}
+\item{callback.delete}{a function called when the user deletes a row.
+This function should return an updated data.frame.}
 
-\item{callback.update}{a function called when the user updates a row. This function should
-return an updated data.frame.}
+\item{callback.update}{a function called when the user updates a row.
+This function should return an updated data.frame.}
 
-\item{callback.insert}{a function called when the user inserts a new row. This function should
-return an updated data.frame.}
+\item{callback.insert}{a function called when the user inserts a new row.
+This function should return an updated data.frame.}
+
+\item{callback.actionButton}{a function called when the user clicks an action button.
+called with arguments 'data', 'row' and 'buttonID'.
+This function can return an updated data.frame,
+alternatively return NULL if data is not to be changed.}
 
 \item{click.time.threshold}{This is to prevent duplicate entries usually by double clicking the
 save or update buttons. If the user clicks the save button again within this amount of
@@ -138,22 +181,31 @@ feature. For developers, a message is printed using the warning function.}
 
 \item{datatable.options}{options passed to \code{\link{DT::renderDataTable}}.
 See \url{https://rstudio.github.io/DT/options.html} for more information.}
-
-\item{...}{extra options passed to DT::renderDataTable}
 }
 \value{
-Returns a list of reactive values. \code{return_values$data()} contains
- the current state of DTedit's copy of the data. \code{return_values$edit.count()}
- contains the number of edits done within DTedit (does not include changes to DTedit's
- copy of the data secondary to changes in \code{thedataframe}, if \code{thedataframe} is a reactive)
+Returns a list of reactive values.
+  \itemize{
+  \item \code{return_values$thedata()} the current state of DTedit's copy of the data. 
+  \item \code{return_values$edit.count()} the number of edits done within DTedit
+    (does not include changes to DTedit's copy of the data secondary to
+     changes in \code{thedata}, if \code{thedata} is a reactive)
+  }
 }
 \description{
-dtedit - server function
+dtedit - editable DataTable
+
+dteditmod - editable DataTable, adapted for use in modules
 }
 \details{
-Use in conjunction with \code{callModule} and \code{dteditUI} to create
-editable datatables. \code{dtedit} is used in the 'server' component of the
-shiny app.
+\code{dtedit} is used in conjunction with \code{uiOutput} to create editable datatables.
+\code{dtedit} is used in a shiny application's server definition, \code{uiOutput} is used
+in the UI (user interface) definition.
+
+\code{dteditmod} is used in conjunction with \code{callModule} and
+\code{dteditmodUI} to create editable datatables in a module environment.
+\code{dteditmod} is called through \code{callModule} in the 'server' section of
+the shiny application.
+\code{dteditmodUI} is called in the 'UI' (user-interface) section of the shiny app.
 
 This object will maintain data state. However, in order of the data to persist
 between Shiny instances, data needs to be saved to some external format (e.g.
@@ -182,39 +234,82 @@ returned that will become the current state of the data table. If anything
 else is returned then the internal \code{data.frame} will be used.
 }
 \examples{
-# minimal DTedit example
+# minimal DTedit example 'dtedit'
+# you can try this example in interactive mode
+# with 'example("dtedit")'
 \donttest{
-library(shiny)
-library(DTedit)
-
-server <- function(input, output) {
+  library(shiny)
+  library(DTedit)
   
-  Grocery_List <- callModule(dtedit, 'Grocery_List',
-                             thedataframe = data.frame(Buy = c('Tea', 'Biscuits', 'Apples'),
-                                                       Quantity = c(7, 2, 5),
-                                                       stringsAsFactors = FALSE)
-                             )
+  server <- function(input, output) {
+    
+    Grocery_List <- dtedit(
+      input, output,
+      name = 'Grocery_List',
+      thedata = data.frame(
+        Buy = c('Tea', 'Biscuits', 'Apples'),
+        Quantity = c(7, 2, 5),
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+  
+  ui <- fluidPage(
+    h3('Grocery List'),
+    uiOutput('Grocery_List')
+  )
+  
+  shinyApp(ui = ui, server = server)
 }
-
-ui <- fluidPage(
-  h3('Grocery List'),
-  dteditUI('Grocery_List')
-)
-
-shinyApp(ui = ui, server = server)
+# minimal DTedit example 'dteditmod'
+# this is a separate application from the 'dtedit' example!
+#
+# unfortunately, this application cannot be
+# tried with 'example("dteditmod")', but you can copy
+# the lines below into an '.R' file, or copy and paste to
+# execute in 'interactive' console mode.
+\donttest{
+  library(shiny)
+  library(DTedit)
+  
+  server <- function(input, output) {
+    
+    Grocery_List <- callModule(
+      dteditmod,
+      'Grocery_List',
+      thedata = data.frame(
+        Buy = c('Tea', 'Biscuits', 'Apples'),
+        Quantity = c(7, 2, 5),
+        stringsAsFactors = FALSE
+      )
+    )
+  }
+  
+  ui <- fluidPage(
+    h3('Grocery List'),
+    dteditmodUI('Grocery_List')
+  )
+  
+  shinyApp(ui = ui, server = server)
 }
 }
 \seealso{
-\code{\link{dteditUI}} : the companion user-interface function.\cr
+\itemize{
+ \item \code{example("dtedit")} a simple example.
+ \item \code{dtedit_demo()} demonstration of dtedit.
+ \item \code{dtedit_reactive_demo()} reactive dataframe
+ \item \code{dtedit_selectInputReactive_demo()} reactive selectInput
+ }
 
- \itemize{
- \item \code{example("dtedit")} for a simple example.
- \item \code{example("dteditUI")} for a simple example with reactive dataframe
- \item \code{dtedit_demo()} for a more complex example. Includes database interaction
- and interactions between the data of multiple datatables.
+\itemize{
+ \item \code{\link{dteditmodUI}} : the companion user-interface function for \code{dteditmod}.\cr
+ \item \code{example("dteditmodUI")} a simple module example with reactive dataframe
+ \item \code{dteditmod_demo()} a more complex module example. Database interaction
+   and interactions between the data of multiple datatables.
+ \item \code{dteditmod_fileInput_demo()} a modular example including binary file input and action buttons.
  }
 
 Other Datatable Edit functions: 
-\code{\link{dteditUI}()}
+\code{\link{dteditmodUI}()}
 }
 \concept{Datatable Edit functions}
