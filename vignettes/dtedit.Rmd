@@ -2,8 +2,9 @@
 title: "DTedit"
 author: "David Fong"
 date: "`r Sys.Date()`"
-abstract: Editable DataTables (DT) for shiny apps. Data columns to view or edit can be selected. Different datatypes can be edited. Valid input choices and interaction with persistent storage can be defined through callbacks. In the case of limited selection choices for data columns with 'dropdown' inputs, the choices can be defined and dynamically changed. Available in general-purpose and module versions.<br/><br/>
 output:
+  rmarkdown::html_vignette:
+    toc: yes
   html_document:
     number_sections: yes
     theme: lumen
@@ -12,14 +13,23 @@ output:
     toc_float:
       collapsed: yes
       smooth_scroll: yes
-  rmarkdown::html_vignette:
-    toc: true
   pdf_document:
     toc: yes
     toc_depth: '3'
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+    toc: yes
+    toc_depth: 3
+abstract: Editable DataTables (DT) package for shiny apps. Originally created by Jason
+  Bryer. Data columns to view or edit can be selected. Different datatypes can be edited.
+  Valid input choices and interaction with persistent storage can be defined through
+  callbacks. In the case of limited selection choices for data columns with 'dropdown'
+  inputs, the choices can be defined and dynamically changed. Available in general-purpose
+  and module versions.<br/><br/>
 vignette: >
-  %\VignetteIndexEntry{DTedit}
-  %\VignetteEncoding{UTF-8}
+  %\VignetteIndexEntry{DTedit} 
+  \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
 ---
 
@@ -33,6 +43,8 @@ vignette: >
 # however the build succeeds if using the 
 # build_vignettes_to_inst.R function
 # which is defined in the root directory
+
+# OR using devtools::build()
 
 knitr::opts_chunk$set(
   collapse = TRUE,
