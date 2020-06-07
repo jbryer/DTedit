@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 /DTedit.Rproj
+inst/doc
+doc
+Meta

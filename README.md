@@ -125,7 +125,10 @@ A very simple example : [inst/examples/example.R](inst/examples/example.R).<br/>
 This example can be seen with `example("dtedit")`
 
 Example with two datatables : [inst/shiny_demo/app.R](inst/shiny_demo/app.R).<br/>
-This demonstration can be seen with `DTedit::dtedit_demo()`
+This demonstration can be seen with `DTedit::dtedit_demo()`.<br/>
+This, and other demonstrations, can be called with `runApp` arguments.<br/>
+e.g. `DTedit::dtedit_demo(display.mode = "showcase")`<br/>
+Note that *all* `.R` files in the `shiny_demo` directory are displayed in showcase mode, not just the `.R` file used in the actual demonstration!
 
 Example with reactive dataframe : [inst/shiny_demo/app_reactivedataframe.R](inst/shiny_demo/app_reactivedataframe.R).<br/>
 This demonstration can be seen with `DTedit::dtedit_reactive_demo()`

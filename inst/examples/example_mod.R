@@ -9,11 +9,11 @@
   library(shiny)
   library(DTedit)
   
-  server <- function(input, output) {
+  server <- function(input, output, session) {
     
     Grocery_List <- callModule(
       dteditmod,
-      'Grocery_List',
+      id = 'Grocery_List',
       thedata = data.frame(
         Buy = c('Tea', 'Biscuits', 'Apples'),
         Quantity = c(7, 2, 5),
