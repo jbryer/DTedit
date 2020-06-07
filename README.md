@@ -1,3 +1,7 @@
+<!-- badges: start -->
+[![Travis build status](https://travis-ci.org/DavidPatShuiFong/DTedit.svg?branch=develop)](https://travis-ci.org/DavidPatShuiFong/DTedit?branch=develop)
+<!-- badges: end -->
+
 ## Editable DataTables for shiny apps.
 
 **Author:** Jason Bryer, Ph.D.
