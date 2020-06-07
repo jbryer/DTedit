@@ -1,11 +1,11 @@
 #' Create a DataTable with Add, Edit and Delete buttons.
 #'
 #' dtedit - editable DataTable
-#' 
+#'
 #' \code{dtedit} is used in conjunction with \code{uiOutput} to create editable datatables.
 #' \code{dtedit} is used in a shiny application's server definition, \code{uiOutput} is used
 #' in the UI (user interface) definition.
-#' 
+#'
 #' @param input Shiny input object passed from the server.
 #' @param output Shiny output object passed from the server.
 #' @param name (\code{name} is available in \code{dtedit} only). The \code{name} of the
@@ -27,7 +27,7 @@
 #'  \item \code{dtedit_reactive_demo()} reactive dataframe
 #'  \item \code{dtedit_selectInputReactive_demo()} reactive selectInput
 #'  }
-#' 
+#'
 #' @example inst/examples/example.R
 #'
 #' @export
@@ -76,7 +76,7 @@ dtedit <- function(input, output,
 #'
 #' @return Returns a list of reactive values.
 #'   \itemize{
-#'   \item \code{return_values$thedata()} the current state of DTedit's copy of the data. 
+#'   \item \code{return_values$thedata()} the current state of DTedit's copy of the data.
 #'   \item \code{return_values$edit.count()} the number of edits done within DTedit
 #'     (does not include changes to DTedit's copy of the data secondary to
 #'      changes in \code{thedata}, if \code{thedata} is a reactive)
@@ -161,9 +161,9 @@ dtedit <- function(input, output,
 #'        save or update buttons. If the user clicks the save button again within this amount of
 #'        time (in seconds), the subsequent click will be ignored. Set to zero to disable this
 #'        feature. For developers, a message is printed using the warning function.
-#' @param datatable.options options passed to \code{\link{DT::renderDataTable}}.
+#' @param datatable.options options passed to \code{DT::renderDataTable}.
 #'        See \url{https://rstudio.github.io/DT/options.html} for more information.
-#'        
+#'
 #' @seealso
 #'
 #'  \itemize{
@@ -173,11 +173,12 @@ dtedit <- function(input, output,
 #'    and interactions between the data of multiple datatables.
 #'  \item \code{dteditmod_fileInput_demo()} a modular example including binary file input and action buttons.
 #'  }
-#'  
-#' @rdname dtedit
-#' 
+#'
+#' @describeIn dtedit
+#'
 #' @example inst/examples/example_mod.R
 #'
+#' @importFrom blob blob as.blob
 #' @export
 dteditmod <- function(input, output, session,
                       thedata,
@@ -291,8 +292,6 @@ dteditmod <- function(input, output, session,
       factor = "selectInput",
       integer = "numericInput",
       numeric = "numericInput",
-      factor = "selectInputReactive",
-      list = "selectInputMultipleReactive",
       blob = "fileInput"
     )
   })
@@ -487,13 +486,14 @@ dteditmod <- function(input, output, session,
           # no choices explicitly defined
           # use choices defined in other rows, if available
         }
-        if (length(choices) == 1 & choices[[1]] == "") {
+        if (length(choices) == 1 && choices[[1]] == "") {
           warning(paste0(
             "No choices available for ", edit.cols[i],
             ". Specify them using the input.choices parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(ns(paste0(name, typeName, edit.cols[i])),
+        fields[[i]] <- shiny::selectInput(
+          ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           choices = choices,
           selected = value,
@@ -633,7 +633,7 @@ dteditmod <- function(input, output, session,
       shiny::showModal(addModal())
     }
   })
-  
+
   addModal <- function(row, values) {
     # 'addModal' popup is generated when
     # the '_add' button event is observed (with missing 'values')
@@ -660,12 +660,12 @@ dteditmod <- function(input, output, session,
       size = modal.size
     )
   }
-  
+
   insert.click <- NA # click timer (to avoid overly fast double-click)
 
   observeEvent(input[[paste0(name, "_insert")]], {
     # '_insert' event generated from the 'addModal' popup
-    
+
     if (!is.na(insert.click)) {
       lastclick <- as.numeric(Sys.time() - insert.click, units = "secs")
       if (lastclick < click.time.threshold) {
@@ -751,10 +751,10 @@ dteditmod <- function(input, output, session,
       shiny::showModal(editModal(row))
     }
   })
-  
+
   editModal <- function(row) {
     # 'editModal' popup created when '_edit' event is observed
-    # 
+    #
     # other than being closed/cancelled, the 'editModal' popup
     # can also be closed when the '_update' event is observed
     output[[paste0(name, "_message")]] <- renderText("")
@@ -774,12 +774,12 @@ dteditmod <- function(input, output, session,
       size = modal.size
     )
   }
-  
+
   update.click <- NA # a timer to avoid 'double-clicks'
 
   observeEvent(input[[paste0(name, "_update")]], {
     # the '_update' event is observed from the 'editModal' popup
-    
+
     if (!is.na(update.click)) {
       lastclick <- as.numeric(Sys.time() - update.click, units = "secs")
       if (lastclick < click.time.threshold) {
@@ -853,10 +853,10 @@ dteditmod <- function(input, output, session,
       }
     }
   })
-  
+
   deleteModal <- function(row) {
     # if the '_remove' event is observed, the 'deleteModal' popup is opened
-    # 
+    #
     # other than being closed/cancelled, the 'deleteModal' popup
     # can also be closed if the '_delete' event is observed
     fields <- list()
@@ -881,10 +881,10 @@ dteditmod <- function(input, output, session,
       size = modal.size
     )
   }
-  
+
   observeEvent(input[[paste0(name, "_delete")]], {
     # the '_delete' event is observed from the 'deleteModal' popup
-    
+
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       tryCatch({
@@ -920,7 +920,7 @@ dteditmod <- function(input, output, session,
 
   observeEvent(input$select_button, {
     # triggered by an 'action' button being clicked
-    
+
     # row <- input[[paste0(name, "dt_rows_selected")]]
     # unfortunately, the 'row' selected this way seems to be unreliable
     # determine the row number from the button selected

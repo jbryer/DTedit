@@ -179,13 +179,13 @@ save or update buttons. If the user clicks the save button again within this amo
 time (in seconds), the subsequent click will be ignored. Set to zero to disable this
 feature. For developers, a message is printed using the warning function.}
 
-\item{datatable.options}{options passed to \code{\link{DT::renderDataTable}}.
+\item{datatable.options}{options passed to \code{DT::renderDataTable}.
 See \url{https://rstudio.github.io/DT/options.html} for more information.}
 }
 \value{
 Returns a list of reactive values.
   \itemize{
-  \item \code{return_values$thedata()} the current state of DTedit's copy of the data. 
+  \item \code{return_values$thedata()} the current state of DTedit's copy of the data.
   \item \code{return_values$edit.count()} the number of edits done within DTedit
     (does not include changes to DTedit's copy of the data secondary to
      changes in \code{thedata}, if \code{thedata} is a reactive)
@@ -233,34 +233,43 @@ Callback functions may return a \code{data.frame}. When a \code{data.frame} is
 returned that will become the current state of the data table. If anything
 else is returned then the internal \code{data.frame} will be used.
 }
+\section{Functions}{
+\itemize{
+\item \code{dteditmod}: 
+}}
+
 \examples{
 # minimal DTedit example 'dtedit'
 # you can try this example in interactive mode
 # with 'example("dtedit")'
-\donttest{
-  library(shiny)
-  library(DTedit)
+
+library(shiny)
+library(DTedit)
+
+server <- function(input, output) {
   
-  server <- function(input, output) {
-    
-    Grocery_List <- dtedit(
-      input, output,
-      name = 'Grocery_List',
-      thedata = data.frame(
-        Buy = c('Tea', 'Biscuits', 'Apples'),
-        Quantity = c(7, 2, 5),
-        stringsAsFactors = FALSE
-      )
+  Grocery_List <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
     )
-  }
-  
-  ui <- fluidPage(
-    h3('Grocery List'),
-    uiOutput('Grocery_List')
   )
-  
-  shinyApp(ui = ui, server = server)
 }
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+if (interactive())
+  shinyApp(ui = ui, server = server)
+
+#### end of 'dtedit' example ####
+
+
 # minimal DTedit example 'dteditmod'
 # this is a separate application from the 'dtedit' example!
 #
@@ -268,30 +277,29 @@ else is returned then the internal \code{data.frame} will be used.
 # tried with 'example("dteditmod")', but you can copy
 # the lines below into an '.R' file, or copy and paste to
 # execute in 'interactive' console mode.
-\donttest{
-  library(shiny)
-  library(DTedit)
+library(shiny)
+library(DTedit)
+
+server <- function(input, output, session) {
   
-  server <- function(input, output, session) {
-    
-    Grocery_List <- callModule(
-      dteditmod,
-      id = 'Grocery_List',
-      thedata = data.frame(
-        Buy = c('Tea', 'Biscuits', 'Apples'),
-        Quantity = c(7, 2, 5),
-        stringsAsFactors = FALSE
-      )
+  Grocery_List <- callModule(
+    dteditmod,
+    id = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
     )
-  }
-  
-  ui <- fluidPage(
-    h3('Grocery List'),
-    dteditmodUI('Grocery_List')
   )
-  
-  shinyApp(ui = ui, server = server)
 }
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  dteditmodUI('Grocery_List')
+)
+
+if (interactive())
+  shinyApp(ui = ui, server = server)
 }
 \seealso{
 \itemize{

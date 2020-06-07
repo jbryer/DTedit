@@ -119,6 +119,10 @@ The `id` you will pass to `dteditmodUI` is the id you passed to the `callModule`
 dteditmodUI('mycontacts')
 ```
 
+#### Vignette
+
+See vignette with `browseVignettes("DTedit")` or [on RPubs](https://rpubs.com/DavidFong/DTedit). 
+
 #### More examples
 
 A very simple example : [inst/examples/example.R](inst/examples/example.R).<br/>
