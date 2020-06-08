@@ -666,7 +666,6 @@ dteditmod <- function(input, output, session,
 
   observeEvent(input[[paste0(name, "_insert")]], {
     # '_insert' event generated from the 'addModal' popup
-
     if (!is.na(insert.click)) {
       lastclick <- as.numeric(Sys.time() - insert.click, units = "secs")
       if (lastclick < click.time.threshold) {
@@ -680,14 +679,9 @@ dteditmod <- function(input, output, session,
 
     newdata <- result$thedata
     row <- nrow(newdata) + 1 # the new row number
-    newdata[row, ] <- NA # create a new empty row
-    for (i in edit.cols) {
-      if (inputTypes[i] == "fileInput") {
-        newdata[row, i] <- blob::as.blob(raw(0))
-        # unfortunately, there is no NA or NULL for 'blob'!
-        # need to add it as an raw(0)
-      }
-    }
+    newdata[row, ] <- data.frame(as.list(as.blob(raw())))
+    # create a new empty row, compatible with blob columns
+    # filled with raw(0), which can later be co-erced to other types
     # the new row is ready for filling
     for (i in edit.cols) {
       if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
