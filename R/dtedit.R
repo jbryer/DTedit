@@ -75,9 +75,10 @@ dtedit <- function(input, output,
 #' else is returned then the internal \code{data.frame} will be used.
 #'
 #' @return Returns a list of reactive values.
+#'
 #'   \itemize{
-#'   \item \code{return_values$thedata()} the current state of DTedit's copy of the data.
-#'   \item \code{return_values$edit.count()} the number of edits done within DTedit
+#'     \item \code{thedata()} the current state of DTedit's copy of the data.
+#'     \item \code{edit.count()} the number of edits done within DTedit
 #'     (does not include changes to DTedit's copy of the data secondary to
 #'      changes in \code{thedata}, if \code{thedata} is a reactive)
 #'   }
@@ -174,7 +175,7 @@ dtedit <- function(input, output,
 #'  \item \code{dteditmod_fileInput_demo()} a modular example including binary file input and action buttons.
 #'  }
 #'
-#' @describeIn dtedit
+#' @rdname dtedit
 #'
 #' @example inst/examples/example_mod.R
 #'

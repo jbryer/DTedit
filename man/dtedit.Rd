@@ -184,9 +184,10 @@ See \url{https://rstudio.github.io/DT/options.html} for more information.}
 }
 \value{
 Returns a list of reactive values.
+
   \itemize{
-  \item \code{return_values$thedata()} the current state of DTedit's copy of the data.
-  \item \code{return_values$edit.count()} the number of edits done within DTedit
+    \item \code{thedata()} the current state of DTedit's copy of the data.
+    \item \code{edit.count()} the number of edits done within DTedit
     (does not include changes to DTedit's copy of the data secondary to
      changes in \code{thedata}, if \code{thedata} is a reactive)
   }
@@ -233,11 +234,6 @@ Callback functions may return a \code{data.frame}. When a \code{data.frame} is
 returned that will become the current state of the data table. If anything
 else is returned then the internal \code{data.frame} will be used.
 }
-\section{Functions}{
-\itemize{
-\item \code{dteditmod}: 
-}}
-
 \examples{
 # minimal DTedit example 'dtedit'
 # you can try this example in interactive mode
