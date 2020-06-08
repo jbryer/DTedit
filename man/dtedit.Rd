@@ -275,8 +275,9 @@ if (interactive())
 #
 # unfortunately, this application cannot be
 # tried with 'example("dteditmod")', but you can copy
-# the lines below into an '.R' file, or copy and paste to
-# execute in 'interactive' console mode.
+# and paste to execute in 'interactive' console mode,
+# or copy the lines into an '.R' file and choose 
+# 'Run App' from RStudio.
 library(shiny)
 library(DTedit)
 

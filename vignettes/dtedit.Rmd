@@ -91,7 +91,7 @@ library(DTedit)
 
 server <- function(input, output) {
 
-  Grocery_List <- dtedit(
+  Grocery_List_Results <- dtedit(
     input, output,
     name = 'Grocery_List',
     thedata = data.frame(
@@ -125,7 +125,7 @@ library(DTedit)
 
 server <- function(input, output, session) {
 
-  Grocery_List <- callModule(
+  Grocery_List_Results <- callModule(
     dteditmod,
     id = 'Grocery_List',
     thedata = data.frame(
@@ -148,9 +148,14 @@ In this vignette, the 'standard' `dtedit` is mostly used. Some examples referenc
 
 ## Receiving changes from `dtedit` (or `dteditmod`)
 
-`dtedit` returns a list. In the simple example previously described, the results were stored in a variable named **Grocery_List**. The list includes `$thedata`, which is a reactive and will change when `dtedit`'s copy of the dataframe changes.
+`dtedit` returns a list. The list includes `$thedata`, which is a reactive and will change when `dtedit`'s copy of the dataframe changes.
 
-In the example below, the results are stored in a variable name **Grocery_List_Results**. Every time the internal copy of `thedata` changes, so does `Grocery_List_Results$thedata()`. An `observeEvent` waits for changes in `Grocery_List_Results$thedata()`, and messages the contents of `Grocery_List_Results$thedata()` to the console.
+In the example below, the results are stored in a variable name **Grocery_List_Results**.
+Every time the internal copy of `thedata` changes, so does **Grocery_List_Results$thedata()**.
+
+An `observeEvent` waits for changes in **Grocery_List_Results$thedata()**.
+
+The `observeEvent` then messages the contents of **Grocery_List_Results$thedata()** to the console.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -206,7 +211,7 @@ server <- function(input, output) {
     return(data)
   }
 
-  Grocery_List <- dtedit(
+  Grocery_List_Results <- dtedit(
     input, output,
     name = 'Grocery_List',
     thedata = data.frame(
@@ -233,9 +238,9 @@ shinyApp(ui = ui, server = server)
 
 In the call to `dtedit`, **mydata** is referred to in the `thedata` definition as **mydata**, *not* **mydata()**.
 
-Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in `Grocery_List$thedata()`, which then changes **mydata**.
+Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in **Grocery_List_Results$thedata()**, which then changes **mydata**.
 
-Another example of reactive dataframes can be seen, with source code, with `dtedit_reactive_demo(display.mode = "showcase")`. The code is in the `app_reactivedataframe.R` tab. A modular version, using `dteditmod`, can  be seen with `example(dteditmodUI)`.
+Another example of reactive dataframes can be seen, with source code, with `dtedit_reactive_demo(display.mode = "showcase")`. The code is in the `example_reactivedataframe.R` tab. A modular version, using `dteditmod`, can  be seen with `example(dteditmodUI)`.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -248,7 +253,7 @@ server <- function(input, output) {
     )
   })
 
-  Grocery_List <- dtedit(
+  Grocery_List_Results <- dtedit(
     input, output,
     name = 'Grocery_List',
     thedata = mydata
@@ -276,10 +281,10 @@ server <- function(input, output) {
     mydata(newdata)
   })
 
-  observeEvent(Grocery_List$thedata(), {
+  observeEvent(Grocery_List_Results$thedata(), {
     # the data has been added
     # copy the changes to our own copy
-    mydata(Grocery_List$thedata())
+    mydata(Grocery_List_Results$thedata())
   })
 
 }
@@ -305,7 +310,7 @@ In addition, **delete**, **add** and **copy** buttons have been turned off with 
 ```{r, eval = FALSE}
 server <- function(input, output) {
 
-  Grocery_List <- dtedit(
+  Grocery_List_Results <- dtedit(
     input, output,
     name = 'Grocery_List',
     thedata = data.frame(
@@ -375,7 +380,7 @@ server <- function(input, output) {
 
   buy.Types <- reactiveVal(less_choices)
 
-  Grocery_List <- dtedit(
+  Grocery_List_Results <- dtedit(
     input, output,
     name = 'Grocery_List',
     thedata = data.frame(
@@ -420,7 +425,7 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
-`selectInputReactive` is demonstrated in `dtedit_selectInputReactive_demo(display.mode = "showcase")`, with the source code in the `app_selectInputReactive.R` tab. In this demonstration, **names.Types** (user types) and **names.Likes** (potential user Likes) are reactive variables which are used to determine the choices to `selectInputReactive` and `selectInputMultipleReactive` in the **names** DataTable. **names.Types** and **names.Likes** are themselves altered by changes in two other `DTedit` datatables.
+`selectInputReactive` is demonstrated in `dtedit_selectInputReactive_demo(display.mode = "showcase")`, with the source code in the `example_selectInputReactive.R` tab. In this demonstration, **names.Types** (user types) and **names.Likes** (potential user Likes) are reactive variables which are used to determine the choices to `selectInputReactive` and `selectInputMultipleReactive` in the **names** DataTable. **names.Types** and **names.Likes** are themselves altered by changes in two other `DTedit` datatables.
 
 The same demonstration is shown for modular `dteditmod` in `dteditmod_demo(display.mode = "showcase")`, with source code in the `app_mod.R` tab. The interacting datatables are in the `Emails` tab.
 
@@ -428,7 +433,7 @@ The same demonstration is shown for modular `dteditmod` in `dteditmod_demo(displ
 
 An *action button* column can be created. When an *action button* is pushed, the function defined in `callback.actionButton` is called, allowing, for example, modification of the data in the datatable, as shown in the example below.
 
-A demonstration of action buttons (two columns in the same datatable) can be seen, with source code, with `dteditmod_fileInput_demo(display.mode = "showcase")`. The code is in the `app_mod_fileInput.R` tab. This demonstration uses the modular `dteditmod`. It also demonstrates use of binary blob data-types, use of `view.cols` and `edit.cols` and the (implicit) use of `fileInput` to store pictures and spreadsheets in the dataframe.
+A demonstration of action buttons (two columns in the same datatable) can be seen, with source code, with `dteditmod_fileInput_demo(display.mode = "showcase")`. The code is in the `example_mod_fileInput.R` tab. This demonstration uses the modular `dteditmod`. It also demonstrates use of binary blob data-types, use of `view.cols` and `edit.cols` and the (implicit) use of `fileInput` to store pictures and spreadsheets in the dataframe.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -447,7 +452,7 @@ server <- function(input, output) {
     return(data)
   }
 
-  Grocery_List <- dtedit(
+  Grocery_List_Results <- dtedit(
     input, output,
     name = 'Grocery_List',
     thedata = data.frame(

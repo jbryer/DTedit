@@ -111,4 +111,5 @@ ui <- fluidPage(
   DT::dataTableOutput("showSpreadsheet")
 )
 
-shinyApp(ui = ui, server = server)
+if (interactive())
+  shinyApp(ui = ui, server = server)

@@ -33,7 +33,7 @@ dtedit_demo <- function(...) {
 #'
 #' @export
 dtedit_reactive_demo <- function(...) {
-  dir <- paste0(find.package("DTedit"), "/shiny_demo/app_reactivedataframe.R")
+  dir <- paste0(find.package("DTedit"), "/examples/example_reactivedataframe.R")
   message(paste0("Running shiny app from ", dir))
   shiny::runApp(appDir = dir, ...)
 }
@@ -54,7 +54,7 @@ dtedit_reactive_demo <- function(...) {
 #'
 #' @export
 dtedit_selectInputReactive_demo <- function(...) {
-  dir <- paste0(find.package("DTedit"), "/shiny_demo/app_selectInputReactive.R")
+  dir <- paste0(find.package("DTedit"), "/examples/example_selectInputReactive.R")
   message(paste0("Running shiny app from ", dir))
   shiny::runApp(appDir = dir, ...)
 }
@@ -100,7 +100,7 @@ dteditmod_demo <- function(...) {
 #'
 #' @export
 dteditmod_fileInput_demo <- function(...) {
-  dir <- paste0(find.package("DTedit"), "/shiny_demo/app_mod_fileInput.R")
+  dir <- paste0(find.package("DTedit"), "/examples/example_mod_fileInput.R")
   message(paste0("Running shiny app from ", dir))
   shiny::runApp(appDir = dir, ...)
 }

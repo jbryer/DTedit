@@ -57,4 +57,5 @@ ui <- fluidPage(
   uiOutput("items")
 )
 
-shinyApp(ui = ui, server = server)
+if (interactive())
+  shinyApp(ui = ui, server = server)
