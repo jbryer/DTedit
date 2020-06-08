@@ -5,6 +5,14 @@ date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: yes
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: vignette
+    toc: yes
+    toc_depth: 4
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
   html_document:
     number_sections: yes
     theme: lumen
@@ -13,14 +21,6 @@ output:
     toc_float:
       collapsed: yes
       smooth_scroll: yes
-  pdf_document:
-    toc: yes
-    toc_depth: '3'
-  prettydoc::html_pretty:
-    theme: cayman
-    highlight: github
-    toc: yes
-    toc_depth: 3
 abstract: Editable DataTables (DT) package for shiny apps. Originally created by Jason
   Bryer. Data columns to view or edit can be selected. Different datatypes can be edited.
   Valid input choices and interaction with persistent storage can be defined through
@@ -366,7 +366,11 @@ For an example of explicit definition, see [`selectInput`](#selectInput).
 
 ## `selectInput` and `selectInputReactive` {#selectInput}
 
-Drop down choices can be defined statically by defining `input.types` as `selectInput`. `selectInput` will look for possible input choices by checking if `input.choices` is defined (as in the example below), the column has defined `factor`s or the pre-existing values already present in the column.
+Drop down choices can be defined statically by defining `input.types` as `selectInput`. `selectInput` will look for possible input choices in the following ways :
+
+* if `input.choices` is defined (as in the example below)
+* the column is a 'factor/categorical' variable, with defined `factor`s 
+* the pre-existing values already present in the column.
 
 Drop down choices can be changed dynamically by defining `input.types` as `selectInputReactive`. The `input.choices` for a `selectInputReactive` is a list name (in this case `buy.types.list`) in `input.choices.reactive`. `buy.types.list` in `input.choices.reactive` defines a reactive variable, which in the example below is `buy.Types`.
 
