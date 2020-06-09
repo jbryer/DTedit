@@ -15,7 +15,9 @@ Suggests:
     rmarkdown,
     testthat,
     shinytest,
-    covr
+    covr,
+    devtools,
+    withr
 License: LGPL
 Encoding: UTF-8
 LazyData: true

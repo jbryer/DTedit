@@ -679,7 +679,7 @@ dteditmod <- function(input, output, session,
 
     newdata <- result$thedata
     row <- nrow(newdata) + 1 # the new row number
-    newdata[row, ] <- data.frame(as.list(as.blob(raw())))
+    newdata[row, ] <- data.frame(as.list(blob::as.blob(raw())))
     # create a new empty row, compatible with blob columns
     # filled with raw(0), which can later be co-erced to other types
     # the new row is ready for filling
@@ -1032,3 +1032,38 @@ dteditmodUI <- function(id) {
     shiny::uiOutput(ns("editdt"))
   )
 }
+
+#' test application
+#' 
+#' @return a shiny app
+#' @export
+testApp <- function() {
+  server <- function(input, output) {
+    
+    Grocery_List <- dtedit(
+      input, output,
+      name = 'Grocery_List',
+      thedata = data.frame(
+        Buy = c('Tea', 'Biscuits', 'Apples'),
+        Quantity = c(7, 2, 5),
+        stringsAsFactors = FALSE
+      )
+    )
+    
+    data_list <- list() # exported list for shinytest
+    shiny::observeEvent(Grocery_List$thedata(), {
+      data_list[[length(data_list) + 1]] <<- Grocery_List$thedata()
+    })
+    shiny::exportTestValues(data_list = {data_list})
+  }
+  
+  ui <- shiny::fluidPage(
+    shiny::h3('Grocery List'),
+    shiny::uiOutput('Grocery_List')
+  )
+  
+  shiny::shinyApp(ui = ui, server = server)
+}  
+
+  
+  
