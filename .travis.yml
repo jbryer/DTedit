@@ -1,16 +1,18 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
-sudo: false
+
+sudo: FALSE
+
 cache: 
   packages: true
   
 # Install PhantomJS (if not cached)
 # We need to install lbzip2 first
-before_install:
-    - sudo apt-get -y install lbzip2
-    - Rscript -e 'install.packages("shinytest")'
-    - Rscript -e 'shinytest::installDependencies()'
+#before_install:
+#    - sudo apt-get -y install lbzip2
+#    - Rscript -e 'install.packages("shinytest")'
+#    - Rscript -e 'shinytest::installDependencies()'
     
-after_success:
-    - Rscript -e 'covr::codecov(token = "deae9e1f-ee2b-45fb-a095-ee90d9c2f299", quiet=FALSE)'
+#after_success:
+#    - Rscript -e 'covr::codecov(token = "deae9e1f-ee2b-45fb-a095-ee90d9c2f299", quiet=FALSE)'

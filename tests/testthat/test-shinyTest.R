@@ -48,6 +48,7 @@ tmp_lib <- ensurePackagePresent()
 testthat::test_that("shinyTest", {
   testthat::skip_on_cran()
   testthat::skip_on_travis()
+  
   results <- withr::with_libpaths(tmp_lib, {
     shinytest::testApp(appDir = testthat::test_path("../shinyTest"), compareImages = FALSE)
   }, action = "prefix")
