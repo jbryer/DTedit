@@ -1,0 +1,12 @@
+app <- ShinyDriver$new("../")
+app$snapshotInit("mytest")
+
+app$snapshot()
+app$setInputs(`Grocery_List-editdt_edit` = "click")
+app$setInputs(`Grocery_List-editdt_update` = "click")
+app$setInputs(`Grocery_List-editdt_edit_Quantity` = 2)
+app$setInputs(`Grocery_List-editdt_edit_Buy` = "Biscuits")
+app$setInputs(`Grocery_List-editdt_edit_Quantity` = 3)
+app$setInputs(`Grocery_List-editdt_edit_Quantity` = 4)
+app$setInputs(`Grocery_List-editdt_update` = "click")
+app$snapshot()

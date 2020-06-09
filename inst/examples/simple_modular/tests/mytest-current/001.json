@@ -1,0 +1,182 @@
+{
+  "input": {
+    "DataTables_Table_0_length": "10",
+    "Grocery_List-editdt_add": 0,
+    "Grocery_List-editdt_copy": 0,
+    "Grocery_List-editdt_edit": 0,
+    "Grocery_List-editdt_remove": 0,
+    "Grocery_List-editdtdt_cell_clicked": {
+
+    },
+    "Grocery_List-editdtdt_rows_all": null,
+    "Grocery_List-editdtdt_rows_current": null,
+    "Grocery_List-editdtdt_rows_selected": null,
+    "Grocery_List-editdtdt_search": "",
+    "Grocery_List-editdtdt_state": null
+  },
+  "output": {
+    "Grocery_List-editdt": {
+      "html": "<div>\n  <button id=\"Grocery_List-editdt_add\" type=\"button\" class=\"btn btn-default action-button\">New<\/button>\n  <button id=\"Grocery_List-editdt_edit\" type=\"button\" class=\"btn btn-default action-button\">Edit<\/button>\n  <button id=\"Grocery_List-editdt_remove\" type=\"button\" class=\"btn btn-default action-button\">Delete<\/button>\n  <button id=\"Grocery_List-editdt_copy\" type=\"button\" class=\"btn btn-default action-button\">Copy<\/button>\n  <br/>\n  <br/>\n  <div id=\"Grocery_List-editdtdt\" style=\"width:100%; height:auto; \" class=\"datatables html-widget html-widget-output\"><\/div>\n<\/div>",
+      "deps": [
+        {
+          "name": "htmlwidgets",
+          "version": "1.5.1",
+          "src": {
+            "href": "htmlwidgets-1.5.1"
+          },
+          "meta": null,
+          "script": "htmlwidgets.js",
+          "stylesheet": null,
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        },
+        {
+          "name": "jquery",
+          "version": "1.12.4",
+          "src": {
+            "href": "jquery-1.12.4"
+          },
+          "meta": null,
+          "script": "jquery.min.js",
+          "stylesheet": null,
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        },
+        {
+          "name": "datatables-css",
+          "version": "0.0.0",
+          "src": {
+            "href": "datatables-css-0.0.0"
+          },
+          "meta": null,
+          "script": null,
+          "stylesheet": "datatables-crosstalk.css",
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        },
+        {
+          "name": "datatables-binding",
+          "version": "0.13.4",
+          "src": {
+            "href": "datatables-binding-0.13.4"
+          },
+          "meta": null,
+          "script": "datatables.js",
+          "stylesheet": null,
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": false
+        },
+        {
+          "name": "crosstalk",
+          "version": "1.0.0",
+          "src": {
+            "href": "crosstalk-1.0.0"
+          },
+          "meta": null,
+          "script": "js/crosstalk.min.js",
+          "stylesheet": "css/crosstalk.css",
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        }
+      ]
+    },
+    "Grocery_List-editdtdt": {
+      "x": {
+        "filter": "none",
+        "container": "<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Buy<\/th>\n      <th>Quantity<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>",
+        "options": {
+          "pageLength": 10,
+          "columnDefs": [
+            {
+              "className": "dt-right",
+              "targets": 1
+            }
+          ],
+          "order": [
+
+          ],
+          "autoWidth": false,
+          "orderClasses": false,
+          "ajax": {
+            "type": "POST",
+            "data": "function(d) {\nd.search.caseInsensitive = true;\nd.search.smart = true;\nd.escape = \"1,2\";\nvar encodeAmp = function(x) { x.value = x.value.replace(/&/g, \"%26\"); }\nencodeAmp(d.search);\n$.each(d.columns, function(i, v) {encodeAmp(v.search);});\n}"
+          },
+          "serverSide": true,
+          "processing": true
+        },
+        "selection": {
+          "mode": "single",
+          "selected": null,
+          "target": "row",
+          "selectable": null
+        }
+      },
+      "evals": [
+        "options.ajax.data"
+      ],
+      "jsHooks": [
+
+      ],
+      "deps": [
+        {
+          "name": "dt-core",
+          "version": "1.10.20",
+          "src": {
+            "href": "dt-core-1.10.20"
+          },
+          "meta": null,
+          "script": "js/jquery.dataTables.min.js",
+          "stylesheet": [
+            "css/jquery.dataTables.min.css",
+            "css/jquery.dataTables.extra.css"
+          ],
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": false
+        },
+        {
+          "name": "jquery",
+          "version": "1.11.3",
+          "src": {
+            "href": "jquery-1.11.3"
+          },
+          "meta": null,
+          "script": "jquery.min.js",
+          "stylesheet": null,
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        },
+        {
+          "name": "crosstalk",
+          "version": "1.0.0",
+          "src": {
+            "href": "crosstalk-1.0.0"
+          },
+          "meta": null,
+          "script": "js/crosstalk.min.js",
+          "stylesheet": "css/crosstalk.css",
+          "head": null,
+          "attachment": null,
+          "package": null,
+          "all_files": true
+        }
+      ]
+    }
+  },
+  "export": {
+
+  }
+}

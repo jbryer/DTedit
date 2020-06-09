@@ -295,7 +295,7 @@ ui <- fluidPage(
   dteditmodUI('Grocery_List')
 )
 
-if (interactive())
+if (interactive() || isTRUE(getOption("shiny.testmode")))
   shinyApp(ui = ui, server = server)
 }
 \seealso{

@@ -12,7 +12,10 @@ Suggests:
     base64enc,
     randomNames,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat,
+    shinytest,
+    covr
 License: LGPL
 Encoding: UTF-8
 LazyData: true
