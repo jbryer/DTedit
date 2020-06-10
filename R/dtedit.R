@@ -675,30 +675,27 @@ dteditmod <- function(input, output, session,
       }
     }
     insert.click <<- Sys.time()
-    
     newdata <- result$thedata
     row <- nrow(newdata) + 1 # the new row number
-    new_row <- # to contain a 'blank' new row
-      # the following sapply can be tested on the following dataframes
-      # data.frame(a = character(), b = numeric(),
-      #            x = as.Date(numeric(), origin = "1970-01-01"), y = raw())
-      # data.frame(a = "a", b = 7, x = as.Date(NA, origin = "1970-01-01"), y = raw(1))
-      #  'raw(1)' can be changed to as.blob(raw(0))
-      #  but as.blob can't be used to create a NULL blob object!
-      sapply(newdata,
-             FUN = function(x) {
-               switch(class(x),
-                      "character" = as.character(NA),
-                      "factor" = as.factor(NA),
-                      "numeric" = as.integer(NA),
-                      "Date" = as.Date(NA, origin = "1970-01-01"),
-                      "blob" = list(blob::as.blob(raw(1))),
-                      "raw" = list(blob::as.blob(raw(1))),
-                      as(NA, class(x)) # catch-all. doesn't work for blob
-               )
-             }
-      )
-    newdata[row, ] <- data.frame(new_row)
+    new_row <- list() # to contain a 'blank' new row
+    # the following loop can be tested on the following dataframes
+    # data.frame(a = character(), b = numeric(),
+    #            x = as.Date(numeric(), origin = "1970-01-01"), y = raw())
+    # data.frame(a = "a", b = 7, x = as.Date(NA, origin = "1970-01-01"), y = raw(1))
+    #  'raw(1)' can be changed to as.blob(raw(0))
+    #  but as.blob can't be used to create a NULL blob object!
+    for (i in 1:ncol(newdata)) {
+      new_row[[i]] <- switch(
+        class(newdata[, i]),
+        "factor" = as.factor(NA),
+        "Date" = as.Date(NA, origin = "1970-01-01"),
+        "raw" = list(blob::as.blob(raw(1))),
+        "blob" = list(blob::as.blob(raw(1))),
+        "character" = as.character(NA),
+        "numeric" = as.numeric(NA),
+        as(NA, class(newdata[, i])))
+    }
+    newdata[row, ] <- data.frame(new_row, stringsAsFactors = FALSE)
     # create a new empty row, compatible with blob columns
     # the new row is ready for filling
     for (i in edit.cols) {

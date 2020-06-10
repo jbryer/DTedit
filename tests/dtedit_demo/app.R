@@ -4,6 +4,8 @@ library(shiny)
 library(RSQLite)
 library(DTedit)
 
+file.remove("books.sqlite") 
+# remove old copy of database, re-generate from CSV
 ##### Load books data.frame as a SQLite database
 conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
 
@@ -63,7 +65,7 @@ books.delete.callback <- function(data, row) {
 }
 
 ##### Create the Shiny server
-server <- function(input, output) {
+server <- function(input, output, session) {
   books <- getBooks()
   dtedit(
     input, output,
@@ -84,6 +86,10 @@ server <- function(input, output) {
                       stringsAsFactors=FALSE)
   names$Date <- as.Date(names$Date, origin='1970-01-01')
   namesdt <- dtedit(input, output, name = 'names', names)
+  
+  cancel.onsessionEnded <- session$onSessionEnded(function() {
+    DBI::dbDisconnect(conn)
+  })
 }
 
 ##### Create the shiny UI
@@ -91,7 +97,9 @@ ui <- fluidPage(
   h3('Books'),
   uiOutput('books'),
   hr(), h3('Email Addresses'),
+  
   uiOutput('names')
 )
 
-shinyApp(ui = ui, server = server)
+if (interactive() || isTRUE(getOption("shiny.testmode")))
+  shinyApp(ui = ui, server = server)

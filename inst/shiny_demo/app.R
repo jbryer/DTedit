@@ -61,7 +61,7 @@ books.delete.callback <- function(data, row) {
 }
 
 ##### Create the Shiny server
-server <- function(input, output) {
+server <- function(input, output, session) {
   books <- getBooks()
   dtedit(
     input, output,
@@ -82,6 +82,10 @@ server <- function(input, output) {
     stringsAsFactors=FALSE)
   names$Date <- as.Date(names$Date, origin='1970-01-01')
   namesdt <- dtedit(input, output, name = 'names', names)
+  
+  cancel.onsessionEnded <- session$onSessionEnded(function() {
+    DBI::dbDisconnect(conn)
+  })
 }
 
 ##### Create the shiny UI
