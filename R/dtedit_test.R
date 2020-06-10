@@ -70,7 +70,7 @@ testDTedit <- function(appname = "simple") {
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return(shinyApp(ui = ui, server = server))
   }
-  
+
   if (appname == "reactive") {
     server <- function(input, output) {
       
@@ -128,6 +128,106 @@ testDTedit <- function(appname = "simple") {
       uiOutput('Grocery_List'),
       actionButton(inputId = "more", label = "Buy More!"),
       actionButton(inputId = "less", label = "Too Much!")
+    )
+    
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return(shinyApp(ui = ui, server = server))
+  }
+  
+  if (appname == "callback") {
+    server <- function(input, output) {
+      
+      grocery.update.callback <- function(data, olddata, row) {
+        # 'data' contains the dataframe *after* the row has been updated
+        # 'row' is the row number where data has been updated
+        # 'olddata' is the previous version of the data
+        
+        if (data[row, "Quantity"] < 0) {
+          stop("Can't buy less than zero (0)!")
+        }
+        
+        return(data)
+      }
+      
+      grocery.insert.callback <- function(data, row) {
+        # 'data' contains the dataframe *after* the row has been inserted
+        
+        if (data[row, "Quantity"] > 10) {
+          stop("Can't buy more than ten (10)!")
+        }
+        
+        return(data)
+      }
+      
+      grocery.delete.callback <- function(data, row) {
+        # 'data' contains the dataframe *after* the row has been inserted
+        
+        if (data[row, "Quantity"] != 0) {
+          stop("Can only delete if quantity equal to zero!")
+        }
+        
+        data <- data[-row, ]
+        
+        return(data)
+      }
+      
+      grocery.callback.actionButton <- function(data, row, buttonID) {
+        # data - the current copy of 'thedata'
+        # row - the row number of the clicked button
+        # buttonID - the buttonID of the clicked button
+        print(paste("You chose", buttonID, ", row: ", row))
+        
+        if (substr(buttonID, 1, nchar("addOne")) == "addOne") {
+          # in this demonstration, all the buttons are 'random'
+          # but it is possible to define more than one column of buttons
+          data[row, "Quantity"] <- data[row, "Quantity"][[1]] + 1
+        }
+        if (substr(buttonID, 1, nchar("subtractOne")) == "subtractOne") {
+          # in this demonstration, all the buttons are 'random'
+          # but it is possible to define more than one column of buttons
+          data[row, "Quantity"] <- data[row, "Quantity"][[1]] - 1
+        }
+        return(data)
+      }
+      
+      Grocery_List_Results <- dtedit(
+        input, output,
+        name = 'Grocery_List',
+        thedata = data.frame(
+          Buy = c('Tea', 'Biscuits', 'Apples'),
+          Quantity = c(7, 2, 5),
+          stringsAsFactors = FALSE
+        ),
+        action.buttons = list(
+          myaction = list( # the 'myaction' name is arbitrary
+            columnLabel = "Add One",
+            buttonLabel = "+1",
+            buttonPrefix = "addOne"
+          ),
+          myaction2 = list( # the 'myaction' name is arbitrary
+            columnLabel = "Remove One",
+            buttonLabel = "-1",
+            buttonPrefix = "subtractOne"
+          )
+        ),
+        callback.update = grocery.update.callback,
+        callback.delete = grocery.delete.callback,
+        callback.insert = grocery.insert.callback,
+        callback.actionButton = grocery.callback.actionButton
+      )
+      
+      data_list <- list() # exported list for shinytest
+      edit_count <- list()
+      observeEvent(Grocery_List_Results$thedata(), {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata()
+        edit_count[[length(edit_count) + 1]] <<- Grocery_List_Results$edit.count()
+      })
+      shiny::exportTestValues(data_list = {data_list}, edit_count = {edit_count})
+    }
+    
+    ui <- fluidPage(
+      h3('Grocery List'),
+      shiny::uiOutput('Grocery_List')
     )
     
     if (interactive() || isTRUE(getOption("shiny.testmode")))
