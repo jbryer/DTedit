@@ -15,59 +15,72 @@
       },
       {
         "Buy": [
-          "Teabags",
+          "Tea",
           "Biscuits",
           "Apples"
         ],
         "Quantity": [
-          2,
-          2,
-          5
+          3.5,
+          1,
+          2.5
         ]
       },
       {
         "Buy": [
-          "Teabags",
+          "Tea",
+          "Biscuits",
           "Apples"
         ],
         "Quantity": [
+          1.75,
+          0.5,
+          1.25
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples"
+        ],
+        "Quantity": [
+          3.5,
+          1,
+          2.5
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples"
+        ],
+        "Quantity": [
+          7,
           2,
           5
         ]
       },
       {
         "Buy": [
-          "Teabags",
-          "Apples",
-          "Apple Cider"
+          "Tea",
+          "Biscuits",
+          "Apples"
         ],
         "Quantity": [
-          2,
-          5,
-          5
-        ]
-      },
-      {
-        "Buy": [
-          "Teabags",
-          "Apples",
-          "Apple Cider",
-          "Carrots"
-        ],
-        "Quantity": [
-          2,
-          5,
-          5,
-          7
+          14,
+          4,
+          10
         ]
       }
     ],
     "edit_count": [
       0,
-      1,
-      2,
-      3,
-      4
+      0,
+      0,
+      0,
+      0,
+      0
     ]
   }
 }
