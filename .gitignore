@@ -5,3 +5,5 @@
 /DTedit.Rproj
 Meta
 doc
+
+tests/dtedit_demo/books.sqlite

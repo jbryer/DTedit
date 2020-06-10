@@ -678,9 +678,28 @@ dteditmod <- function(input, output, session,
     
     newdata <- result$thedata
     row <- nrow(newdata) + 1 # the new row number
-    newdata[row, ] <- data.frame(as.list(blob::as.blob(raw())))
+    new_row <- # to contain a 'blank' new row
+      # the following sapply can be tested on the following dataframes
+      # data.frame(a = character(), b = numeric(),
+      #            x = as.Date(numeric(), origin = "1970-01-01"), y = raw())
+      # data.frame(a = "a", b = 7, x = as.Date(NA, origin = "1970-01-01"), y = raw(1))
+      #  'raw(1)' can be changed to as.blob(raw(0))
+      #  but as.blob can't be used to create a NULL blob object!
+      sapply(newdata,
+             FUN = function(x) {
+               switch(class(x),
+                      "character" = as.character(NA),
+                      "factor" = as.factor(NA),
+                      "numeric" = as.integer(NA),
+                      "Date" = as.Date(NA, origin = "1970-01-01"),
+                      "blob" = list(blob::as.blob(raw(1))),
+                      "raw" = list(blob::as.blob(raw(1))),
+                      as(NA, class(x)) # catch-all. doesn't work for blob
+               )
+             }
+      )
+    newdata[row, ] <- data.frame(new_row)
     # create a new empty row, compatible with blob columns
-    # filled with raw(0), which can later be co-erced to other types
     # the new row is ready for filling
     for (i in edit.cols) {
       if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
