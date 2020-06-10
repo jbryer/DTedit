@@ -44,13 +44,15 @@ ensurePackagePresent <- function(pkgName = "DTedit", quiet=TRUE) {
 }
 
 tmp_lib <- ensurePackagePresent()
-
-testthat::test_that("shinyTest", {
-  testthat::skip_on_cran()
+context("simple_modular") # note that context is not encouraged for testthat >= 2.1
+testthat::test_that("simple_modular", {
+  testthat::skip_on_cran() 
+  # skip_on_cran relies on NOT_CRAN environment variable to be TRUE
+  # https://github.com/r-lib/covr/issues/314
   testthat::skip_on_travis()
   
   results <- withr::with_libpaths(tmp_lib, {
-    shinytest::testApp(appDir = testthat::test_path("../shinyTest"), compareImages = FALSE)
+    shinytest::testApp(appDir = testthat::test_path("../simple_modular"), compareImages = FALSE)
   }, action = "prefix")
   shinytest::expect_pass(results)
 })
