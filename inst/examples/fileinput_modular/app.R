@@ -14,7 +14,7 @@ server <- function(input, output) {
       # this is from the 'Picture' column
       if (length(unlist(data[row, "Picture"])) > 0) {
         # not a empty entry!
-        outfile <- tempfile(fileext = ".png")
+        outfile <- tempfile(fileext = ".jpg")
         # create temporary filename
         # and write the binary blob to the temporary file
         zz <- file(outfile, "wb") # create temporary file
@@ -64,9 +64,9 @@ server <- function(input, output) {
     edit.cols = c("Buy", "Quantity", "Picture", "Spreadsheet"),
     edit.label.cols = c(
       "Item to buy", "Quantity",
-      "Picture (.png)", "Spreadsheet (.csv)"
+      "Picture (.jpg)", "Spreadsheet (.csv)"
     ),
-    input.choices = list(Picture = ".png", Spreadsheet = ".csv"),
+    input.choices = list(Picture = ".jpg", Spreadsheet = ".csv"),
     # unfortunately, RStudio's 'browser' doesn't actually respect
     #  file-name/type restrictions. A 'real' browser does respect
     #  the restrictions.
@@ -99,11 +99,24 @@ server <- function(input, output) {
   output$showSpreadsheet <- DT::renderDataTable({
     spreadsheet()
   })
+  
+  #### following code for shinytest, not essential for application function ####
+  data_list <- list() # exported list for shinytest
+  shiny::observeEvent(Grocery_List$thedata(), {
+    data_list[[length(data_list) + 1]] <<- Grocery_List$thedata()
+  })
+  shiny::exportTestValues(data_list = {data_list})
+  spreadsheet_list <- list() # exported list for shinytest
+  shiny::observeEvent(spreadsheet(), {
+    spreadsheet_list[[length(spreadsheet_list) + 1]] <<- spreadsheet()
+  })
+  shiny::exportTestValues(spreadsheet_list = {spreadsheet_list})
+  ##############################################################################
 }
 
 ui <- fluidPage(
   h3("Grocery List"),
-  "Pictures must be in PNG (.png) format, and spreadsheets must be",
+  "Pictures must be in JPEG (.jpg) format. Spreadsheets must be",
   "in comma-separated-value (.csv) format!",
   br(), br(), br(),
   dteditmodUI("Grocery_List"),
@@ -111,5 +124,5 @@ ui <- fluidPage(
   DT::dataTableOutput("showSpreadsheet")
 )
 
-if (interactive())
-  shinyApp(ui = ui, server = server)
+if (interactive() || isTRUE(getOption("shiny.testmode")))
+  return(shinyApp(ui = ui, server = server))

@@ -100,7 +100,7 @@ dteditmod_demo <- function(...) {
 #'
 #' @export
 dteditmod_fileInput_demo <- function(...) {
-  dir <- paste0(find.package("DTedit"), "/examples/example_mod_fileInput.R")
+  dir <- paste0(find.package("DTedit"), "/examples/fileInput_modular")
   message(paste0("Running shiny app from ", dir))
   shiny::shinyAppDir(appDir = dir, ...)
 }

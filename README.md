@@ -135,8 +135,8 @@ This example can be seen with `example("dtedit")`
 
 Example with two datatables : [inst/shiny_demo/app.R](inst/shiny_demo/app.R).<br/>
 This demonstration can be seen with `DTedit::dtedit_demo()`.<br/>
-This, and other demonstrations, can be called with `runApp` arguments.<br/>
-e.g. `DTedit::dtedit_demo(display.mode = "showcase")`<br/>
+This, and other demonstrations, can be called with `shinyAppDir` arguments.<br/>
+e.g. `DTedit::dtedit_demo(options = list(display.mode = "showcase"))`<br/>
 Note that *all* `.R` files in the `shiny_demo` directory are displayed in showcase mode, not just the `.R` file used in the actual demonstration!
 
 Example with reactive dataframe : [inst/examples/example_reactivedataframe.R](inst/examples/example_reactivedataframe.R).<br/>
@@ -153,5 +153,5 @@ This example can be seen with `example("dteditmodUI")`
 A modularized version with multiple datatables and reactive input choices : [inst/shiny_demo/app_mod.R](inst/shiny_demo/app_mod.R).<br/>
 This demonstration can be seen with `DTedit::dteditmod_demo()`
 
-A modularized version with fileInput, binary blobs and action buttons : [inst/examples/example_mod_fileInput.R](inst/examples/example_mod_fileInput.R).<br/>
+A modularized version with fileInput, binary blobs and action buttons : [inst/examples/fileinput_modular/app.R](inst/examples/fileinput_modular/app.R).<br/>
 This demonstration can be seen with `DTedit::dteditmod_fileInput_demo()`
