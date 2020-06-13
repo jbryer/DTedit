@@ -65,7 +65,7 @@ books.delete.callback <- function(data, row) {
 ##### Create the Shiny server
 server <- function(input, output, session) {
   books <- getBooks()
-  dtedit(
+  booksdt <- dtedit(
     input, output,
     name = 'books',
     thedata = books,
@@ -84,6 +84,12 @@ server <- function(input, output, session) {
     stringsAsFactors=FALSE)
   names$Date <- as.Date(names$Date, origin='1970-01-01')
   namesdt <- dtedit(input, output, name = 'names', names)
+  
+  data_list <- list() # exported list for shinytest
+  shiny::observeEvent(booksdt$thedata(), {
+    data_list[[length(data_list) + 1]] <<- booksdt$thedata()
+  })
+  shiny::exportTestValues(data_list = {data_list})
   
   cancel.onsessionEnded <- session$onSessionEnded(function() {
     DBI::dbDisconnect(conn)
