@@ -139,15 +139,15 @@ This, and other demonstrations, can be called with `shinyAppDir` arguments.<br/>
 e.g. `DTedit::dtedit_demo(options = list(display.mode = "showcase"))`<br/>
 Note that *all* `.R` files in the `shiny_demo` directory are displayed in showcase mode, not just the `.R` file used in the actual demonstration!
 
-Example with reactive dataframe : [inst/examples/example_reactivedataframe.R](inst/examples/example_reactivedataframe.R).<br/>
+Example with reactive dataframe : [inst/examples/reactivedataframe/app.R](inst/examples/reactivedataframe/app.R).<br/>
 This demonstration can be seen with `DTedit::dtedit_reactive_demo()`
 
-Example with reactive input choices : [inst/examples/example_selectInputReactive.R](inst/examples/example_selectInputReactive.R).<br/>
+Example with reactive input choices : [inst/examples/example/selectInputReactive/app.R](inst/examples/selectInputReactive/app.R).<br/>
 This demonstration can be seen with `DTedit::dtedit_selectInputReactive_demo()`
 
 A very simple modularized example : [inst/examples/example_mod.R](inst/examples/example_mod.R).<br/>
 
-A modularized example with reactive dataframes : [inst/examples/example_mod_reactivedataframe.R](inst/examples/example_mod_reactivedataframe.R).<br/>
+A modularized example with reactive dataframes : [inst/examples/reactivedataframe_modular/app.R](inst/examples/reactivedataframe_modular/app.R).<br/>
 This example can be seen with `example("dteditmodUI")`
 
 A modularized version with multiple datatables and reactive input choices : [inst/shiny_demo/app_mod.R](inst/shiny_demo/app_mod.R).<br/>

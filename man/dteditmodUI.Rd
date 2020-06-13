@@ -73,7 +73,7 @@ ui <- fluidPage(
   actionButton("data_scramble", "Scramble an entry")
 )
 
-if (interactive())
+if (interactive() || isTRUE(getOption("shiny.testmode")))
   shinyApp(ui = ui, server = server)
 }
 \seealso{

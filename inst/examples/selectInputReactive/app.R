@@ -1,5 +1,4 @@
 library(shiny)
-library(RSQLite)
 library(DTedit)
 
 ##### Create the Shiny server
@@ -115,7 +114,7 @@ server <- function(input, output, session) {
     data.frame(
       Name=character(), Email=character(),
       Date=as.Date(integer(), origin='1970-01-01'),
-      Type = isolate(factor(character(), levels = names.Types())),
+      Type = character(),
       Like = character(),
       # Like = I(list(isolate(factor(character(), levels = names.Likes())))),
       stringsAsFactors=FALSE
@@ -166,6 +165,12 @@ server <- function(input, output, session) {
     names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))
   })
   
+  data_list <- list() # exported list for shinytest
+  shiny::observeEvent(namesdt$thedata(), {
+    data_list[[length(data_list) + 1]] <<- namesdt$thedata()
+  })
+  shiny::exportTestValues(data_list = {data_list})
+  
 }
 
 ##### Create the shiny UI
@@ -201,5 +206,5 @@ ui <- fluidPage(
   )
 )
 
-if (interactive())
+if (interactive() || isTRUE(getOption("shiny.testmode")))
   shinyApp(ui = ui, server = server)

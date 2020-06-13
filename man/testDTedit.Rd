@@ -7,7 +7,14 @@
 testDTedit(appname = "simple")
 }
 \arguments{
-\item{appname}{choose test}
+\item{appname}{choose test
+simple
+simple_modular
+reactive
+callback
+error_test
+selectInputreactive
+password}
 }
 \value{
 a shiny app

@@ -1,0 +1,66 @@
+{
+  "export": {
+    "data_list": [
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples"
+        ],
+        "Type": [
+          "Plant",
+          "Processed",
+          "Fruit"
+        ],
+        "Quantity": [
+          7,
+          2,
+          5
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples",
+          "Cheese"
+        ],
+        "Type": [
+          "Plant",
+          "Processed",
+          "Fruit",
+          "Processed"
+        ],
+        "Quantity": [
+          7,
+          2,
+          5,
+          2
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples",
+          "Cheese",
+          "Coffee"
+        ],
+        "Type": [
+          "Plant",
+          "Processed",
+          "Fruit",
+          "Processed",
+          "Plant"
+        ],
+        "Quantity": [
+          7,
+          2,
+          5,
+          2,
+          1
+        ]
+      }
+    ]
+  }
+}

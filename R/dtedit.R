@@ -1038,7 +1038,7 @@ dteditmod <- function(input, output, session,
 #'  \item \code{dteditmod_demo()} for a more complex example. Includes database interaction
 #'  and interactions between the data of multiple datatables.
 #'  }
-#' @example inst/examples/example_mod_reactivedataframe.R
+#' @example inst/examples/reactivedataframe_modular/app.R
 #' @export
 dteditmodUI <- function(id) {
   ns <- shiny::NS(id)

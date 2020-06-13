@@ -7,7 +7,14 @@ NULL
 #' for testthat/codecov
 #' 
 #' @param appname choose test
-#' 
+#'   simple
+#'   simple_modular
+#'   reactive
+#'   callback
+#'   error_test
+#'   selectInputreactive
+#'   password
+#'   
 #' @return a shiny app
 #' @export
 testDTedit <- function(appname = "simple") {
@@ -404,5 +411,95 @@ testDTedit <- function(appname = "simple") {
     
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return(shiny::shinyApp(ui = ui, server = server))
+  }
+  
+  if (appname == "selectInputReactive") {
+    server <- function(input, output) {
+      
+      less_choices <- c('Tea', 'Biscuits', 'Apples', 'Cheese')
+      more_choices <- c(less_choices, 'Coffee', 'Pears', 'Fish')
+      
+      buy.Types <- reactiveVal(less_choices)
+      
+      Grocery_List_Results <- dtedit(
+        input, output,
+        name = 'Grocery_List',
+        thedata = data.frame(
+          Buy = c('Tea', 'Biscuits', 'Apples'),
+          Type = c('Plant', 'Processed', 'Fruit'),
+          Quantity = c(7, 2, 5),
+          stringsAsFactors = FALSE
+        ),
+        input.types = list(
+          Buy = 'selectInputReactive',
+          Type = 'selectInput'
+        ),
+        input.choices = list(
+          Buy = 'buy.Types.list',
+          Type = c('Plant', 'Processed', 'Fruit', 'Animal')
+        ),
+        input.choices.reactive =
+          list(buy.Types.list = buy.Types)
+      )
+      
+      observeEvent(input$choice, {
+        if (input$choice == 1) {
+          buy.Types(less_choices)
+        } else {
+          buy.Types(more_choices)
+        }
+      })
+      
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Grocery_List_Results$thedata(), {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata()
+      })
+      shiny::exportTestValues(data_list = {data_list})
+      
+    }
+    
+    ui <- fluidPage(
+      h3('Grocery List'),
+      uiOutput('Grocery_List'),
+      radioButtons(
+        'choice',
+        label = 'Buy choices',
+        choices = list('Less' = 1, 'More' = 2),
+        selected = 1
+      )
+    )
+    
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return(shinyApp(ui = ui, server = server))
+  }
+  
+  if (appname == "password") {
+    server <- function(input, output) {
+      Password_List <- dtedit(
+        input, output,
+        name = 'Password_List',
+        thedata = data.frame(
+          Name = c('Sylvia', 'Eric', 'Molly'),
+          Password = c('', '', ''),
+          stringsAsFactors = FALSE
+        ),
+        view.cols = c("Name"),
+        input.types = c(Password = "passwordInput")
+      )
+      
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Password_List$thedata(), {
+        data_list[[length(data_list) + 1]] <<- Password_List$thedata()
+      })
+      shiny::exportTestValues(data_list = {data_list})
+    }
+    
+    ui <- shiny::fluidPage(
+      shiny::h3('Passwords'),
+      shiny::uiOutput('Password_List')
+    )
+    
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return (shiny::shinyApp(ui = ui, server = server))
   }
 }  

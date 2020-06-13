@@ -1,0 +1,72 @@
+{
+  "export": {
+    "data_list": [
+      {
+        "Name": [
+
+        ],
+        "Email": [
+
+        ],
+        "Date": [
+
+        ],
+        "Type": [
+
+        ],
+        "Like": [
+
+        ]
+      },
+      {
+        "Name": [
+          "Jane Elias"
+        ],
+        "Email": [
+          "je@alibaba.com"
+        ],
+        "Date": [
+          "2020-06-17"
+        ],
+        "Type": [
+          "Admin"
+        ],
+        "Like": [
+          [
+            "Apple",
+            "Pear"
+          ]
+        ]
+      },
+      {
+        "Name": [
+          "Jane Elias",
+          "John Doe"
+        ],
+        "Email": [
+          "je@alibaba.com",
+          "jd@jd.com"
+        ],
+        "Date": [
+          "2020-06-17",
+          "2020-06-01"
+        ],
+        "Type": [
+          "Admin",
+          "Visitor"
+        ],
+        "Like": [
+          [
+            "Apple",
+            "Pear"
+          ],
+          [
+            "Apple",
+            "Pear",
+            "Oranges"
+          ]
+        ]
+      }
+    ]
+  }
+}

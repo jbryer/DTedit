@@ -192,10 +192,6 @@ In the example below, `callback.update` is defined, and checks whether the purch
 
 Note that `callback.insert` has *not* been defined, and so it is still possible to create a *new* entry/row which has a negative purchase amount! However, it is of course possible to define `callback.insert` so that negative `Quantity` is also prevented when creating a new entry/row.
 
-More sophisticated **callbacks** can take the opportunity to store changed data in a persistent database. This is demonstrated in `dtedit_demo()`. The source code for the demonstration can be seen with `dtedit_demo(options = list(display.mode = "showcase"))`, in the `app.R` tab.
-
-The modular `dteditmod` version of the **callbacks** demonstration, with multiple callbacks for multiple datatables, can be seen with `dtedit_mod_demo(options = list(display.mode = "showcase"))`, in the `app_mod.R` tab.
-
 ```{r, eval = FALSE}
 server <- function(input, output) {
 
@@ -232,6 +228,10 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
+More sophisticated **callbacks** can take the opportunity to store changed data in a persistent database. This is demonstrated in `dtedit_demo()`. The source code for the demonstration can be seen with `dtedit_demo(options = list(display.mode = "showcase"))`, in the `app.R` tab.
+
+The modular `dteditmod` version of the **callbacks** demonstration, with multiple callbacks for multiple datatables, can be seen with `dtedit_mod_demo(options = list(display.mode = "showcase"))`, in the `app_mod.R` tab.
+
 ## Reactive `thedata` dataframe
 
 `thedata` can be a reactive, in which case `dtedit`'s copy of the `thedata` will change in response to changes in the original dataframe. In the example below, the input buttons **more** and **less** trigger changes in **mydata**, which will be detected by `dtedit`.
@@ -239,8 +239,6 @@ shinyApp(ui = ui, server = server)
 In the call to `dtedit`, **mydata** is referred to in the `thedata` definition as **mydata**, *not* **mydata()**.
 
 Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in **Grocery_List_Results$thedata()**, which then changes **mydata**.
-
-Another example of reactive dataframes can be seen, with source code, with `dtedit_reactive_demo(display.mode = "showcase")`. The code is in the `example_reactivedataframe.R` tab. A modular version, using `dteditmod`, can  be seen with `example(dteditmodUI)`.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -298,6 +296,8 @@ ui <- fluidPage(
 
 shinyApp(ui = ui, server = server)
 ```
+
+Another example of reactive dataframes can be seen, with source code, with `dtedit_reactive_demo(options = list(display.mode = "showcase"))`. The code is in the `app.R` tab. A modular version, using `dteditmod`, can  be seen with `example(dteditmodUI)`.
 
 ## View and Edit columns
 
@@ -429,7 +429,7 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
-`selectInputReactive` is demonstrated in `dtedit_selectInputReactive_demo(options = list(display.mode = "showcase"))`, with the source code in the `example_selectInputReactive.R` tab. In this demonstration, **names.Types** (user types) and **names.Likes** (potential user Likes) are reactive variables which are used to determine the choices to `selectInputReactive` and `selectInputMultipleReactive` in the **names** DataTable. **names.Types** and **names.Likes** are themselves altered by changes in two other `DTedit` datatables.
+`selectInputReactive` is demonstrated in `dtedit_selectInputReactive_demo(options = list(display.mode = "showcase"))`, with the source code in the `app.R` tab. In this demonstration, **names.Types** (user types) and **names.Likes** (potential user Likes) are reactive variables which are used to determine the choices to `selectInputReactive` and `selectInputMultipleReactive` in the **names** DataTable. **names.Types** and **names.Likes** are themselves altered by changes in two other `DTedit` datatables.
 
 The same demonstration is shown for modular `dteditmod` in `dteditmod_demo(options = list(display.mode = "showcase"))`, with source code in the `app_mod.R` tab. The interacting datatables are in the `Emails` tab.
 
