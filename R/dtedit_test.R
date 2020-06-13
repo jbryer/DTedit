@@ -7,13 +7,16 @@ NULL
 #' for testthat/codecov
 #' 
 #' @param appname choose test
-#'   simple
-#'   simple_modular
-#'   reactive
-#'   callback
-#'   error_test
-#'   selectInputReactive
-#'   password
+#' 
+#' \itemize{
+#'   \item \code{simple}
+#'   \item \code{simple_modular}
+#'   \item \code{reactive}
+#'   \item \code{callback}
+#'   \item \code{error_test}
+#'   \item \code{selectInputReactive}
+#'   \item \code{password}
+#' }
 #' @param ... extra options passed to shiny::shinyApp 
 #'  
 #' @return a shiny app
