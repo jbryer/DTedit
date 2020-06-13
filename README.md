@@ -142,10 +142,11 @@ Note that *all* `.R` files in the `shiny_demo` directory are displayed in showca
 Example with reactive dataframe : [inst/examples/reactivedataframe/app.R](inst/examples/reactivedataframe/app.R).<br/>
 This demonstration can be seen with `DTedit::dtedit_reactive_demo()`
 
-Example with reactive input choices : [inst/examples/example/selectInputReactive/app.R](inst/examples/selectInputReactive/app.R).<br/>
+Example with reactive input choices : [inst/examples/selectInputReactive/app.R](inst/examples/selectInputReactive/app.R).<br/>
 This demonstration can be seen with `DTedit::dtedit_selectInputReactive_demo()`
 
 A very simple modularized example : [inst/examples/example_mod.R](inst/examples/example_mod.R).<br/>
+A slightly modified version of this example can be seen with `DTedit::dtedit_test("simple_modular")`.
 
 A modularized example with reactive dataframes : [inst/examples/reactivedataframe_modular/app.R](inst/examples/reactivedataframe_modular/app.R).<br/>
 This example can be seen with `example("dteditmodUI")`

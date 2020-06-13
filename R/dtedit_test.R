@@ -7,16 +7,13 @@ NULL
 #' for testthat/codecov
 #' 
 #' @param appname choose test
-#' 
-#' \itemize{
-#'   \item \code{simple}
-#'   \item \code{simple_modular}
-#'   \item \code{reactive}
-#'   \item \code{callback}
-#'   \item \code{error_test}
-#'   \item \code{selectInputReactive}
-#'   \item \code{password}
-#' }
+#'   simple
+#'   simple_modular
+#'   reactive
+#'   callback
+#'   error_test
+#'   selectInputReactive
+#'   password
 #' @param ... extra options passed to shiny::shinyApp 
 #'  
 #' @return a shiny app
@@ -24,7 +21,7 @@ NULL
 dtedit_test <- function(appname = "simple", ...) {
   
   if (appname == "simple") {
-    server <- function(input, output) {
+    server <- function(input, output, session) {
       
       Grocery_List <- dtedit(
         input, output,
@@ -57,7 +54,7 @@ dtedit_test <- function(appname = "simple", ...) {
   if (appname == "simple_modular") {
     server <- function(input, output, session) {
       
-      Grocery_List <- callModule(
+      Grocery_List <- shiny::callModule(
         dteditmod,
         id = 'Grocery_List',
         thedata = data.frame(
@@ -78,19 +75,19 @@ dtedit_test <- function(appname = "simple", ...) {
       ######################################################
     }
     
-    ui <- fluidPage(
-      h3('Grocery List'),
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
       dteditmodUI('Grocery_List')
     )
     
     if (interactive() || isTRUE(getOption("shiny.testmode")))
-      return(shinyApp(ui = ui, server = server, ...))
+      return(shiny::shinyApp(ui = ui, server = server, ...))
   }
 
   if (appname == "reactive") {
-    server <- function(input, output) {
+    server <- function(input, output, session) {
       
-      mydata <- reactiveVal({
+      mydata <- shiny::reactiveVal({
         data.frame(
           Buy = c('Tea', 'Biscuits', 'Apples'),
           Quantity = c(7, 2, 5),
@@ -140,19 +137,19 @@ dtedit_test <- function(appname = "simple", ...) {
       #### shinytest code for testing purposes only ########
     }
     
-    ui <- fluidPage(
-      h3('Grocery List'),
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
       uiOutput('Grocery_List'),
       actionButton(inputId = "more", label = "Buy More!"),
       actionButton(inputId = "less", label = "Too Much!")
     )
     
     if (interactive() || isTRUE(getOption("shiny.testmode")))
-      return(shinyApp(ui = ui, server = server, ...))
+      return(shiny::shinyApp(ui = ui, server = server, ...))
   }
   
   if (appname == "callback") {
-    server <- function(input, output) {
+    server <- function(input, output, session) {
       
       grocery.update.callback <- function(data, olddata, row) {
         # 'data' contains the dataframe *after* the row has been updated
@@ -244,17 +241,17 @@ dtedit_test <- function(appname = "simple", ...) {
       #### shinytest code for testing purposes only ########
     }
     
-    ui <- fluidPage(
-      h3('Grocery List'),
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
       shiny::uiOutput('Grocery_List')
     )
     
     if (interactive() || isTRUE(getOption("shiny.testmode")))
-      return(shinyApp(ui = ui, server = server, ...))
+      return(shiny::shinyApp(ui = ui, server = server, ...))
   }
   
   if (appname == "error_test") {
-    server <- function(input, output) {
+    server <- function(input, output, session) {
       
       Grocery_List <- dtedit(
         input, output,
@@ -432,12 +429,12 @@ dtedit_test <- function(appname = "simple", ...) {
   }
   
   if (appname == "selectInputReactive") {
-    server <- function(input, output) {
+    server <- function(input, output, session) {
       
       less_choices <- c('Tea', 'Biscuits', 'Apples', 'Cheese')
       more_choices <- c(less_choices, 'Coffee', 'Pears', 'Fish')
       
-      buy.Types <- reactiveVal(less_choices)
+      buy.Types <- shiny::reactiveVal(less_choices)
       
       Grocery_List_Results <- dtedit(
         input, output,
@@ -483,10 +480,10 @@ dtedit_test <- function(appname = "simple", ...) {
       ######################################################
     }
     
-    ui <- fluidPage(
-      h3('Grocery List'),
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
       uiOutput('Grocery_List'),
-      radioButtons(
+      shiny::radioButtons(
         'choice',
         label = 'Buy choices',
         choices = list('Less' = 1, 'More' = 2),
@@ -495,11 +492,11 @@ dtedit_test <- function(appname = "simple", ...) {
     )
     
     if (interactive() || isTRUE(getOption("shiny.testmode")))
-      return(shinyApp(ui = ui, server = server))
+      return(shiny::shinyApp(ui = ui, server = server))
   }
   
   if (appname == "password") {
-    server <- function(input, output) {
+    server <- function(input, output, session) {
       Password_List <- dtedit(
         input, output,
         name = 'Password_List',

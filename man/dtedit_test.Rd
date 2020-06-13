@@ -8,16 +8,13 @@ dtedit_test(appname = "simple", ...)
 }
 \arguments{
 \item{appname}{choose test
-
-\itemize{
-  \item \code{simple}
-  \item \code{simple_modular}
-  \item \code{reactive}
-  \item \code{callback}
-  \item \code{error_test}
-  \item \code{selectInputReactive}
-  \item \code{password}
-}}
+simple
+simple_modular
+reactive
+callback
+error_test
+selectInputReactive
+password}
 
 \item{...}{extra options passed to shiny::shinyApp}
 }

@@ -466,7 +466,7 @@ dteditmod <- function(input, output, session,
             ". Specify them using the input.choices parameter"
           ))
         }
-        if (length(choices) == 1 & choices[[1]] == "") {
+        if (length(choices) == 1 && choices[[1]] == "") {
           warning(paste0(
             "No choices available for ", edit.cols[i],
             ". Specify them using the input.choices parameter"
@@ -711,7 +711,7 @@ dteditmod <- function(input, output, session,
         "character" = as.character(NA),
         "numeric" = as.numeric(NA),
         "AsIs" = as.list(NA), # for lists
-        as(NA, class(newdata[, i])))
+        methods::as(NA, class(newdata[, i])))
     }
     newdata[row, ] <- data.frame(new_row, stringsAsFactors = FALSE)
     # create a new empty row, compatible with blob columns
