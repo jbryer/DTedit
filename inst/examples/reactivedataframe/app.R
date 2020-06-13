@@ -45,6 +45,12 @@ server <- function(input, output) {
       paste(data()$Column2, collapse = ", ")
     )
   })
+  
+  data_list <- list() # exported list for shinytest
+  shiny::observeEvent(data_DT_gui$thedata(), {
+    data_list[[length(data_list) + 1]] <<- data_DT_gui$thedata()
+  })
+  shiny::exportTestValues(data_list = {data_list})
 }
 
 ##### Create the shiny UI ######
