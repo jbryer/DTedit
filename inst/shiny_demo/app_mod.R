@@ -2,14 +2,15 @@ library(shiny)
 library(RSQLite)
 library(DTedit)
 
-
 ##### Create the Shiny server
 server <- function(input, output, session) {
   
   ##### Load books data.frame as a SQLite database
   conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
   
-  if(!'books' %in% dbListTables(conn)) {
+  if(!'books' %in% dbListTables(conn) || isTRUE(getOption("shiny.testmode"))) {
+    # the sqlite file doesn't have the right data
+    # OR we are running in test mode (test mode -> reset the data)
     books <- read.csv('books.csv', stringsAsFactors = FALSE)
     books$Authors <- strsplit(books$Authors, ';')
     books$Authors <- lapply(books$Authors, trimws) # Strip white space
@@ -138,7 +139,7 @@ server <- function(input, output, session) {
 	  return(data)
 	}
 	
-	callModule(
+	booksdt <- callModule(
 	  dteditmod,
 	  'books',
 	  thedata = books,
@@ -268,6 +269,12 @@ server <- function(input, output, session) {
 		)
 		names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))
 	})
+	
+	data_list <- list() # exported list for shinytest
+	shiny::observeEvent(booksdt$thedata(), {
+	  data_list[[length(data_list) + 1]] <<- booksdt$thedata()
+	})
+	shiny::exportTestValues(data_list = {data_list})
 	
 	session$onSessionEnded(function() {
 	  dbDisconnect(conn)

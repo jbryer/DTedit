@@ -5,7 +5,9 @@ library(DTedit)
 ##### Load books data.frame as a SQLite database
 conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
 
-if(!'books' %in% dbListTables(conn)) {
+if(!'books' %in% dbListTables(conn) || isTRUE(getOption("shiny.testmode"))) {
+  # the sqlite file doesn't have the right data
+  # OR we are running in test mode (test mode -> reset the data)
   books <- read.csv('books.csv', stringsAsFactors = FALSE)
   books$Authors <- strsplit(books$Authors, ';')
   books$Authors <- lapply(books$Authors, trimws) # Strip white space

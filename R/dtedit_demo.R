@@ -77,9 +77,9 @@ dtedit_selectInputReactive_demo <- function(...) {
 #'
 #' @export
 dteditmod_demo <- function(...) {
-  dir <- paste0(find.package("DTedit"), "/shiny_demo/app_mod.R")
-  message(paste0("Running shiny app from ", dir))
-  shiny::shinyAppFile(appDir = dir, ...)
+  filename <- paste0(find.package("DTedit"), "/shiny_demo/app_mod.R")
+  message(paste0("Running shiny app from ", filename))
+  shiny::shinyAppFile(appFile = filename, ...)
 }
 
 #' Run a shiny app showing how the DTedit function works.
