@@ -27,6 +27,16 @@ app$setInputs(names_add_Name = "John Doe",
               names_add_Type = "Visitor",
               names_add_Like = c("Apple", "Pear", "Oranges"))
 app$setInputs(names_insert = "click")
+Sys.sleep(2)
+
+app$setInputs(namesdt_rows_selected = 1, allowInputNoBinding_ = TRUE)
+app$setInputs(namesdt_rows_last_clicked = 1, allowInputNoBinding_ = TRUE)
+app$setInputs(names_copy = "click")
+app$setInputs(names_add_Name = "Augusta Ada",
+              names_add_Email = "ada@defence.gov",
+              names_add_Date = "2020-07-11",
+              names_add_Like = c("Apple", "Pear"))
+app$setInputs(names_insert = "click")
 
 Sys.sleep(2)
 app$snapshot(items = list(export = TRUE), screenshot = TRUE)

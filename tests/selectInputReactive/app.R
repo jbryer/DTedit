@@ -1,1 +1,1 @@
-DTedit::testDTedit("selectInputReactive")
+DTedit::dtedit_test("selectInputReactive")

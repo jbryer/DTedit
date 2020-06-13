@@ -450,13 +450,21 @@ dteditmod <- function(input, output, session,
           value <- value[[1]]
         }
         choices <- ""
-        if (!missing(values)) {
-          choices <- unique(unlist(values[, edit.cols[i]]))
-        }
-        if (!is.null(input.choices)) {
-          if (edit.cols[i] %in% names(input.choices)) {
-            choices <- input.choices[[edit.cols[i]]]
-          }
+        if (!is.null(input.choices) && (edit.cols[i] %in% names(input.choices))) {
+          choices <- input.choices[[edit.cols[i]]]
+        } else if (nrow(result$thedata) > 0) {
+          choices <- unique(unlist(result$thedata[, edit.cols[i]]))
+          # no choices explicitly defined
+          #
+          # use choices defined in other rows, if available
+          # this is a bad choice. even if a column starts
+          # with just 'Yes/No', it is quite possible that with
+          # further table editing valid choices will become
+          # unavailable if, after editing, no rows have that valid choice
+          warning(paste0(
+            "No choices explicitly defined for ", edit.cols[i],
+            ". Specify them using the input.choices parameter"
+          ))
         }
         if (length(choices) == 1 & choices[[1]] == "") {
           warning(paste0(
@@ -484,7 +492,16 @@ dteditmod <- function(input, output, session,
         } else if (nrow(result$thedata) > 0) {
           choices <- unique(unlist(result$thedata[, edit.cols[i]]))
           # no choices explicitly defined
+          #
           # use choices defined in other rows, if available
+          # this is a bad choice. even if a column starts
+          # with just 'Yes/No', it is quite possible that with
+          # further table editing valid choices will become
+          # unavailable if, after editing, no rows have that valid choice
+          warning(paste0(
+            "No choices explicitly defined for ", edit.cols[i],
+            ". Specify them using the input.choices parameter"
+          ))
         }
         if (length(choices) == 1 && choices[[1]] == "") {
           warning(paste0(
@@ -693,6 +710,7 @@ dteditmod <- function(input, output, session,
         "blob" = list(blob::as.blob(raw(1))),
         "character" = as.character(NA),
         "numeric" = as.numeric(NA),
+        "AsIs" = as.list(NA), # for lists
         as(NA, class(newdata[, i])))
     }
     newdata[row, ] <- data.frame(new_row, stringsAsFactors = FALSE)

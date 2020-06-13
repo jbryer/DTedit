@@ -7,6 +7,11 @@
           "Biscuits",
           "Apples"
         ],
+        "Timeframe": [
+          "Today",
+          "Soon",
+          "Flexible"
+        ],
         "Type": [
           "Plant",
           "Processed",
@@ -16,6 +21,21 @@
           7,
           2,
           5
+        ],
+        "BuyFor": [
+          [
+            "Anne",
+            "Bob"
+          ],
+          [
+            "Carly",
+            "Anne"
+          ],
+          [
+            "Anne",
+            "Bob",
+            "Carly"
+          ]
         ]
       },
       {
@@ -24,6 +44,12 @@
           "Biscuits",
           "Apples",
           "Cheese"
+        ],
+        "Timeframe": [
+          "Today",
+          "Soon",
+          "Flexible",
+          "Soon"
         ],
         "Type": [
           "Plant",
@@ -36,6 +62,25 @@
           2,
           5,
           2
+        ],
+        "BuyFor": [
+          [
+            "Anne",
+            "Bob"
+          ],
+          [
+            "Carly",
+            "Anne"
+          ],
+          [
+            "Anne",
+            "Bob",
+            "Carly"
+          ],
+          [
+            "Carly",
+            "Bob"
+          ]
         ]
       },
       {
@@ -45,6 +90,13 @@
           "Apples",
           "Cheese",
           "Coffee"
+        ],
+        "Timeframe": [
+          "Today",
+          "Soon",
+          "Flexible",
+          "Soon",
+          "Today"
         ],
         "Type": [
           "Plant",
@@ -59,6 +111,85 @@
           5,
           2,
           1
+        ],
+        "BuyFor": [
+          [
+            "Anne",
+            "Bob"
+          ],
+          [
+            "Carly",
+            "Anne"
+          ],
+          [
+            "Anne",
+            "Bob",
+            "Carly"
+          ],
+          [
+            "Carly",
+            "Bob"
+          ],
+          "Carly"
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples",
+          "Cheese",
+          "Coffee",
+          "Pears"
+        ],
+        "Timeframe": [
+          "Today",
+          "Soon",
+          "Flexible",
+          "Soon",
+          "Today",
+          "Flexible"
+        ],
+        "Type": [
+          "Plant",
+          "Processed",
+          "Fruit",
+          "Processed",
+          "Plant",
+          "Fruit"
+        ],
+        "Quantity": [
+          7,
+          2,
+          5,
+          2,
+          1,
+          1
+        ],
+        "BuyFor": [
+          [
+            "Anne",
+            "Bob"
+          ],
+          [
+            "Carly",
+            "Anne"
+          ],
+          [
+            "Anne",
+            "Bob",
+            "Carly"
+          ],
+          [
+            "Carly",
+            "Bob"
+          ],
+          "Carly",
+          [
+            "Anne",
+            "Bob",
+            "Carly"
+          ]
         ]
       }
     ]

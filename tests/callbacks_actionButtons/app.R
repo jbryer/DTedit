@@ -1,1 +1,1 @@
-DTedit::testDTedit("callback")
+DTedit::dtedit_test("callback")

@@ -1,1 +1,1 @@
-DTedit::testDTedit("reactive")
+DTedit::dtedit_test("reactive")

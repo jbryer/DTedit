@@ -1,1 +1,1 @@
-DTedit::testDTedit("error_test")
+DTedit::dtedit_test("error_test")

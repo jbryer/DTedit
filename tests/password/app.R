@@ -1,1 +1,1 @@
-DTedit::testDTedit("password")
+DTedit::dtedit_test("password")
