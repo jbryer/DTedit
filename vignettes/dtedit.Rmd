@@ -228,9 +228,17 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
-More sophisticated **callbacks** can take the opportunity to store changed data in a persistent database. This is demonstrated in `dtedit_demo()`. The source code for the demonstration can be seen with `dtedit_demo(options = list(display.mode = "showcase"))`, in the `app.R` tab.
+More sophisticated **callbacks** can take the opportunity to store changed data in a persistent database. This is demonstrated in `dtedit_demo()`. The source code for the demonstration can be seen with 
 
-The modular `dteditmod` version of the **callbacks** demonstration, with multiple callbacks for multiple datatables, can be seen with `dtedit_mod_demo(options = list(display.mode = "showcase"))`, in the `app_mod.R` tab.
+* `dtedit_demo(options = list(display.mode = "showcase"))`
+
+in the `app.R` tab.
+
+The modular `dteditmod` version of the **callbacks** demonstration, with multiple callbacks for multiple datatables, can be seen with
+
+* `dtedit_mod_demo(options = list(display.mode = "showcase"))`
+
+in the `app_mod.R` tab.
 
 ## Reactive `thedata` dataframe
 
@@ -297,7 +305,11 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
-Another example of reactive dataframes can be seen, with source code, with `dtedit_reactive_demo(options = list(display.mode = "showcase"))`. The code is in the `app.R` tab. A modular version, using `dteditmod`, can  be seen with `example(dteditmodUI)`.
+Another example of reactive dataframes can be seen, with source code, with
+
+* `dtedit_reactive_demo(options = list(display.mode = "showcase"))`
+
+the code is in the `app.R` tab. A modular version, using `dteditmod`, can  be seen with `example(dteditmodUI)`.
 
 ## View and Edit columns
 
@@ -429,9 +441,17 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
-`selectInputReactive` is demonstrated in `dtedit_selectInputReactive_demo(options = list(display.mode = "showcase"))`, with the source code in the `app.R` tab. In this demonstration, **names.Types** (user types) and **names.Likes** (potential user Likes) are reactive variables which are used to determine the choices to `selectInputReactive` and `selectInputMultipleReactive` in the **names** DataTable. **names.Types** and **names.Likes** are themselves altered by changes in two other `DTedit` datatables.
+`selectInputReactive` is demonstrated with 
 
-The same demonstration is shown for modular `dteditmod` in `dteditmod_demo(options = list(display.mode = "showcase"))`, with source code in the `app_mod.R` tab. The interacting datatables are in the `Emails` tab.
+* `dtedit_selectInputReactive_demo(options = list(display.mode = "showcase"))`
+
+with the source code in the `app.R` tab. In this demonstration, **names.Types** (user types) and **names.Likes** (potential user Likes) are reactive variables which are used to determine the choices to `selectInputReactive` and `selectInputMultipleReactive` in the **names** DataTable. **names.Types** and **names.Likes** are themselves altered by changes in two other `DTedit` datatables.
+
+The same demonstration is shown as part of the demonstration using modular `dteditmod` 
+
+* `dteditmod_demo(options = list(display.mode = "showcase"))`
+
+with source code in the `app_mod.R` tab. The interacting datatables are in the `Emails` tab.
 
 ## Action buttons
 
@@ -481,7 +501,11 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
-A demonstration of action buttons (two columns in the same datatable) can be seen, with source code, with `dteditmod_fileInput_demo(options = list(display.mode = "showcase"))`. The code is in the `app.R` tab. This demonstration uses the modular `dteditmod`. It also demonstrates use of binary blob data-types, use of `view.cols` and `edit.cols` and the (implicit) use of `fileInput` to store pictures and spreadsheets in the dataframe.
+A demonstration of action buttons (two columns in the same datatable) can be seen, with source code, with
+
+* `dteditmod_fileInput_demo(options = list(display.mode = "showcase"))`
+
+The code is in the `app.R` tab. This demonstration uses the modular `dteditmod`. It also demonstrates use of binary blob data-types, use of `view.cols` and `edit.cols` and the (implicit) use of `fileInput` to store pictures and spreadsheets in the dataframe.
 
 # Appendix - Help files with full option descriptions {#appendix}
 
