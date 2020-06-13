@@ -233,4 +233,176 @@ testDTedit <- function(appname = "simple") {
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return(shinyApp(ui = ui, server = server))
   }
+  
+  if (appname == "error_test") {
+    server <- function(input, output) {
+      
+      Grocery_List <- dtedit(
+        input, output,
+        name = 'Grocery_List',
+        thedata = data.frame(
+          Buy = c('Tea', 'Biscuits', 'Apples'),
+          Quantity = as.integer(c(7, 2, 5)),
+          stringsAsFactors = FALSE
+        )
+      )
+      
+      error_list <- list()
+      error_message <- function(msg) {
+        error_list[[length(error_list) + 1]] <<- as.character(msg)
+      }
+      
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "No_columns",
+          thedata = data.frame()
+        ),
+        error = function(e) error_message(e)
+      )
+      
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "Edit_label_disparity",
+          thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = c(7, 2, 5),
+            stringsAsFactors = FALSE
+          ),
+          edit.cols = c("Buy"),
+          edit.label.cols = c("Item", "Number")
+        ),
+        error = function(e) error_message(e)
+      )
+      
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "View_col_notThere",
+          thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = c(7, 2, 5),
+            stringsAsFactors = FALSE
+          ),
+          view.cols = c("Buy", "Sell")
+        ),
+        error = function(e) error_message(e)
+      )
+      
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "Edit_col_notThere",
+          thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = c(7, 2, 5),
+            stringsAsFactors = FALSE
+          ),
+          edit.cols = c("Buy", "Shop")
+        ),
+        error = function(e) error_message(e)
+      )
+      
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "Input_notEdit",
+          thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = as.integer(c(7, 2, 5)),
+            stringsAsFactors = FALSE
+          ),
+          edit.cols = c("Buy"),
+          input.types = list(Buy = "textInput", Quantity = "numericInput")
+        ),
+        error = function(e) error_message(e)
+      )
+      
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "Input_notValidType",
+          thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = as.integer(c(7, 2, 5)),
+            stringsAsFactors = FALSE
+          ),
+          input.types = list(Buy = "textInput", Quantity = "mySpecialNumeric")
+        ),
+        error = function(e) error_message(e)
+      )
+      
+      # following will generate warning when trying to add a new row
+      tryCatch(
+        w1 <- dtedit(
+          input, output,
+          name = "NoChoice_selectInput",
+          thedata = data.frame(
+            Buy = character(),
+            Quantity = integer(),
+            stringsAsFactors = FALSE
+          ),
+          input.types = list(Buy = "selectInput")
+        )
+      )
+      
+      tryCatch(
+        w2 <- dtedit(
+          input, output,
+          name = "NoChoice_selectInputReactive",
+          thedata = data.frame(
+            Buy = character(),
+            Quantity = integer(),
+            stringsAsFactors = FALSE
+          ),
+          input.types = list(Buy = "selectInputReactive")
+        )
+      )
+      
+      tryCatch(
+        w3 <- dtedit(
+          input, output,
+          name = "NoChoice_selectInputMultiple",
+          thedata = data.frame(
+            Buy = character(),
+            Quantity = integer(),
+            stringsAsFactors = FALSE
+          ),
+          input.types = list(Buy = "selectInputMultiple")
+        )
+      )
+      
+      tryCatch(
+        w4 <- dtedit(
+          input, output,
+          name = "NoChoice_selectInputMultipleReactive",
+          thedata = data.frame(
+            Buy = character(),
+            Quantity = integer(),
+            stringsAsFactors = FALSE
+          ),
+          input.types = list(Buy = "selectInputMultipleReactive")
+        )
+      )
+      
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Grocery_List$thedata(), {
+        data_list[[length(data_list) + 1]] <<- Grocery_List$thedata()
+      })
+      shiny::exportTestValues(data_list = {data_list}, error_list = {error_list})
+    }
+    
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
+      shiny::uiOutput('Grocery_List'),
+      shiny::uiOutput('NoChoice_selectInput'),
+      shiny::uiOutput('NoChoice_selectInputReactive'),
+      shiny::uiOutput('NoChoice_selectInputMultiple'),
+      shiny::uiOutput('NoChoice_selectInputMultipleReactive')
+    )
+    
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return(shiny::shinyApp(ui = ui, server = server))
+  }
 }  
