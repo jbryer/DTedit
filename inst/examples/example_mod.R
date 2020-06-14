@@ -3,29 +3,29 @@
 #
 # unfortunately, this application cannot be
 # tried with 'example("dteditmod")', but you can copy
-# the lines below into an '.R' file, or copy and paste to
-# execute in 'interactive' console mode.
-\donttest{
-  library(shiny)
-  library(DTedit)
+# and paste to execute in 'interactive' console mode,
+# or copy the lines into an '.R' file and choose 
+# 'Run App' from RStudio.
+library(shiny)
+library(DTedit)
+
+server <- function(input, output, session) {
   
-  server <- function(input, output) {
-    
-    Grocery_List <- callModule(
-      dteditmod,
-      'Grocery_List',
-      thedata = data.frame(
-        Buy = c('Tea', 'Biscuits', 'Apples'),
-        Quantity = c(7, 2, 5),
-        stringsAsFactors = FALSE
-      )
+  Grocery_List <- callModule(
+    dteditmod,
+    id = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
     )
-  }
-  
-  ui <- fluidPage(
-    h3('Grocery List'),
-    dteditmodUI('Grocery_List')
   )
-  
-  shinyApp(ui = ui, server = server)
 }
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  dteditmodUI('Grocery_List')
+)
+
+if (interactive() || isTRUE(getOption("shiny.testmode")))
+  shinyApp(ui = ui, server = server)

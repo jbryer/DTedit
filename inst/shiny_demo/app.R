@@ -5,7 +5,9 @@ library(DTedit)
 ##### Load books data.frame as a SQLite database
 conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
 
-if(!'books' %in% dbListTables(conn)) {
+if(!'books' %in% dbListTables(conn) || isTRUE(getOption("shiny.testmode"))) {
+  # the sqlite file doesn't have the right data
+  # OR we are running in test mode (test mode -> reset the data)
   books <- read.csv('books.csv', stringsAsFactors = FALSE)
   books$Authors <- strsplit(books$Authors, ';')
   books$Authors <- lapply(books$Authors, trimws) # Strip white space
@@ -61,9 +63,10 @@ books.delete.callback <- function(data, row) {
 }
 
 ##### Create the Shiny server
-server <- function(input, output) {
+server <- function(input, output, session) {
   books <- getBooks()
-  dtedit(input, output,
+  booksdt <- dtedit(
+    input, output,
     name = 'books',
     thedata = books,
     edit.cols = c('Title', 'Authors', 'Date', 'Publisher'),
@@ -73,13 +76,24 @@ server <- function(input, output) {
     view.cols = names(books)[c(5,1,3)],
     callback.update = books.update.callback,
     callback.insert = books.insert.callback,
-    callback.delete = books.delete.callback)
+    callback.delete = books.delete.callback
+  )
   
   names <- data.frame(Name=character(), Email=character(), Date=numeric(),
     Type = factor(levels=c('Admin', 'User')),
     stringsAsFactors=FALSE)
   names$Date <- as.Date(names$Date, origin='1970-01-01')
   namesdt <- dtedit(input, output, name = 'names', names)
+  
+  data_list <- list() # exported list for shinytest
+  shiny::observeEvent(booksdt$thedata(), {
+    data_list[[length(data_list) + 1]] <<- booksdt$thedata()
+  })
+  shiny::exportTestValues(data_list = {data_list})
+  
+  cancel.onsessionEnded <- session$onSessionEnded(function() {
+    DBI::dbDisconnect(conn)
+  })
 }
 
 ##### Create the shiny UI

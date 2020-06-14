@@ -10,4 +10,6 @@
 #'             actionButton showModal observeEvent p column br removeModal renderUI runApp
 #'             isolate is.reactive outputOptions reactive NS tagList uiOutput
 #' @importFrom DT dataTableOutput renderDataTable dataTableProxy replaceData
+#' @importFrom blob blob as.blob
+#' @importFrom methods as
 NA

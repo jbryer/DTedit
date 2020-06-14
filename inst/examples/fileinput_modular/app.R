@@ -10,16 +10,21 @@ server <- function(input, output) {
   
   my.actionButton.callback <- function(data, row, buttonID) {
     if (substr(buttonID, 1, nchar("picture")) == "picture") {
+      # the 'action' button identifier (ID) prefix shows this
+      # this is from the 'Picture' column
       if (length(unlist(data[row, "Picture"])) > 0) {
-        outfile <- tempfile(fileext = ".png")
+        # not a empty entry!
+        outfile <- tempfile(fileext = ".jpg")
         # create temporary filename
+        # and write the binary blob to the temporary file
         zz <- file(outfile, "wb") # create temporary file
         writeBin(object = unlist(data[row, "Picture"]), con = zz)
         close(zz)
         
+        # read the picture from the temporary file
         picture(base64enc::dataURI(file = outfile))
         
-        # cleanup
+        # cleanup (remove the temporary file)
         file.remove(outfile)
       } else {
         picture(NULL)
@@ -55,20 +60,25 @@ server <- function(input, output) {
       stringsAsFactors = FALSE
     ),
     view.cols = c("Buy", "Quantity"),
+    # note that the 'Picture' and 'Spreadsheet' columns are hidden
     edit.cols = c("Buy", "Quantity", "Picture", "Spreadsheet"),
     edit.label.cols = c(
       "Item to buy", "Quantity",
-      "Picture (.png)", "Spreadsheet (.csv)"
+      "Picture (.jpg)", "Spreadsheet (.csv)"
     ),
-    input.choices = list(Picture = ".png", Spreadsheet = ".csv"),
+    input.choices = list(Picture = ".jpg", Spreadsheet = ".csv"),
     # unfortunately, RStudio's 'browser' doesn't actually respect
     #  file-name/type restrictions. A 'real' browser does respect
     #  the restrictions.
     action.button = list(
       MyActionButton = list(
         columnLabel = "Picture",
+        # the column label happens to be the same as a
+        # data column label, but it doesn't need to be
         buttonLabel = "Show Picture",
         buttonPrefix = "picture",
+        # buttonPrefix will be in the buttonID passed
+        # to callback.actionButton
         afterColumn = "Quantity"),
       MyOtherActionButton = list(
         columnLabel = "Spreadsheet",
@@ -89,11 +99,24 @@ server <- function(input, output) {
   output$showSpreadsheet <- DT::renderDataTable({
     spreadsheet()
   })
+  
+  #### following code for shinytest, not essential for application function ####
+  data_list <- list() # exported list for shinytest
+  shiny::observeEvent(Grocery_List$thedata(), {
+    data_list[[length(data_list) + 1]] <<- Grocery_List$thedata()
+  })
+  shiny::exportTestValues(data_list = {data_list})
+  spreadsheet_list <- list() # exported list for shinytest
+  shiny::observeEvent(spreadsheet(), {
+    spreadsheet_list[[length(spreadsheet_list) + 1]] <<- spreadsheet()
+  })
+  shiny::exportTestValues(spreadsheet_list = {spreadsheet_list})
+  ##############################################################################
 }
 
 ui <- fluidPage(
   h3("Grocery List"),
-  "Pictures must be in PNG (.png) format, and spreadsheets must be",
+  "Pictures must be in JPEG (.jpg) format. Spreadsheets must be",
   "in comma-separated-value (.csv) format!",
   br(), br(), br(),
   dteditmodUI("Grocery_List"),
@@ -101,4 +124,5 @@ ui <- fluidPage(
   DT::dataTableOutput("showSpreadsheet")
 )
 
-shinyApp(ui = ui, server = server)
+if (interactive() || isTRUE(getOption("shiny.testmode")))
+  return(shinyApp(ui = ui, server = server))

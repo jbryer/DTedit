@@ -4,11 +4,22 @@
 \alias{dteditmod_fileInput_demo}
 \title{Run a shiny app showing how the DTedit function works.}
 \usage{
-dteditmod_fileInput_demo()
+dteditmod_fileInput_demo(...)
+}
+\arguments{
+\item{...}{arguments pass to \code{runApp}
+
+For example, can launch in showcase mode:
+
+\code{DTedit::dteditmod_fileInput_demo(display.mode = "showcase")}
+
+Note that 'showcase' mode shows all
+the .R files in the 'shiny_demo' directory, not
+just the .R file used for this demonstration!}
 }
 \description{
-modularized version
+Demonstrates file input, blobs and action buttons
 }
 \details{
-file input, blobs and action buttons
+(modularized, uses dteditmod/dteditmodUI)
 }
