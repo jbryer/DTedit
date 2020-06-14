@@ -16,7 +16,7 @@ app$setInputs(Password_List_update = "click", wait_ = FALSE, values_ = FALSE)
 app$setInputs(Password_List_update = "click")
 
 Sys.sleep(2)
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 
 # wait for the process to close gracefully
 # this allows covr to write out the coverage results
