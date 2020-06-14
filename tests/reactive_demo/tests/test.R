@@ -8,7 +8,7 @@ app$setInputs(data_scramble = "click")
 app$setInputs(data_scramble = "click")
 app$setInputs(data_scramble = "click")
 app$setInputs(data_scramble = "click")
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 
 # wait for the process to close gracefully
 # this allows covr to write out the coverage results

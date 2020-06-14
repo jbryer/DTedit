@@ -30,7 +30,7 @@ app$setInputs(Grocery_List_add_Buy = "Pears",
 app$setInputs(Grocery_List_insert = "click")
 
 Sys.sleep(1.5)
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 
 # wait for the process to close gracefully
 # this allows covr to write out the coverage results

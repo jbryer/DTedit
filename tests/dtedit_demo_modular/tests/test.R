@@ -11,7 +11,7 @@ app$setInputs(`books-editdt_add_Authors` = c("Chambers, J.M.", "Hastie, T.J.", "
 app$setInputs(`books-editdt_insert` = "click")
 
 Sys.sleep(2)
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 
 # wait for the process to close gracefully
 # this allows covr to write out the coverage results

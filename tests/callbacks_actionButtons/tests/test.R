@@ -1,7 +1,7 @@
 app <- ShinyDriver$new("../")
 app$snapshotInit("test")
 
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 app$setInputs(Grocery_List_add = "click")
 app$setInputs(Grocery_List_add_Buy = "Bananas",
               Grocery_List_add_Quantity = 12) # should dis-allow
@@ -20,7 +20,7 @@ app$setInputs(Grocery_Listdt_rows_last_clicked = 2, allowInputNoBinding_ = TRUE)
 app$setInputs(Grocery_List_remove = "click")
 app$setInputs(Grocery_List_delete = "click")
 # should dis-allow, as current logic only allows delete if quantity = 0
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 app$executeScript("$('.modal').modal('hide');") # close modal
 app$setInputs(Grocery_Listdt_rows_selected = 3, allowInputNoBinding_ = TRUE)
 app$setInputs(Grocery_Listdt_rows_last_clicked = 3, allowInputNoBinding_ = TRUE)
@@ -37,7 +37,7 @@ app$setInputs(Grocery_Listdt_rows_last_clicked = 3,
 app$setInputs(Grocery_List_remove = "click")
 app$setInputs(Grocery_List_delete = "click")
 Sys.sleep(2)
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 app$setInputs(Grocery_Listdt_rows_selected = 4, allowInputNoBinding_ = TRUE)
 app$setInputs(Grocery_Listdt_rows_last_clicked = 4, allowInputNoBinding_ = TRUE)
 app$setInputs(Grocery_List_edit = "click")
@@ -50,7 +50,7 @@ app$executeScript('document.getElementById("addOne_1").click()')
 app$executeScript('document.getElementById("subtractOne_2").click()')
 # directly 'clicks' on the action buttons with Javascript
 Sys.sleep(2)
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 
 # wait for the process to close gracefully
 # this allows covr to write out the coverage results

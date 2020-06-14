@@ -2,7 +2,7 @@ app <- ShinyDriver$new("..")
 
 app$snapshotInit("test")
 
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 
 app$setInputs(Grocery_Listdt_rows_selected = 1, allowInputNoBinding_ = TRUE)
 app$setInputs(Grocery_Listdt_rows_last_clicked = 1, allowInputNoBinding_ = TRUE)
@@ -31,7 +31,7 @@ Sys.sleep(2)
 app$setInputs(Grocery_List_insert = "click")
 Sys.sleep(2)
 
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 
 # wait for the process to close gracefully
 # this allows covr to write out the coverage results
