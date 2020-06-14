@@ -18,8 +18,8 @@ the .R files in the 'shiny_demo' directory, not
 just the .R file used for this demonstration!}
 }
 \description{
-modularized version
+Demonstrates file input, blobs and action buttons
 }
 \details{
-file input, blobs and action buttons
+(modularized, uses dteditmod/dteditmodUI)
 }

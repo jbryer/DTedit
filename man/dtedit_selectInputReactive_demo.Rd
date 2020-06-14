@@ -18,5 +18,6 @@ the .R files in the 'shiny_demo' directory, not
 just the .R file used for this demonstration!}
 }
 \description{
-selectInputReactive
+demonstrates interaction between datatables using
+ selectInputReactive and selectInputMultipleReactive
 }

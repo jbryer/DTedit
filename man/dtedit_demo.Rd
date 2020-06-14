@@ -18,5 +18,7 @@ the .R files in the 'shiny_demo' directory, not
 just the .R file used for this demonstration!}
 }
 \description{
-Run a shiny app showing how the DTedit function works.
+Demonstrates adding/editing/deleting data rows,
+ callbacks, interacting with a database,
+ selectInput and selectInputMultiple.
 }

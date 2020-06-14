@@ -18,8 +18,12 @@ the .R files in the 'shiny_demo' directory, not
 just the .R file used for this demonstration!}
 }
 \description{
-modularized version
+modularized version of dtedit_demo and dtedit_selectInputReactive_demo.
+ Uses dteditmod/dteditmodUI version of dtedit.
 }
 \details{
-selectInputReactive
+Demonstrates adding/editing/deleting data rows, callbacks,
+ interaction with database.
+ 
+Demonstrates interaction between datatables using reactives
 }

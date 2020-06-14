@@ -1,5 +1,9 @@
 #' Run a shiny app showing how the DTedit function works.
 #' 
+#' Demonstrates adding/editing/deleting data rows,
+#'  callbacks, interacting with a database,
+#'  selectInput and selectInputMultiple.
+#'  
 #' @param ... arguments pass to \code{runApp}
 #'  
 #'  For example, can launch in showcase mode:
@@ -40,7 +44,8 @@ dtedit_reactive_demo <- function(...) {
 
 #' Run a shiny app showing how the DTedit function works.
 #'
-#' selectInputReactive
+#' demonstrates interaction between datatables using
+#'  selectInputReactive and selectInputMultipleReactive
 #'
 #' @param ... arguments pass to \code{runApp}
 #'  
@@ -61,9 +66,13 @@ dtedit_selectInputReactive_demo <- function(...) {
 
 #' Run a shiny app showing how the DTedit function works.
 #'
-#' modularized version
+#' modularized version of dtedit_demo and dtedit_selectInputReactive_demo.
+#'  Uses dteditmod/dteditmodUI version of dtedit.
 #' 
-#' selectInputReactive
+#' Demonstrates adding/editing/deleting data rows, callbacks,
+#'  interaction with database.
+#'  
+#' Demonstrates interaction between datatables using reactives
 #'
 #' @param ... arguments pass to \code{runApp}
 #'  
@@ -84,9 +93,9 @@ dteditmod_demo <- function(...) {
 
 #' Run a shiny app showing how the DTedit function works.
 #'
-#' modularized version
-#' 
-#' file input, blobs and action buttons
+#' Demonstrates file input, blobs and action buttons
+#'
+#' (modularized, uses dteditmod/dteditmodUI)
 #'
 #' @param ... arguments pass to \code{runApp}
 #'  

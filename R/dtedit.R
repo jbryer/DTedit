@@ -1040,7 +1040,7 @@ dteditmod <- function(input, output, session,
 
 #' Create a DataTable with Add, Edit and Delete buttons.
 #'
-#' dteditUI - user-interface function for module use
+#' dteditmodUI - user-interface function for module use
 #'
 #' Use in conjunction with \code{callModule} and \code{dtedit} to create
 #' editable datatables. \code{dteditUI} is used in the 'user interface' component
@@ -1051,9 +1051,8 @@ dteditmod <- function(input, output, session,
 #' @seealso \code{\link{dteditmod}} : the companion server-component function.\cr
 # !
 #'  \itemize{
-#'  \item \code{example("dteditmod")} for a simple example.
-#'  \item \code{example("dteditmodUI")} for a simple example with reactive dataframe
-#'  \item \code{dteditmod_demo()} for a more complex example. Includes database interaction
+#'  \item \code{example("dteditmodUI")} a simple example with a reactive dataframe
+#'  \item \code{dteditmod_demo()} a more complex example. Includes database interaction
 #'  and interactions between the data of multiple datatables.
 #'  }
 #' @example inst/examples/reactivedataframe_modular/app.R
