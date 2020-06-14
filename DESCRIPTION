@@ -1,6 +1,6 @@
 Package: DTedit
 Title: Editable DataTables for Shiny Apps
-Version: 2.0.0
+Version: 2.0.1
 Authors@R: c(person(given = "Jason", family = "Bryer", email = "jason@bryer.org", role = c("aut", "cre")),
              person(given = "David", family = "Fong", email = "vkelim@bigpond.com", role = c("aut")),
              person(given = "Klodian", family = "Dhana", role = c("ctb")))

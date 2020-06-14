@@ -1,6 +1,6 @@
 <!-- badges: start -->
-[![Travis build status](https://travis-ci.org/DavidPatShuiFong/DTedit.svg?branch=develop)](https://travis-ci.org/DavidPatShuiFong/DTedit?branch=develop)
-[![Codecov test coverage](https://codecov.io/gh/DavidPatShuiFong/DTedit/branch/develop/graph/badge.svg)](https://codecov.io/gh/DavidPatShuiFong/DTedit?branch=develop)
+[![Travis build status](https://travis-ci.org/DavidPatShuiFong/DTedit.svg?branch=develop)](https://travis-ci.org/DavidPatShuiFong/DTedit?branch=master)
+[![Codecov test coverage](https://codecov.io/gh/DavidPatShuiFong/DTedit/branch/develop/graph/badge.svg)](https://codecov.io/gh/DavidPatShuiFong/DTedit?branch=master)
 <!-- badges: end -->
 
 ## Editable DataTables for shiny apps.
