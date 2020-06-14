@@ -1,13 +1,13 @@
 app <- ShinyDriver$new("../")
 app$snapshotInit("test")
 
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = TRUE))
 app$setInputs(`Grocery_List-editdtdt_rows_selected` = 1, allowInputNoBinding_ = TRUE)
 app$setInputs(`Grocery_List-editdtdt_rows_last_clicked` = 1, allowInputNoBinding_ = TRUE)
 app$setInputs(`Grocery_List-editdt_edit` = "click")
 app$uploadFile(`Grocery_List-editdt_edit_Picture` = "bee_agapanthus.jpg")
 # <-- This should be the path to the file, relative to the app's tests/ directory
-app$uploadFile(`Grocery_List-editdt_edit_Spreadsheet` = "DiabetesSIP_Report.csv") 
+app$uploadFile(`Grocery_List-editdt_edit_Spreadsheet` = "DiabetesSIP_Report.csv")
 app$setInputs(`Grocery_List-editdt_update` = "click")
 app$setInputs(`Grocery_List-editdt_add` = "click")
 app$setInputs(`Grocery_List-editdt_add_Buy` = "Locquats",
@@ -18,11 +18,11 @@ app$setInputs(`Grocery_List-editdt_insert` = "click")
 
 app$executeScript('document.getElementById("picture_1").click()')
 app$executeScript('document.getElementById("spreadsheet_1").click()')
-app$snapshot(items = list(export = TRUE), screenshot = TRUE)
+app$snapshot(items = list(export = "spreadsheet_list"))
 
 app$executeScript('document.getElementById("picture_4").click()')
 app$executeScript('document.getElementById("spreadsheet_4").click()')
-app$snapshot(items = list(export = "spreadsheet_list"), screenshot = TRUE)
+app$snapshot(items = list(export = "spreadsheet_list"))
 # on the third snapshot, just check spreadsheet_list
 # because thedata is a large JSON (with two JPGs, total 1.2 MB)
 
