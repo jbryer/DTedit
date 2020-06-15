@@ -82,7 +82,7 @@ Full option/argument descriptions can be found in [the appendix](#appendix).
 
 For the 'standard' (non-module) version, the `dtedit` object is defined within the `server` function. The `name` defined in the `dtedit` function (in this case **Grocery_List**) is referenced by a `uiOutput` object in the `ui` (user interface) definition, as seen in the very simple example below.
 
-```{r, eval = FALSE}
+```{r, message = FALSE}
 # minimal DTedit example 'dtedit'
 # you can try this example in interactive mode
 # with 'example("dtedit")'
@@ -453,11 +453,44 @@ The same demonstration is shown as part of the demonstration using modular `dted
 
 with source code in the `app_mod.R` tab. The interacting datatables are in the `Emails` tab.
 
+## Datatables options - buttons
+
+`dtedit` uses the [`DT`](https://rstudio.github.io/DT/) package to create datatables. [`DT`](https://rstudio.github.io/DT/) is based on [`datatables`](https://datatables.net/). `DT` has an `options` argument. `options` can be passed through to `DT` with `dtedit`'s `datatables.options` argument. Any argument that is not recognized by `dtedit` is passed through to `DT`.
+
+The following example adds [copy, CSV and PDF buttons](https://rstudio.github.io/DT/003-tabletools-buttons.html) to `dtedit`'s datatable by defining `datatable.options` and `extensions` (extensions is not a recognized argument of `dtedit`).
+
+```{r, message = FALSE}
+server <- function(input, output) {
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ),
+    extensions = 'Buttons',
+    datatable.options = list(
+      dom = 'Bfrtip',
+      buttons = c('copy', 'csv', 'pdf')
+    )
+  )
+}
+
+ui <- fluidPage(
+    h3('Grocery List'),
+    uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
 ## Action buttons
 
 An *action button* column can be created. When an *action button* is pushed, the function defined in `callback.actionButton` is called, allowing, for example, modification of the data in the datatable, as shown in the example below.
 
-```{r, eval = FALSE}
+```{r, message = FALSE}
 server <- function(input, output) {
 
   grocery.callback.actionButton <- function(data, row, buttonID) {
