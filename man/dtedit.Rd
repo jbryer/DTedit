@@ -38,6 +38,9 @@ dteditmod(
   label.edit = "Edit",
   label.add = "New",
   label.copy = "Copy",
+  label.save = "Save",
+  label.cancel = "Cancel",
+  text.delete.modal = "Are you sure you want to delete this record?",
   show.delete = TRUE,
   show.update = TRUE,
   show.insert = TRUE,
@@ -151,6 +154,12 @@ The limit can be modified by using shiny.maxRequestSize option.}
 \item{label.add}{the label of the add button.}
 
 \item{label.copy}{the label of the copy button.}
+
+\item{label.save}{the label of the save button.}
+
+\item{label.cancel}{the label of the cancel button.}
+
+\item{text.delete.modal}{the text shown in the delete modal dialog.}
 
 \item{show.delete}{whether to show/enable the delete button.}
 
