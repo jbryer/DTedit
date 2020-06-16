@@ -65,9 +65,7 @@ to the \code{session} argument of dteditmod.)}
 
 \item{thedata}{a data frame to view and edit. can be a reactive}
 
-\item{...}{\code{dtedit} passes options to \code{dteditmod},
-re-labelling \code{name} to \code{session}.
-Extra options not defined by \code{dteditmod} are passed to \code{DT::renderDataTable}.}
+\item{...}{arguments not recognized by DTedit are passed to \code{DT::renderDataTable}}
 
 \item{session}{Shiny session object (an environment) passed from the server.
 Alternatively, the 'name' (character) of the outputted editable datatable.}
@@ -83,38 +81,65 @@ and add dialogs. The length and order of \code{code.cols.labels} must
 correspond to \code{edit.cols}.}
 
 \item{input.types}{a character vector where the name corresponds to a column
-       in \code{edit.cols} and the value is the input type. Possible values
-       are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
-       \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput},
-       \code{textInput}, \code{textAreaInput}, \code{passwordInput} or \code{fileInput}.
+in \code{edit.cols} and the value is the input type. Possible values
+are:
+\itemize{
+\item \code{dateInput} - input changed by \code{date.width}
+\item \code{selectInput} - choices determined by \code{input.choices},
+or the levels of the data column
+variable (if the column variable is of class \code{factor}),
+or the already present values in the data column.
+\item \code{selectInputMultiple} - choices determined by
+\code{input.choices} or the already present values in the data
+column.
+\item \code{selectInputReactive} - choices determined by a reactive
+variable, as defined by \code{input.choices} and
+\code{input.choices.reactive}.
+\item \code{selectInputMultipleReactive} - choices determined by a
+reactive variable, as defined by \code{input.choices} and
+\code{input.choices.reactive}
+\item \code{numericInput} - input changed by \code{numeric.width}
+\item \code{textInput} - input changed by \code{text.width}
+\item \code{textAreaInput} - input changed by \code{textarea.width} and \code{textarea.height}
+\item \code{passwordInput}
+\item \code{fileInput} - type of acceptable file types is defined by
+\code{input.choices}. Maximum file length is modifed by
+\code{max.fileInputLength}
+}
 
-       One case where this parameter is desirable is when a text
-       area is required instead of a simple text input.}
+One case where this parameter is desirable is when a text
+area is required instead of a simple text input.}
 
 \item{input.choices}{a list of character vectors. The names of each element in the list must
-       correspond to a column name in the data. The value, a character vector, are the options
-       presented to the user for data entry, in the case of input type \code{selectInput}).
+correspond to a column name in the data. The value, a character vector, are the options
+presented to the user for data entry, in the case of input type \code{selectInput}).
 
-       In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive},
-       the value is the name of the reactive in 'input.choices.reactive'
+In the case of input type \code{selectInputReactive}
+or `selectInputMultipleReactive``, the value is the name
+of the reactive in 'input.choices.reactive'
 
-       In the case of input type \code{fileInput} this is the 'accept' argument,
-       which specifies the type of file which is acceptable. Can be a case insensitive
-       file extension (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
-       'application/pdf').}
+In the case of input type `fileInput`` this is the
+'accept' argument, which specifies the type of file which
+is acceptable. Can be a case insensitive file extension
+(e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
+'application/pdf').}
 
 \item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
 to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 The reactive itself is a character vector.}
 
 \item{action.buttons}{a named list of action button columns.
-Each column description is a list of \code{columnLabel}, \code{buttonLabel}, \code{buttonPrefix}, \code{afterColumn}.
-\code{columnLabel} label used for the column.
-\code{buttonLabel} label used for each button
-\code{buttonPrefix} used as the prefix for action button IDs.
-  The suffix will be a number from '1' to the number of rows.
-  Prefix and suffix will be separated with an underscore '_'.
-\code{afterColumn} if provided, the action button column is placed after this named column.}
+Each column description is a list of \code{columnLabel}, \code{buttonLabel},
+\code{buttonPrefix}, \code{afterColumn}.
+\itemize{
+\item \code{columnLabel} label used for the column.
+\item \code{buttonLabel} label used for each button
+\item \code{buttonPrefix} used as the prefix for action button IDs.
+The suffix will be a number from '1' to the number of rows.
+Prefix and suffix will be separated with an underscore '_'.
+\item \code{afterColumn} if provided, the action button column is
+placed after this named column.
+}}
 
 \item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}
 
@@ -183,14 +208,15 @@ feature. For developers, a message is printed using the warning function.}
 See \url{https://rstudio.github.io/DT/options.html} for more information.}
 }
 \value{
-Returns a list of reactive values.
-
-  \itemize{
-    \item \code{thedata()} the current state of DTedit's copy of the data.
-    \item \code{edit.count()} the number of edits done within DTedit
-    (does not include changes to DTedit's copy of the data secondary to
-     changes in \code{thedata}, if \code{thedata} is a reactive)
-  }
+Returns reactiveValues
+\itemize{
+\item \verb{$theData} - the current state of \code{DTedit}'s copy of the data
+\item \verb{$view.cols}
+\item \verb{$edit.cols}
+\item \verb{$edit.count} - number of edits to data done within \code{DTedit} (does not
+include changes to \code{DTedit}'s copy of the data secondary to changes
+of a reactive \code{thedata})
+}
 }
 \description{
 dtedit - editable DataTable
@@ -307,12 +333,12 @@ if (interactive() || isTRUE(getOption("shiny.testmode")))
  }
 
 \itemize{
- \item \code{\link{dteditmodUI}} : the companion user-interface function for \code{dteditmod}.\cr
- \item \code{example("dteditmodUI")} a simple module example with reactive dataframe
- \item \code{dteditmod_demo()} a more complex module example. Database interaction
-   and interactions between the data of multiple datatables.
- \item \code{dteditmod_fileInput_demo()} a modular example including binary file input and action buttons.
- }
+\item \code{\link{dteditmodUI}} : the companion user-interface function for \code{dteditmod}.\cr
+\item \code{example("dteditmodUI")} a simple module example with reactive dataframe
+\item \code{dteditmod_demo()} a more complex module example. Database interaction
+and interactions between the data of multiple datatables.
+\item \code{dteditmod_fileInput_demo()} a modular example including binary file input and action buttons.
+}
 
 Other Datatable Edit functions: 
 \code{\link{dteditmodUI}()}
