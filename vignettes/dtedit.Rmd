@@ -151,11 +151,11 @@ In this vignette, the 'standard' `dtedit` is mostly used. Some examples referenc
 `dtedit` returns a list. The list includes `$thedata`, which is a reactive and will change when `dtedit`'s copy of the dataframe changes.
 
 In the example below, the results are stored in a variable name **Grocery_List_Results**.
-Every time the internal copy of `thedata` changes, so does **Grocery_List_Results$thedata()**.
+Every time the internal copy of `thedata` changes, so does **Grocery_List_Results$thedata**.
 
-An `observeEvent` waits for changes in **Grocery_List_Results$thedata()**.
+An `observeEvent` waits for changes in **Grocery_List_Results$thedata**.
 
-The `observeEvent` then messages the contents of **Grocery_List_Results$thedata()** to the console.
+The `observeEvent` then messages the contents of **Grocery_List_Results$thedata** to the console.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -170,8 +170,8 @@ server <- function(input, output) {
     )
   )
 
-  observeEvent(Grocery_List_Results$thedata(), {
-    message(Grocery_List_Results$thedata())
+  observeEvent(Grocery_List_Results$thedata, {
+    message(Grocery_List_Results$thedata)
   })
 
 }
@@ -246,7 +246,7 @@ in the `app_mod.R` tab.
 
 In the call to `dtedit`, **mydata** is referred to in the `thedata` definition as **mydata**, *not* **mydata()**.
 
-Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in **Grocery_List_Results$thedata()**, which then changes **mydata**.
+Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in **Grocery_List_Results$thedata**, which then changes **mydata**. Note that **Grocery_List_Results$thedata** does *not* have trailing parentheses '()'.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -287,10 +287,10 @@ server <- function(input, output) {
     mydata(newdata)
   })
 
-  observeEvent(Grocery_List_Results$thedata(), {
+  observeEvent(Grocery_List_Results$thedata, {
     # the data has been added
     # copy the changes to our own copy
-    mydata(Grocery_List_Results$thedata())
+    mydata(Grocery_List_Results$thedata)
   })
 
 }

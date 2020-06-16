@@ -5,7 +5,17 @@ date: "13th June 2020"
 output: html_document
 ---
 
+# DTedit 2.0.2
+16th June 2020
+
+## Changes (breaking)
+
+* `dtedit`/`dteditmod` returns `reactiveValues`
+  + `$thedata`, `$view.cols`, `$edit.cols`, `$edit.count`
+  + compatible with `DTedit` version 1.0.0 but *not* compatible with versions 2.0.0/2.0.1
+
 # DTedit 2.0.1
+14th June 2020
 
 ## New features
 

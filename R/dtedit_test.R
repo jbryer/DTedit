@@ -3,9 +3,9 @@
 NULL
 
 #' test application
-#' 
+#'
 #' for testthat/codecov
-#' 
+#'
 #' @param appname choose test
 #'   simple
 #'   simple_modular
@@ -14,15 +14,15 @@ NULL
 #'   error_test
 #'   selectInputReactive
 #'   password
-#' @param ... extra options passed to shiny::shinyApp 
-#'  
+#' @param ... extra options passed to shiny::shinyApp
+#'
 #' @return a shiny app
 #' @export
 dtedit_test <- function(appname = "simple", ...) {
-  
+
   if (appname == "simple") {
     server <- function(input, output, session) {
-      
+
       Grocery_List <- dtedit(
         input, output,
         name = 'Grocery_List',
@@ -32,28 +32,28 @@ dtedit_test <- function(appname = "simple", ...) {
           stringsAsFactors = FALSE
         )
       )
-      
+
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
-      shiny::observeEvent(Grocery_List$thedata(), {
-        data_list[[length(data_list) + 1]] <<- Grocery_List$thedata()
+      shiny::observeEvent(Grocery_List$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
       })
       shiny::exportTestValues(data_list = {data_list})
       ######################################################
     }
-    
+
     ui <- shiny::fluidPage(
       shiny::h3('Grocery List'),
       shiny::uiOutput('Grocery_List')
     )
-    
+
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return (shiny::shinyApp(ui = ui, server = server, ...))
   }
-  
+
   if (appname == "simple_modular") {
     server <- function(input, output, session) {
-      
+
       Grocery_List <- shiny::callModule(
         dteditmod,
         id = 'Grocery_List',
@@ -63,30 +63,30 @@ dtedit_test <- function(appname = "simple", ...) {
           stringsAsFactors = FALSE
         )
       )
-      
+
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
       edit_count <- list()
-      shiny::observeEvent(Grocery_List$thedata(), {
-        data_list[[length(data_list) + 1]] <<- Grocery_List$thedata()
-        edit_count[[length(edit_count) + 1]] <<- Grocery_List$edit.count()
+      shiny::observeEvent(Grocery_List$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
+        edit_count[[length(edit_count) + 1]] <<- Grocery_List$edit.count
       })
       shiny::exportTestValues(data_list = {data_list}, edit_count = {edit_count})
       ######################################################
     }
-    
+
     ui <- shiny::fluidPage(
       shiny::h3('Grocery List'),
       dteditmodUI('Grocery_List')
     )
-    
+
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return(shiny::shinyApp(ui = ui, server = server, ...))
   }
 
   if (appname == "reactive") {
     server <- function(input, output, session) {
-      
+
       mydata <- shiny::reactiveVal({
         data.frame(
           Buy = c('Tea', 'Biscuits', 'Apples'),
@@ -94,13 +94,13 @@ dtedit_test <- function(appname = "simple", ...) {
           stringsAsFactors = FALSE
         )
       })
-      
+
       Grocery_List_Results <- dtedit(
         input, output,
         name = 'Grocery_List',
         thedata = mydata
       )
-      
+
       observeEvent(input$more, {
         # if the 'Buy More!' button is pressed
         newdata <- data.frame(
@@ -111,7 +111,7 @@ dtedit_test <- function(appname = "simple", ...) {
         )
         mydata(newdata)
       })
-      
+
       observeEvent(input$less, {
         # if the 'Too Much!' button is pressed
         newdata <- data.frame(
@@ -122,75 +122,75 @@ dtedit_test <- function(appname = "simple", ...) {
         )
         mydata(newdata)
       })
-      
+
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
       edit_count <- list()
-      observeEvent(Grocery_List_Results$thedata(), {
+      observeEvent(Grocery_List_Results$thedata, {
         # the data has been added
         # copy the changes to our own copy
-        mydata(Grocery_List_Results$thedata())
-        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata()
-        edit_count[[length(edit_count) + 1]] <<- Grocery_List_Results$edit.count()
+        mydata(Grocery_List_Results$thedata)
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
+        edit_count[[length(edit_count) + 1]] <<- Grocery_List_Results$edit.count
       })
       shiny::exportTestValues(data_list = {data_list}, edit_count = {edit_count})
       #### shinytest code for testing purposes only ########
     }
-    
+
     ui <- shiny::fluidPage(
       shiny::h3('Grocery List'),
       uiOutput('Grocery_List'),
       actionButton(inputId = "more", label = "Buy More!"),
       actionButton(inputId = "less", label = "Too Much!")
     )
-    
+
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return(shiny::shinyApp(ui = ui, server = server, ...))
   }
-  
+
   if (appname == "callback") {
     server <- function(input, output, session) {
-      
+
       grocery.update.callback <- function(data, olddata, row) {
         # 'data' contains the dataframe *after* the row has been updated
         # 'row' is the row number where data has been updated
         # 'olddata' is the previous version of the data
-        
+
         if (data[row, "Quantity"] < 0) {
           stop("Can't buy less than zero (0)!")
         }
-        
+
         return(data)
       }
-      
+
       grocery.insert.callback <- function(data, row) {
         # 'data' contains the dataframe *after* the row has been inserted
-        
+
         if (data[row, "Quantity"] > 10) {
           stop("Can't buy more than ten (10)!")
         }
-        
+
         return(data)
       }
-      
+
       grocery.delete.callback <- function(data, row) {
         # 'data' contains the dataframe *after* the row has been inserted
-        
+
         if (data[row, "Quantity"] != 0) {
           stop("Can only delete if quantity equal to zero!")
         }
-        
+
         data <- data[-row, ]
-        
+
         return(data)
       }
-      
+
       grocery.callback.actionButton <- function(data, row, buttonID) {
         # data - the current copy of 'thedata'
         # row - the row number of the clicked button
         # buttonID - the buttonID of the clicked button
         print(paste("You chose", buttonID, ", row: ", row))
-        
+
         if (substr(buttonID, 1, nchar("addOne")) == "addOne") {
           # in this demonstration, all the buttons are 'random'
           # but it is possible to define more than one column of buttons
@@ -203,7 +203,7 @@ dtedit_test <- function(appname = "simple", ...) {
         }
         return(data)
       }
-      
+
       Grocery_List_Results <- dtedit(
         input, output,
         name = 'Grocery_List',
@@ -229,30 +229,30 @@ dtedit_test <- function(appname = "simple", ...) {
         callback.insert = grocery.insert.callback,
         callback.actionButton = grocery.callback.actionButton
       )
-      
+
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
       edit_count <- list()
-      observeEvent(Grocery_List_Results$thedata(), {
-        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata()
-        edit_count[[length(edit_count) + 1]] <<- Grocery_List_Results$edit.count()
+      observeEvent(Grocery_List_Results$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
+        edit_count[[length(edit_count) + 1]] <<- Grocery_List_Results$edit.count
       })
       shiny::exportTestValues(data_list = {data_list}, edit_count = {edit_count})
       #### shinytest code for testing purposes only ########
     }
-    
+
     ui <- shiny::fluidPage(
       shiny::h3('Grocery List'),
       shiny::uiOutput('Grocery_List')
     )
-    
+
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return(shiny::shinyApp(ui = ui, server = server, ...))
   }
-  
+
   if (appname == "error_test") {
     server <- function(input, output, session) {
-      
+
       Grocery_List <- dtedit(
         input, output,
         name = 'Grocery_List',
@@ -262,12 +262,12 @@ dtedit_test <- function(appname = "simple", ...) {
           stringsAsFactors = FALSE
         )
       )
-      
+
       error_list <- list()
       error_message <- function(msg) {
         error_list[[length(error_list) + 1]] <<- as.character(msg)
       }
-      
+
       tryCatch(
         dtedit(
           input, output,
@@ -276,7 +276,7 @@ dtedit_test <- function(appname = "simple", ...) {
         ),
         error = function(e) error_message(e)
       )
-      
+
       tryCatch(
         dtedit(
           input, output,
@@ -291,7 +291,7 @@ dtedit_test <- function(appname = "simple", ...) {
         ),
         error = function(e) error_message(e)
       )
-      
+
       tryCatch(
         dtedit(
           input, output,
@@ -305,7 +305,7 @@ dtedit_test <- function(appname = "simple", ...) {
         ),
         error = function(e) error_message(e)
       )
-      
+
       tryCatch(
         dtedit(
           input, output,
@@ -319,7 +319,7 @@ dtedit_test <- function(appname = "simple", ...) {
         ),
         error = function(e) error_message(e)
       )
-      
+
       tryCatch(
         dtedit(
           input, output,
@@ -334,7 +334,7 @@ dtedit_test <- function(appname = "simple", ...) {
         ),
         error = function(e) error_message(e)
       )
-      
+
       tryCatch(
         dtedit(
           input, output,
@@ -348,7 +348,7 @@ dtedit_test <- function(appname = "simple", ...) {
         ),
         error = function(e) error_message(e)
       )
-      
+
       # following will generate warning when trying to add a new row
       tryCatch(
         w1 <- dtedit(
@@ -362,7 +362,7 @@ dtedit_test <- function(appname = "simple", ...) {
           input.types = list(Buy = "selectInput")
         )
       )
-      
+
       tryCatch(
         w2 <- dtedit(
           input, output,
@@ -375,7 +375,7 @@ dtedit_test <- function(appname = "simple", ...) {
           input.types = list(Buy = "selectInputReactive")
         )
       )
-      
+
       tryCatch(
         w3 <- dtedit(
           input, output,
@@ -388,7 +388,7 @@ dtedit_test <- function(appname = "simple", ...) {
           input.types = list(Buy = "selectInputMultiple")
         )
       )
-      
+
       tryCatch(
         w4 <- dtedit(
           input, output,
@@ -401,16 +401,16 @@ dtedit_test <- function(appname = "simple", ...) {
           input.types = list(Buy = "selectInputMultipleReactive")
         )
       )
-      
+
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
-      shiny::observeEvent(Grocery_List$thedata(), {
-        data_list[[length(data_list) + 1]] <<- Grocery_List$thedata()
+      shiny::observeEvent(Grocery_List$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
       })
       shiny::exportTestValues(data_list = {data_list}, error_list = {error_list})
       #### shinytest code for testing purposes only ########
     }
-    
+
     ui <- shiny::fluidPage(
       shiny::h3('Grocery List'),
       shiny::uiOutput('Grocery_List'),
@@ -423,19 +423,19 @@ dtedit_test <- function(appname = "simple", ...) {
       shiny::h5("No choices selectInputMultiple Reactive"),
       shiny::uiOutput('NoChoice_selectInputMultipleReactive')
     )
-    
+
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return(shiny::shinyApp(ui = ui, server = server, ...))
   }
-  
+
   if (appname == "selectInputReactive") {
     server <- function(input, output, session) {
-      
+
       less_choices <- c('Tea', 'Biscuits', 'Apples', 'Cheese')
       more_choices <- c(less_choices, 'Coffee', 'Pears', 'Fish')
-      
+
       buy.Types <- shiny::reactiveVal(less_choices)
-      
+
       Grocery_List_Results <- dtedit(
         input, output,
         name = 'Grocery_List',
@@ -446,7 +446,7 @@ dtedit_test <- function(appname = "simple", ...) {
           Quantity = c(7, 2, 5),
           BuyFor = I(list(list('Anne', 'Bob'),
                           list('Carly', 'Anne'),
-                          list('Anne', 'Bob', 'Carly'))), 
+                          list('Anne', 'Bob', 'Carly'))),
           stringsAsFactors = FALSE
         ),
         input.types = list(
@@ -462,7 +462,7 @@ dtedit_test <- function(appname = "simple", ...) {
         input.choices.reactive =
           list(buy.Types.list = buy.Types)
       )
-      
+
       observeEvent(input$choice, {
         if (input$choice == 1) {
           buy.Types(less_choices)
@@ -470,16 +470,16 @@ dtedit_test <- function(appname = "simple", ...) {
           buy.Types(more_choices)
         }
       })
-      
+
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
-      shiny::observeEvent(Grocery_List_Results$thedata(), {
-        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata()
+      shiny::observeEvent(Grocery_List_Results$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
       })
       shiny::exportTestValues(data_list = {data_list})
       ######################################################
     }
-    
+
     ui <- shiny::fluidPage(
       shiny::h3('Grocery List'),
       uiOutput('Grocery_List'),
@@ -490,11 +490,11 @@ dtedit_test <- function(appname = "simple", ...) {
         selected = 1
       )
     )
-    
+
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return(shiny::shinyApp(ui = ui, server = server))
   }
-  
+
   if (appname == "password") {
     server <- function(input, output, session) {
       Password_List <- dtedit(
@@ -508,22 +508,22 @@ dtedit_test <- function(appname = "simple", ...) {
         view.cols = c("Name"),
         input.types = c(Password = "passwordInput")
       )
-      
+
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
-      shiny::observeEvent(Password_List$thedata(), {
-        data_list[[length(data_list) + 1]] <<- Password_List$thedata()
+      shiny::observeEvent(Password_List$thedata, {
+        data_list[[length(data_list) + 1]] <<- Password_List$thedata
       })
       shiny::exportTestValues(data_list = {data_list})
       ######################################################
     }
-    
+
     ui <- shiny::fluidPage(
       shiny::h3('Passwords'),
       shiny::uiOutput('Password_List')
     )
-    
+
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return (shiny::shinyApp(ui = ui, server = server, ...))
   }
-}  
+}

@@ -4,10 +4,10 @@ library(DTedit)
 library(blob)
 
 server <- function(input, output) {
-  
+
   picture <- reactiveVal(NULL)
   spreadsheet <- reactiveVal(NULL)
-  
+
   my.actionButton.callback <- function(data, row, buttonID) {
     if (substr(buttonID, 1, nchar("picture")) == "picture") {
       # the 'action' button identifier (ID) prefix shows this
@@ -20,10 +20,10 @@ server <- function(input, output) {
         zz <- file(outfile, "wb") # create temporary file
         writeBin(object = unlist(data[row, "Picture"]), con = zz)
         close(zz)
-        
+
         # read the picture from the temporary file
         picture(base64enc::dataURI(file = outfile))
-        
+
         # cleanup (remove the temporary file)
         file.remove(outfile)
       } else {
@@ -37,9 +37,9 @@ server <- function(input, output) {
         zz <- file(outfile, "wb") # create temporary file
         writeBin(object = unlist(data[row, "Spreadsheet"]), con = zz)
         close(zz)
-        
+
         spreadsheet(read.csv(outfile))
-        
+
         # cleanup
         file.remove(outfile)
       } else {
@@ -48,7 +48,7 @@ server <- function(input, output) {
     }
     return(NULL)
   }
-  
+
   Grocery_List <- callModule(
     dteditmod,
     'Grocery_List',
@@ -88,22 +88,22 @@ server <- function(input, output) {
     ),
     callback.actionButton = my.actionButton.callback
   )
-  
+
   output$listPicture <- shiny::renderUI({
     shiny::tags$img(
       src = picture(),
       width = "100%"
     )
   })
-  
+
   output$showSpreadsheet <- DT::renderDataTable({
     spreadsheet()
   })
-  
+
   #### following code for shinytest, not essential for application function ####
   data_list <- list() # exported list for shinytest
-  shiny::observeEvent(Grocery_List$thedata(), {
-    data_list[[length(data_list) + 1]] <<- Grocery_List$thedata()
+  shiny::observeEvent(Grocery_List$thedata, {
+    data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
   })
   shiny::exportTestValues(data_list = {data_list})
   spreadsheet_list <- list() # exported list for shinytest

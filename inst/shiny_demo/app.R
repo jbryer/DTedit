@@ -78,19 +78,19 @@ server <- function(input, output, session) {
     callback.insert = books.insert.callback,
     callback.delete = books.delete.callback
   )
-  
+
   names <- data.frame(Name=character(), Email=character(), Date=numeric(),
     Type = factor(levels=c('Admin', 'User')),
     stringsAsFactors=FALSE)
   names$Date <- as.Date(names$Date, origin='1970-01-01')
   namesdt <- dtedit(input, output, name = 'names', names)
-  
+
   data_list <- list() # exported list for shinytest
-  shiny::observeEvent(booksdt$thedata(), {
-    data_list[[length(data_list) + 1]] <<- booksdt$thedata()
+  shiny::observeEvent(booksdt$thedata, {
+    data_list[[length(data_list) + 1]] <<- booksdt$thedata
   })
   shiny::exportTestValues(data_list = {data_list})
-  
+
   cancel.onsessionEnded <- session$onSessionEnded(function() {
     DBI::dbDisconnect(conn)
   })

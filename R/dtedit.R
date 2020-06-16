@@ -1051,15 +1051,8 @@ dteditmod <- function(input, output, session,
   outputOptions(output, name, suspendWhenHidden = FALSE)
   # if suspendWhenHidden is true, then the table is not rendered if the tab is hidden
 
-  return(list(
-    thedata = reactive({
-      result$thedata
-    }),
-    edit.count = reactive({
-      result$edit.count
-    })
-  ))
-  # edit.count only incremented by changes made through dtedit GUI
+  return(result)
+  # $edit.count only incremented by changes made through dtedit GUI
   # does not include edits created through response to changes in reactiveval 'thedata'
   # this might help determine the source of changes in result$thedata
 }

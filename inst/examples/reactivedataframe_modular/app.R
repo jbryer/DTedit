@@ -4,7 +4,7 @@ library(DTedit)
 
 ##### Create the Shiny server #####
 server <- function(input, output) {
-  
+
   data <- reactiveVal() # # 'data' will be a 'reactive' dataframe
   data(data.frame(Column1 = c("Apple", "Cherry", "Frozen"),
                   Column2 = c("Pie", "Tart", "Yoghurt"),
@@ -15,21 +15,21 @@ server <- function(input, output) {
     thedata = data,
     edit.cols = c("Column1", "Column2")
   )
-  
+
   observe({
     data(
       isolate(
         as.data.frame(
-          data_DT_gui$thedata(),
+          data_DT_gui$thedata,
           stringsasfactors = FALSE
         )
       )
     )
     print(isolate(data()))
-    print(paste("Edit count:", data_DT_gui$edit.count()))
-    # only reacts to change in $edit.count()
+    print(paste("Edit count:", data_DT_gui$edit.count))
+    # only reacts to change in $edit.count
   })
-  
+
   observeEvent(input$data_scramble, {
     print("Scrambling...")
     temp <- data()
