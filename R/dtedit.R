@@ -169,6 +169,9 @@ dtedit <- function(input, output,
 #' @param label.edit the label of the edit button.
 #' @param label.add the label of the add button.
 #' @param label.copy the label of the copy button.
+#' @param label.save the label of the save button.
+#' @param label.cancel the label of the cancel button.
+#' @param text.delete.modal the text shown in the delete modal dialog.
 #' @param show.delete whether to show/enable the delete button.
 #' @param show.update whether to show/enable the update button.
 #' @param show.insert whether to show/enable the insert button.
@@ -248,6 +251,9 @@ dteditmod <- function(input, output, session,
                       label.edit = "Edit",
                       label.add = "New",
                       label.copy = "Copy",
+                      label.save = "Save",
+                      label.cancel = "Cancel",
+                      text.delete.modal = "Are you sure you want to delete this record?",
                       show.delete = TRUE,
                       show.update = TRUE,
                       show.insert = TRUE,
@@ -696,8 +702,8 @@ dteditmod <- function(input, output, session,
       ),
       fields,
       footer = shiny::column(
-        shiny::modalButton("Cancel"),
-        shiny::actionButton(ns(paste0(name, "_insert")), "Save"),
+        shiny::modalButton(label.cancel),
+        shiny::actionButton(ns(paste0(name, "_insert")), label.save),
         width = 12
       ),
       size = modal.size
@@ -821,8 +827,8 @@ dteditmod <- function(input, output, session,
         style = "color:red"),
       fields,
       footer = column(
-        shiny::modalButton("Cancel"),
-        shiny::actionButton(ns(paste0(name, "_update")), "Save"),
+        shiny::modalButton(label.cancel),
+        shiny::actionButton(ns(paste0(name, "_update")), label.save),
         width = 12
       ),
       size = modal.size
@@ -924,11 +930,11 @@ dteditmod <- function(input, output, session,
         shiny::textOutput(
           ns(paste0(name, "_message"))), style = "color:red"
       ),
-      shiny::p("Are you sure you want to delete this record?"),
+      shiny::p(text.delete.modal),
       fields,
-      footer = shiny::column(modalButton("Cancel"),
+      footer = shiny::column(modalButton(label.cancel),
                              shiny::actionButton(
-                               ns(paste0(name, "_delete")), "Delete"
+                               ns(paste0(name, "_delete")), label.delete
                              ),
                              width = 12
       ),
