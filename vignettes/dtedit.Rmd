@@ -56,6 +56,10 @@ library(DTedit)
 
 <br/>
 
+Package version : `r packageVersion("DTedit")`
+
+<br/>
+
 # Introduction
 
 The DTedit package allows the viewing and editing of dataframes, via the shiny DT (DataTables) package.
