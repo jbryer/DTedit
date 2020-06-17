@@ -1,9 +1,10 @@
 Package: DTedit
 Title: Editable DataTables for Shiny Apps
-Version: 2.0.1
+Version: 2.1.0
 Authors@R: c(person(given = "Jason", family = "Bryer", email = "jason@bryer.org", role = c("aut", "cre")),
              person(given = "David", family = "Fong", email = "vkelim@bigpond.com", role = c("aut")),
-             person(given = "Klodian", family = "Dhana", role = c("ctb")))
+             person(given = "Klodian", family = "Dhana", role = c("ctb")),
+             person(given = "László", family = "Szakács", role = c("ctb")))
 Description: Extends DT::DataTable to allow users to create, edit, and delete
     rows from the data table.
 Depends: R (>= 3.3), DT, shiny, blob, methods

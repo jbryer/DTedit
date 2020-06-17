@@ -4,10 +4,10 @@ library(DTedit)
 
 ##### Create the Shiny server
 server <- function(input, output, session) {
-  
+
   ##### Load books data.frame as a SQLite database
   conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
-  
+
   if(!'books' %in% dbListTables(conn) || isTRUE(getOption("shiny.testmode"))) {
     # the sqlite file doesn't have the right data
     # OR we are running in test mode (test mode -> reset the data)
@@ -19,7 +19,7 @@ server <- function(input, output, session) {
     books$Date <- paste0(books$Date, '-01-01')
     dbWriteTable(conn, "books", books, overwrite = TRUE)
   }
-  
+
   getBooks <- function() {
     res <- dbSendQuery(conn, "SELECT * FROM books")
     books <- dbFetch(res)
@@ -29,9 +29,9 @@ server <- function(input, output, session) {
     books$Publisher <- as.factor(books$Publisher)
     return(books)
   }
-  
+
 	books <- getBooks()
-	
+
 	##### Callback functions.
 	books.insert.callback <- function(data, row) {
 	  query <- paste0(
@@ -48,7 +48,7 @@ server <- function(input, output, session) {
 	  dbClearResult(res)
 	  return(getBooks())
 	}
-	
+
 	books.update.callback <- function(data, olddata, row) {
 	  query <- paste0(
 	    "UPDATE books SET ",
@@ -63,14 +63,14 @@ server <- function(input, output, session) {
 	  dbClearResult(res)
 	  return(getBooks())
 	}
-	
+
 	books.delete.callback <- function(data, row) {
 	  query <- paste0('DELETE FROM books WHERE id = ', data[row,]$id)
 	  res <- dbSendQuery(conn, query)
 	  dbClearResult(res)
 	  return(getBooks())
 	}
-	
+
 	names.Type.update.callback <- function(data, olddata, row) {
 	  # update a user-type
 	  # do not allow an updated user-type which is the same as another
@@ -80,7 +80,7 @@ server <- function(input, output, session) {
 	  }
 	  return(data)
 	}
-	
+
 	names.Type.insert.callback <- function(data, row) {
 	  # insert a user-type
 	  # do not allow a new user-type which is the same as an old one
@@ -90,7 +90,7 @@ server <- function(input, output, session) {
 	  }
 	  return(data)
 	}
-	
+
 	names.Type.delete.callback <- function(data, row) {
 	  # remove a user-type
 	  # it is possible for this user-type to be currently used
@@ -104,7 +104,7 @@ server <- function(input, output, session) {
 	  }
 	  return(data)
 	}
-	
+
 	names.Like.update.callback <- function(data, olddata, row) {
 	  # update a like
 	  # do not allow an updated like which is the same as another
@@ -114,7 +114,7 @@ server <- function(input, output, session) {
 	  }
 	  return(data)
 	}
-	
+
 	names.Like.insert.callback <- function(data, row) {
 	  # insert a like
 	  # do not allow a like which is the same as an old one
@@ -124,7 +124,7 @@ server <- function(input, output, session) {
 	  }
 	  return(data)
 	}
-	
+
 	names.Like.delete.callback <- function(data, row) {
 	  # remove a like
 	  # it is possible for this like to be currently used
@@ -138,7 +138,7 @@ server <- function(input, output, session) {
 	  }
 	  return(data)
 	}
-	
+
 	booksdt <- callModule(
 	  dteditmod,
 	  'books',
@@ -187,7 +187,7 @@ server <- function(input, output, session) {
 	  callback.insert = names.Type.insert.callback,
 	  callback.update = names.Type.update.callback
 	)
-	
+
 	names.Types <- reactiveVal(isolate(names.Type()$Types))
 
 	names <- reactiveVal()
@@ -201,12 +201,12 @@ server <- function(input, output, session) {
 	    stringsAsFactors=FALSE
 	  )
 	)
-	
+
 	observe({
-		names.Types(names.Typedt$thedata()$Types)
-		names.Likes(names.Likedt$thedata()$Likes)
+		names.Types(names.Typedt$thedata$Types)
+		names.Likes(names.Likedt$thedata$Likes)
 	})
-	
+
 	namesdt <- callModule(
 	  dteditmod,
 	  'names',
@@ -221,11 +221,11 @@ server <- function(input, output, session) {
 	    names.Likes = names.Likes
 	  )
 	)
-	
+
 	observe({
-		print(namesdt$thedata())
-		names(as.data.frame(namesdt$thedata(), stringsasfactors = FALSE))
-		print(paste("Edit count:", namesdt$edit.count()))
+		print(namesdt$thedata)
+		names(as.data.frame(namesdt$thedata, stringsasfactors = FALSE))
+		print(paste("Edit count:", namesdt$edit.count))
 	})
 
 	observeEvent(input$email_clean,{
@@ -269,13 +269,13 @@ server <- function(input, output, session) {
 		)
 		names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))
 	})
-	
+
 	data_list <- list() # exported list for shinytest
-	shiny::observeEvent(booksdt$thedata(), {
-	  data_list[[length(data_list) + 1]] <<- booksdt$thedata()
+	shiny::observeEvent(booksdt$thedata, {
+	  data_list[[length(data_list) + 1]] <<- booksdt$thedata
 	})
 	shiny::exportTestValues(data_list = {data_list})
-	
+
 	session$onSessionEnded(function() {
 	  dbDisconnect(conn)
 	})

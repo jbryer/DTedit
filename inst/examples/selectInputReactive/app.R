@@ -3,7 +3,7 @@ library(DTedit)
 
 ##### Create the Shiny server
 server <- function(input, output, session) {
-  
+
   names.Type.update.callback <- function(data, olddata, row) {
     # update a user-type
     # do not allow an updated user-type which is the same as another
@@ -13,7 +13,7 @@ server <- function(input, output, session) {
     }
     return(data)
   }
-  
+
   names.Type.insert.callback <- function(data, row) {
     # insert a user-type
     # do not allow a new user-type which is the same as an old one
@@ -23,7 +23,7 @@ server <- function(input, output, session) {
     }
     return(data)
   }
-  
+
   names.Type.delete.callback <- function(data, row) {
     # remove a user-type
     # it is possible for this user-type to be currently used
@@ -37,7 +37,7 @@ server <- function(input, output, session) {
     }
     return(data)
   }
-  
+
   names.Like.update.callback <- function(data, olddata, row) {
     # update a like
     # do not allow an updated like which is the same as another
@@ -47,7 +47,7 @@ server <- function(input, output, session) {
     }
     return(data)
   }
-  
+
   names.Like.insert.callback <- function(data, row) {
     # insert a like
     # do not allow a like which is the same as an old one
@@ -57,7 +57,7 @@ server <- function(input, output, session) {
     }
     return(data)
   }
-  
+
   names.Like.delete.callback <- function(data, row) {
     # remove a like
     # it is possible for this like to be currently used
@@ -71,7 +71,7 @@ server <- function(input, output, session) {
     }
     return(data)
   }
-  
+
   names.Like <- reactiveVal()
   names.Like(data.frame(Likes = c("Apple", "Pear"), stringsAsFactors = FALSE))
   names.Likedt <- dtedit(
@@ -89,7 +89,7 @@ server <- function(input, output, session) {
     callback.update = names.Like.update.callback
   )
   names.Likes <- reactiveVal(isolate(names.Like()$Likees))
-  
+
   names.Type <- reactiveVal()
   names.Type(data.frame(Types = c("Admin", "User"), stringsAsFactors = FALSE))
   names.Typedt <- dtedit(
@@ -106,9 +106,9 @@ server <- function(input, output, session) {
     callback.insert = names.Type.insert.callback,
     callback.update = names.Type.update.callback
   )
-  
+
   names.Types <- reactiveVal(isolate(names.Type()$Types))
-  
+
   names <- reactiveVal()
   names(
     data.frame(
@@ -120,12 +120,12 @@ server <- function(input, output, session) {
       stringsAsFactors=FALSE
     )
   )
-  
+
   observe({
-    names.Types(names.Typedt$thedata()$Types)
-    names.Likes(names.Likedt$thedata()$Likes)
+    names.Types(names.Typedt$thedata$Types)
+    names.Likes(names.Likedt$thedata$Likes)
   })
-  
+
   namesdt <- dtedit(
     input, output,
     'names',
@@ -134,17 +134,17 @@ server <- function(input, output, session) {
     input.choices = c(Type = "names.Types", Like = "names.Likes"),
     input.choices.reactive = list(names.Types = names.Types, names.Likes = names.Likes)
   )
-  
+
   observe({
-    print(namesdt$thedata())
-    names(as.data.frame(namesdt$thedata(), stringsasfactors = FALSE))
-    print(paste("Edit count:", namesdt$edit.count()))
+    print(namesdt$thedata)
+    names(as.data.frame(namesdt$thedata, stringsasfactors = FALSE))
+    print(paste("Edit count:", namesdt$edit.count))
   })
-  
+
   observeEvent(input$email_clean,{
     names(names()[0,]) # empty the dataframe
   })
-  
+
   observeEvent(input$email_add, {
     email <- c("hotmail.com", "yahoo.com",
                "gmail.com", "outlook.com",
@@ -164,13 +164,13 @@ server <- function(input, output, session) {
     )
     names(data.frame(rbind(names(), extra_email), stringsAsFactors = FALSE))
   })
-  
+
   data_list <- list() # exported list for shinytest
-  shiny::observeEvent(namesdt$thedata(), {
-    data_list[[length(data_list) + 1]] <<- namesdt$thedata()
+  shiny::observeEvent(namesdt$thedata, {
+    data_list[[length(data_list) + 1]] <<- namesdt$thedata
   })
   shiny::exportTestValues(data_list = {data_list})
-  
+
 }
 
 ##### Create the shiny UI
@@ -194,14 +194,14 @@ ui <- fluidPage(
       wellPanel(
         uiOutput("names.Type")
       )
-      
+
     ),
     tabPanel(
       "Likes",
       wellPanel(
         uiOutput("names.Like")
       )
-      
+
     )
   )
 )

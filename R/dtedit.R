@@ -74,14 +74,15 @@ dtedit <- function(input, output,
 #' returned that will become the current state of the data table. If anything
 #' else is returned then the internal \code{data.frame} will be used.
 #'
-#' @return Returns a list of reactive values.
+#' @md
 #'
-#'   \itemize{
-#'     \item \code{thedata()} the current state of DTedit's copy of the data.
-#'     \item \code{edit.count()} the number of edits done within DTedit
-#'     (does not include changes to DTedit's copy of the data secondary to
-#'      changes in \code{thedata}, if \code{thedata} is a reactive)
-#'   }
+#' @return Returns reactiveValues
+#'  * `$theData` - the current state of `DTedit`'s copy of the data
+#'  * `$view.cols`
+#'  * `$edit.cols`
+#'  * `$edit.count` - number of edits to data done within `DTedit` (does not
+#'     include changes to `DTedit`'s copy of the data secondary to changes
+#'     of a reactive `thedata`)
 #'
 #' @param input Shiny input object passed from the server.
 #' @param output Shiny output object passed from the server.
@@ -96,35 +97,59 @@ dtedit <- function(input, output,
 #'        and add dialogs. The length and order of \code{code.cols.labels} must
 #'        correspond to \code{edit.cols}.
 #' @param input.types a character vector where the name corresponds to a column
-#'        in \code{edit.cols} and the value is the input type. Possible values
-#'        are \code{dateInput}, \code{selectInput}, \code{selectInputMultiple},
-#'        \code{selectInputReactive}, \code{selectInputMultipleReactive}, \code{numericInput},
-#'        \code{textInput}, \code{textAreaInput}, \code{passwordInput} or \code{fileInput}.
+#' in \code{edit.cols} and the value is the input type. Possible values
+#' are:
 #'
-#'        One case where this parameter is desirable is when a text
-#'        area is required instead of a simple text input.
+#'  * `dateInput` - input changed by `date.width`
+#'  * `selectInput` - choices determined by `input.choices`,
+#'    or the levels of the data column
+#'    variable (if the column variable is of class `factor`),
+#'    or the already present values in the data column.
+#'  * `selectInputMultiple` - choices determined by
+#'    `input.choices` or the already present values in the data
+#'    column.
+#'  * `selectInputReactive` - choices determined by a reactive
+#'    variable, as defined by `input.choices` and
+#'    `input.choices.reactive`.
+#'  * `selectInputMultipleReactive` - choices determined by a
+#'    reactive variable, as defined by `input.choices` and
+#'    `input.choices.reactive`
+#'  * `numericInput` - input changed by `numeric.width`
+#'  * `textInput` - input changed by `text.width`
+#'  * `textAreaInput` - input changed by `textarea.width` and `textarea.height`
+#'  * `passwordInput`
+#'  * `fileInput` - type of acceptable file types is defined by
+#'    `input.choices`. Maximum file length is modifed by
+#'    `max.fileInputLength`
+#'
+#'  One case where this parameter is desirable is when a text
+#'  area is required instead of a simple text input.
 #' @param input.choices a list of character vectors. The names of each element in the list must
-#'        correspond to a column name in the data. The value, a character vector, are the options
-#'        presented to the user for data entry, in the case of input type \code{selectInput}).
+#'  correspond to a column name in the data. The value, a character vector, are the options
+#'  presented to the user for data entry, in the case of input type \code{selectInput}).
 #'
-#'        In the case of input type \code{selectInputReactive} or \code{selectInputMultipleReactive},
-#'        the value is the name of the reactive in 'input.choices.reactive'
+#'  In the case of input type `selectInputReactive`
+#'  or `selectInputMultipleReactive``, the value is the name
+#'  of the reactive in 'input.choices.reactive'
 #'
-#'        In the case of input type \code{fileInput} this is the 'accept' argument,
-#'        which specifies the type of file which is acceptable. Can be a case insensitive
-#'        file extension (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
-#'        'application/pdf').
+#'  In the case of input type `fileInput`` this is the
+#'  'accept' argument, which specifies the type of file which
+#'  is acceptable. Can be a case insensitive file extension
+#'  (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
+#'  'application/pdf').
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
-#'        to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
-#'        The reactive itself is a character vector.
+#'  to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
+#'  The reactive itself is a character vector.
 #' @param action.buttons a named list of action button columns.
-#'        Each column description is a list of \code{columnLabel}, \code{buttonLabel}, \code{buttonPrefix}, \code{afterColumn}.
-#'        \code{columnLabel} label used for the column.
-#'        \code{buttonLabel} label used for each button
-#'        \code{buttonPrefix} used as the prefix for action button IDs.
-#'          The suffix will be a number from '1' to the number of rows.
-#'          Prefix and suffix will be separated with an underscore '_'.
-#'        \code{afterColumn} if provided, the action button column is placed after this named column.
+#'  Each column description is a list of \code{columnLabel}, \code{buttonLabel},
+#'  \code{buttonPrefix}, \code{afterColumn}.
+#'  * \code{columnLabel} label used for the column.
+#'  * \code{buttonLabel} label used for each button
+#'  * \code{buttonPrefix} used as the prefix for action button IDs.
+#'    The suffix will be a number from '1' to the number of rows.
+#'    Prefix and suffix will be separated with an underscore '_'.
+#'  * \code{afterColumn} if provided, the action button column is
+#'    placed after this named column.
 #' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
@@ -135,8 +160,8 @@ dtedit <- function(input, output,
 #' @param numeric.width the width of numeric inputs.
 #' @param select.width the width of drop down inputs.
 #' @param max.fileInputLength the maximum length (in bytes) of \code{fileInput}.
-#'        Shiny itself has a default limit of 5 megabytes per file.
-#'        The limit can be modified by using shiny.maxRequestSize option.
+#'  Shiny itself has a default limit of 5 megabytes per file.
+#'  The limit can be modified by using shiny.maxRequestSize option.
 #' @param title.delete the title of the dialog box for deleting a row.
 #' @param title.edit the title of the dialog box for editing a row.
 #' @param title.add the title of the dialog box for inserting a new row.
@@ -144,26 +169,30 @@ dtedit <- function(input, output,
 #' @param label.edit the label of the edit button.
 #' @param label.add the label of the add button.
 #' @param label.copy the label of the copy button.
+#' @param label.save the label of the save button.
+#' @param label.cancel the label of the cancel button.
+#' @param text.delete.modal the text shown in the delete modal dialog.
 #' @param show.delete whether to show/enable the delete button.
 #' @param show.update whether to show/enable the update button.
 #' @param show.insert whether to show/enable the insert button.
 #' @param show.copy whether to show/enablre the copy button.
 #' @param callback.delete a function called when the user deletes a row.
-#'        This function should return an updated data.frame.
+#'  This function should return an updated data.frame.
 #' @param callback.update a function called when the user updates a row.
-#'        This function should return an updated data.frame.
+#'  This function should return an updated data.frame.
 #' @param callback.insert a function called when the user inserts a new row.
-#'        This function should return an updated data.frame.
+#'  This function should return an updated data.frame.
 #' @param callback.actionButton a function called when the user clicks an action button.
-#'        called with arguments 'data', 'row' and 'buttonID'.
-#'        This function can return an updated data.frame,
-#'        alternatively return NULL if data is not to be changed.
+#'  called with arguments 'data', 'row' and 'buttonID'.
+#'  This function can return an updated data.frame,
+#'  alternatively return NULL if data is not to be changed.
 #' @param click.time.threshold This is to prevent duplicate entries usually by double clicking the
-#'        save or update buttons. If the user clicks the save button again within this amount of
-#'        time (in seconds), the subsequent click will be ignored. Set to zero to disable this
-#'        feature. For developers, a message is printed using the warning function.
+#'  save or update buttons. If the user clicks the save button again within this amount of
+#'  time (in seconds), the subsequent click will be ignored. Set to zero to disable this
+#'  feature. For developers, a message is printed using the warning function.
 #' @param datatable.options options passed to \code{DT::renderDataTable}.
-#'        See \url{https://rstudio.github.io/DT/options.html} for more information.
+#'  See \url{https://rstudio.github.io/DT/options.html} for more information.
+#' @param ... arguments not recognized by DTedit are passed to \code{DT::renderDataTable}
 #'
 #' @seealso
 #'
@@ -222,6 +251,9 @@ dteditmod <- function(input, output, session,
                       label.edit = "Edit",
                       label.add = "New",
                       label.copy = "Copy",
+                      label.save = "Save",
+                      label.cancel = "Cancel",
+                      text.delete.modal = "Are you sure you want to delete this record?",
                       show.delete = TRUE,
                       show.update = TRUE,
                       show.insert = TRUE,
@@ -247,7 +279,7 @@ dteditmod <- function(input, output, session,
     # 'ns' becomes a 'change nothing' function
     moduleMode <- FALSE # not in 'module' mode
   }
-  
+
   thedataCopy <- if (shiny::is.reactive(shiny::isolate(thedata))) {
     shiny::isolate(thedata())
   } else {
@@ -264,21 +296,21 @@ dteditmod <- function(input, output, session,
   } else if (!all(edit.cols %in% names(thedataCopy))) {
     stop("Not all edit.cols are in the data.")
   }
-  
+
   DataTableName <- paste0(name, "dt")
-  
+
   result <- shiny::reactiveValues()
   result$thedata <- thedataCopy
   result$view.cols <- view.cols
   result$edit.cols <- edit.cols
   result$edit.count <- 0 # number of edits (Add/Delete/Edit/Copy) through dtedit
-  
+
   dt.proxy <- DT::dataTableProxy(DataTableName)
-  
+
   selectInputMultiple <- function(...) {
     shiny::selectInput(multiple = TRUE, selectize = selectize, ...)
   }
-  
+
   valid.input.types <- c(
     "dateInput", "selectInput", "numericInput",
     "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
@@ -320,7 +352,7 @@ dteditmod <- function(input, output, session,
       })
     }
   }
-  
+
   addActionButtons <- function(data, action.buttons) {
     # data : dataframe
     # action.buttons : named list of lists
@@ -334,7 +366,7 @@ dteditmod <- function(input, output, session,
     # returns list
     #  $dataframe
     #  $button.colNames - the column names of the action buttons
-    
+
     # create a vector of shiny inputs
     # of length 'len'
     # input IDs have prefix 'id', a numeric suffix from '1' to 'len'
@@ -361,7 +393,7 @@ dteditmod <- function(input, output, session,
     #    ns("select_button"),
     #    '\", this.id, {priority: \"event\"})')
     #   )
-    
+
     view.cols.andButtons <- names(data) # used to store the order of columns
     # by default, view columns 'and buttons' are the same as view.cols
     button.colNames <- NULL # later will store vector of button column names
@@ -401,7 +433,7 @@ dteditmod <- function(input, output, session,
     #  data-frame to a vector
     return(list(data = data, button.colNames = button.colNames))
   }
-  
+
   thedataWithButtons <- addActionButtons(
     thedataCopy[, view.cols, drop = FALSE], action.buttons
   )
@@ -422,7 +454,7 @@ dteditmod <- function(input, output, session,
   )
   outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
   # without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
-  
+
   getFields <- function(typeName, values) {
     # creates input fields when adding or editing a row
     # 'typeName' is either '_add_' or '_edit_'
@@ -430,7 +462,7 @@ dteditmod <- function(input, output, session,
     # if adding a 'new' row, then 'values' will be 'missing'
     #
     # returns a list of shiny inputs, 'fields'
-    
+
     fields <- list()
     for (i in seq_along(edit.cols)) {
       if (inputTypes[i] == "dateInput") {
@@ -616,15 +648,15 @@ dteditmod <- function(input, output, session,
     }
     return(fields)
   }
-  
+
   output[[paste0(name, "_message")]] <- shiny::renderText("")
-  
+
   updateData <- function(proxy, data, ...) {
     # updates data displayed in DT datatable
     #
     # will reference 'global' action.buttons variable
     #  when callling function 'addActionButtons'
-    
+
     # Convert any list columns to characters before displaying
     for (i in 1:ncol(data)) {
       if (is.list(data[, i])) {
@@ -637,12 +669,12 @@ dteditmod <- function(input, output, session,
         # causes data[,i] column to be deleted!
       }
     }
-    
+
     DT::replaceData(proxy, addActionButtons(data, action.buttons)$data, ...)
   }
-  
+
   ##### Insert functions #####################################################
-  
+
   observeEvent(input[[paste0(name, "_add")]], {
     # if the 'Add' button is clicked then
     # the 'addModal' popup is generated, with 'missing' values
@@ -650,7 +682,7 @@ dteditmod <- function(input, output, session,
       shiny::showModal(addModal())
     }
   })
-  
+
   addModal <- function(row, values) {
     # 'addModal' popup is generated when
     # the '_add' button event is observed (with missing 'values')
@@ -670,16 +702,16 @@ dteditmod <- function(input, output, session,
       ),
       fields,
       footer = shiny::column(
-        shiny::modalButton("Cancel"),
-        shiny::actionButton(ns(paste0(name, "_insert")), "Save"),
+        shiny::modalButton(label.cancel),
+        shiny::actionButton(ns(paste0(name, "_insert")), label.save),
         width = 12
       ),
       size = modal.size
     )
   }
-  
+
   insert.click <- NA # click timer (to avoid overly fast double-click)
-  
+
   observeEvent(input[[paste0(name, "_insert")]], {
     # '_insert' event generated from the 'addModal' popup
     if (!is.na(insert.click)) {
@@ -755,9 +787,9 @@ dteditmod <- function(input, output, session,
       return(FALSE)
     })
   })
-  
+
   ##### Copy functions #######################################################
-  
+
   observeEvent(input[[paste0(name, "_copy")]], {
     # if '_copy' event is observed, call the 'addModal' popup
     # with pre-filled values
@@ -769,9 +801,9 @@ dteditmod <- function(input, output, session,
       }
     }
   })
-  
+
   ##### Update functions #####################################################
-  
+
   observeEvent(input[[paste0(name, "_edit")]], {
     # if '_edit' event is observed, call the 'editModal' popup
     row <- input[[paste0(name, "dt_rows_selected")]]
@@ -779,7 +811,7 @@ dteditmod <- function(input, output, session,
       shiny::showModal(editModal(row))
     }
   })
-  
+
   editModal <- function(row) {
     # 'editModal' popup created when '_edit' event is observed
     #
@@ -795,19 +827,19 @@ dteditmod <- function(input, output, session,
         style = "color:red"),
       fields,
       footer = column(
-        shiny::modalButton("Cancel"),
-        shiny::actionButton(ns(paste0(name, "_update")), "Save"),
+        shiny::modalButton(label.cancel),
+        shiny::actionButton(ns(paste0(name, "_update")), label.save),
         width = 12
       ),
       size = modal.size
     )
   }
-  
+
   update.click <- NA # a timer to avoid 'double-clicks'
-  
+
   observeEvent(input[[paste0(name, "_update")]], {
     # the '_update' event is observed from the 'editModal' popup
-    
+
     if (!is.na(update.click)) {
       lastclick <- as.numeric(Sys.time() - update.click, units = "secs")
       if (lastclick < click.time.threshold) {
@@ -817,7 +849,7 @@ dteditmod <- function(input, output, session,
       }
     }
     update.click <- Sys.time()
-    
+
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       newdata <- result$thedata
@@ -869,9 +901,9 @@ dteditmod <- function(input, output, session,
     }
     return(FALSE)
   })
-  
+
   ##### Delete functions #####################################################
-  
+
   observeEvent(input[[paste0(name, "_remove")]], {
     # if the '_remove' event is observed, the 'deleteModal' popup is opened
     row <- input[[paste0(name, "dt_rows_selected")]]
@@ -881,7 +913,7 @@ dteditmod <- function(input, output, session,
       }
     }
   })
-  
+
   deleteModal <- function(row) {
     # if the '_remove' event is observed, the 'deleteModal' popup is opened
     #
@@ -898,21 +930,21 @@ dteditmod <- function(input, output, session,
         shiny::textOutput(
           ns(paste0(name, "_message"))), style = "color:red"
       ),
-      shiny::p("Are you sure you want to delete this record?"),
+      shiny::p(text.delete.modal),
       fields,
-      footer = shiny::column(modalButton("Cancel"),
+      footer = shiny::column(modalButton(label.cancel),
                              shiny::actionButton(
-                               ns(paste0(name, "_delete")), "Delete"
+                               ns(paste0(name, "_delete")), label.delete
                              ),
                              width = 12
       ),
       size = modal.size
     )
   }
-  
+
   observeEvent(input[[paste0(name, "_delete")]], {
     # the '_delete' event is observed from the 'deleteModal' popup
-    
+
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       tryCatch({
@@ -943,19 +975,19 @@ dteditmod <- function(input, output, session,
     }
     return(FALSE)
   })
-  
+
   ##### Action button callbacks ################################################
-  
+
   observeEvent(input$select_button, {
     # triggered by an 'action' button being clicked
-    
+
     # row <- input[[paste0(name, "dt_rows_selected")]]
     # unfortunately, the 'row' selected this way seems to be unreliable
     # determine the row number from the button selected
     #  the buttons have been 'numbered' in the suffix
     x <- strsplit(input$select_button, "_")[[1]]
     selectedRow <- as.numeric(x[length(x)])
-    
+
     newdata <- result$thedata
     tryCatch({
       callback.data <- callback.actionButton(
@@ -987,9 +1019,9 @@ dteditmod <- function(input, output, session,
     }
     )
   })
-  
+
   ##### React to changes in 'thedata' if that variable is a reactive ######
-  
+
   if (shiny::is.reactive(thedata)) {
     observeEvent(thedata(), {
       result$thedata <- as.data.frame(shiny::isolate(thedata()))
@@ -1002,9 +1034,9 @@ dteditmod <- function(input, output, session,
       )
     })
   }
-  
+
   ##### Build the UI for the DataTable and buttons ###########################
-  
+
   output[[name]] <- shiny::renderUI({
     shiny::div(
       if (show.insert) {
@@ -1024,16 +1056,9 @@ dteditmod <- function(input, output, session,
   })
   outputOptions(output, name, suspendWhenHidden = FALSE)
   # if suspendWhenHidden is true, then the table is not rendered if the tab is hidden
-  
-  return(list(
-    thedata = reactive({
-      result$thedata
-    }),
-    edit.count = reactive({
-      result$edit.count
-    })
-  ))
-  # edit.count only incremented by changes made through dtedit GUI
+
+  return(result)
+  # $edit.count only incremented by changes made through dtedit GUI
   # does not include edits created through response to changes in reactiveval 'thedata'
   # this might help determine the source of changes in result$thedata
 }
@@ -1059,7 +1084,7 @@ dteditmod <- function(input, output, session,
 #' @export
 dteditmodUI <- function(id) {
   ns <- shiny::NS(id)
-  
+
   shiny::tagList(
     shiny::uiOutput(ns("editdt"))
   )

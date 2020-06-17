@@ -4,7 +4,7 @@ library(DTedit)
 
 ##### Create the Shiny server #####
 server <- function(input, output) {
-  
+
   data <- reactiveVal() # # 'data' will be a 'reactive' dataframe
   data(data.frame(Column1 = c("Apple", "Cherry", "Frozen"),
                   Column2 = c("Pie", "Tart", "Yoghurt"),
@@ -12,17 +12,17 @@ server <- function(input, output) {
   data_DT_gui <- dtedit(
     input, output,
     'dataspace',
-    thedata = data, 
+    thedata = data,
     edit.cols = c("Column1", "Column2")
   )
-  
+
   observe({
-    data(isolate(as.data.frame(data_DT_gui$thedata(), stringsasfactors = FALSE)))
+    data(isolate(as.data.frame(data_DT_gui$thedata, stringsasfactors = FALSE)))
     print(isolate(data()))
-    print(paste("Edit count:", data_DT_gui$edit.count())) 
-    # only reacts to change in $edit.count()
+    print(paste("Edit count:", data_DT_gui$edit.count))
+    # only reacts to change in $edit.count
   })
-  
+
   observeEvent(input$data_scramble, {
     print("Scrambling...")
     temp <- data()
@@ -35,7 +35,7 @@ server <- function(input, output) {
       data(temp) # adjusted dataframe 'automatically' read by DTedit
     }
   })
-  
+
   output$items <- shiny::renderUI({
     shiny::tags$html(
       "Column 1: ",
@@ -45,10 +45,10 @@ server <- function(input, output) {
       paste(data()$Column2, collapse = ", ")
     )
   })
-  
+
   data_list <- list() # exported list for shinytest
-  shiny::observeEvent(data_DT_gui$thedata(), {
-    data_list[[length(data_list) + 1]] <<- data_DT_gui$thedata()
+  shiny::observeEvent(data_DT_gui$thedata, {
+    data_list[[length(data_list) + 1]] <<- data_DT_gui$thedata
   })
   shiny::exportTestValues(data_list = {data_list})
 }

@@ -56,6 +56,10 @@ library(DTedit)
 
 <br/>
 
+Package version : `r packageVersion("DTedit")`
+
+<br/>
+
 # Introduction
 
 The DTedit package allows the viewing and editing of dataframes, via the shiny DT (DataTables) package.
@@ -82,7 +86,7 @@ Full option/argument descriptions can be found in [the appendix](#appendix).
 
 For the 'standard' (non-module) version, the `dtedit` object is defined within the `server` function. The `name` defined in the `dtedit` function (in this case **Grocery_List**) is referenced by a `uiOutput` object in the `ui` (user interface) definition, as seen in the very simple example below.
 
-```{r, eval = FALSE}
+```{r, message = FALSE}
 # minimal DTedit example 'dtedit'
 # you can try this example in interactive mode
 # with 'example("dtedit")'
@@ -151,11 +155,11 @@ In this vignette, the 'standard' `dtedit` is mostly used. Some examples referenc
 `dtedit` returns a list. The list includes `$thedata`, which is a reactive and will change when `dtedit`'s copy of the dataframe changes.
 
 In the example below, the results are stored in a variable name **Grocery_List_Results**.
-Every time the internal copy of `thedata` changes, so does **Grocery_List_Results$thedata()**.
+Every time the internal copy of `thedata` changes, so does **Grocery_List_Results$thedata**.
 
-An `observeEvent` waits for changes in **Grocery_List_Results$thedata()**.
+An `observeEvent` waits for changes in **Grocery_List_Results$thedata**.
 
-The `observeEvent` then messages the contents of **Grocery_List_Results$thedata()** to the console.
+The `observeEvent` then messages the contents of **Grocery_List_Results$thedata** to the console.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -170,8 +174,8 @@ server <- function(input, output) {
     )
   )
 
-  observeEvent(Grocery_List_Results$thedata(), {
-    message(Grocery_List_Results$thedata())
+  observeEvent(Grocery_List_Results$thedata, {
+    message(Grocery_List_Results$thedata)
   })
 
 }
@@ -246,7 +250,7 @@ in the `app_mod.R` tab.
 
 In the call to `dtedit`, **mydata** is referred to in the `thedata` definition as **mydata**, *not* **mydata()**.
 
-Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in **Grocery_List_Results$thedata()**, which then changes **mydata**.
+Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in **Grocery_List_Results$thedata**, which then changes **mydata**. Note that **Grocery_List_Results$thedata** does *not* have trailing parentheses '()'.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -287,10 +291,10 @@ server <- function(input, output) {
     mydata(newdata)
   })
 
-  observeEvent(Grocery_List_Results$thedata(), {
+  observeEvent(Grocery_List_Results$thedata, {
     # the data has been added
     # copy the changes to our own copy
-    mydata(Grocery_List_Results$thedata())
+    mydata(Grocery_List_Results$thedata)
   })
 
 }
@@ -453,11 +457,44 @@ The same demonstration is shown as part of the demonstration using modular `dted
 
 with source code in the `app_mod.R` tab. The interacting datatables are in the `Emails` tab.
 
+## Datatables options - buttons
+
+`dtedit` uses the [`DT`](https://rstudio.github.io/DT/) package to create datatables. [`DT`](https://rstudio.github.io/DT/) is based on [`datatables`](https://datatables.net/). `DT` has an `options` argument. `options` can be passed through to `DT` with `dtedit`'s `datatables.options` argument. Any argument that is not recognized by `dtedit` is passed through to `DT`.
+
+The following example adds [copy, CSV and PDF buttons](https://rstudio.github.io/DT/003-tabletools-buttons.html) to `dtedit`'s datatable by defining `datatable.options` and `extensions` (extensions is not a recognized argument of `dtedit`).
+
+```{r, message = FALSE}
+server <- function(input, output) {
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ),
+    extensions = 'Buttons',
+    datatable.options = list(
+      dom = 'Bfrtip',
+      buttons = c('copy', 'csv', 'pdf')
+    )
+  )
+}
+
+ui <- fluidPage(
+    h3('Grocery List'),
+    uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
 ## Action buttons
 
 An *action button* column can be created. When an *action button* is pushed, the function defined in `callback.actionButton` is called, allowing, for example, modification of the data in the datatable, as shown in the example below.
 
-```{r, eval = FALSE}
+```{r, message = FALSE}
 server <- function(input, output) {
 
   grocery.callback.actionButton <- function(data, row, buttonID) {
