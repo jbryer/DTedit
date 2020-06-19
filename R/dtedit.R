@@ -96,6 +96,13 @@ dtedit <- function(input, output,
 #' @param edit.label.cols character vector with the labels to use on the edit
 #'        and add dialogs. The length and order of \code{code.cols.labels} must
 #'        correspond to \code{edit.cols}.
+#' @param delete.info.cols character vector with the column names specifying
+#'        which values are presented on the delete dialog.
+#'        This can be a subset of the full \code{data.frame}. Defaults to \code{view.cols}.
+#'        If \code{NULL}, no data values are shown on the delete dialog.
+#' @param delete.info.label.cols character vector with the labels to use on the delete
+#'        dialog. The length and order of \code{delete.info.label.cols} must
+#'        correspond to \code{delete.info.cols}.
 #' @param input.types a character vector where the name corresponds to a column
 #' in \code{edit.cols} and the value is the input type. Possible values
 #' are:
@@ -230,6 +237,8 @@ dteditmod <- function(input, output, session,
                         )
                       ),
                       edit.label.cols = edit.cols,
+                      delete.info.cols = view.cols,
+                      delete.info.label.cols = delete.info.cols,
                       input.types,
                       input.choices = NULL,
                       input.choices.reactive = NULL,
@@ -291,10 +300,14 @@ dteditmod <- function(input, output, session,
     stop("Must provide a data frame with at least one column.")
   } else if (length(edit.cols) != length(edit.label.cols)) {
     stop("edit.cols and edit.label.cols must be the same length.")
+  } else if (length(delete.info.cols) != length(delete.info.label.cols)) {
+    stop("delete.info.cols and delete.info.label.cols must be the same length.")
   } else if (!all(view.cols %in% names(thedataCopy))) {
     stop("Not all view.cols are in the data.")
   } else if (!all(edit.cols %in% names(thedataCopy))) {
     stop("Not all edit.cols are in the data.")
+  } else if (!all(delete.info.cols %in% names(thedataCopy))) {
+    stop("Not all delete.info.cols are in the data.")
   }
 
   DataTableName <- paste0(name, "dt")
@@ -920,8 +933,9 @@ dteditmod <- function(input, output, session,
     # other than being closed/cancelled, the 'deleteModal' popup
     # can also be closed if the '_delete' event is observed
     fields <- list()
-    for (i in view.cols) {
-      fields[[i]] <- div(paste0(i, " = ", result$thedata[row, i]))
+    for (i in seq_along(delete.info.cols)) {
+      fields[[i]] <- div(paste0(delete.info.label.cols[i], " = ",
+                                result$thedata[row, delete.info.cols[i]]))
     }
     output[[paste0(name, "_message")]] <- shiny::renderText("")
     shiny::modalDialog(
