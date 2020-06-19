@@ -175,7 +175,7 @@ dtedit <- function(input, output,
 #' @param show.delete whether to show/enable the delete button.
 #' @param show.update whether to show/enable the update button.
 #' @param show.insert whether to show/enable the insert button.
-#' @param show.copy whether to show/enablre the copy button.
+#' @param show.copy whether to show/enable the copy button.
 #' @param callback.delete a function called when the user deletes a row.
 #'  This function should return an updated data.frame.
 #' @param callback.update a function called when the user updates a row.
