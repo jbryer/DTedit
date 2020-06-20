@@ -5,6 +5,28 @@ date: "13th June 2020"
 output: html_document
 ---
 
+# DTedit 2.20
+20th June 2020
+
+## New features
+
+* Allow definition of which data columns
+  are displayed in the delete dialog, and how those columns are labelled.
+  + `delete.info.cols` and `delete.info.label.cols`
+  + written by László Szakács (@cocinerox)
+* Allow display of rownames.
+  + `datatable.rownames`. By default, set to `FALSE`.
+  If set to `TRUE`, then row names are also displyaed in edit and update modal dialogs.
+  `datatable.rownames` must be set to `TRUE` is using `DT::format*()` functions in
+  `datatable.call`.
+* Allow changes in the transfer of data to `DT::renderDataTable`
+  + `datatable.call` For example this allows the use of `DT::format*()` functions.
+  When using `DT::format*()` functions, note the warning in `datatable.rownames` above,
+  as `datatable.rownames` must be set to `TRUE` to use `DT::format*()`. 
+  See vignette and `help(dtedit)` for further details.
+  + 'under the hood' there is a significant change in the way `DT::renderDataTable` is
+  called.
+
 # DTedit 2.1.0
 16th June 2020
 
@@ -67,5 +89,6 @@ output: html_document
 * `thedata` dataframe did not work if there was only one column - FIXED
 * data columns can be delete during `updateData` function call if a column is empty - FIXED
 * erroneous errors under certain conditions of choices for `selectInputMultiple` - FIXED
-* module version `selectInput` did not show previously chosen option - FIXED (Klodian Dhana) (#1, @klodiandhana) (#febc655)
+* module version `selectInput` did not show previously chosen option - FIXED 
+  + Klodian Dhana (#1, @klodiandhana) (#febc655)
 

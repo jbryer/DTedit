@@ -183,7 +183,7 @@ dtedit <- function(input, output,
 #' @param callback.insert a function called when the user inserts a new row.
 #'  This function should return an updated data.frame.
 #' @param callback.actionButton a function called when the user clicks an action button.
-#'  called with arguments 'data', 'row' and 'buttonID'.
+#'  called with arguments `data`, `row` and `buttonID`.
 #'  This function can return an updated data.frame,
 #'  alternatively return NULL if data is not to be changed.
 #' @param click.time.threshold This is to prevent duplicate entries usually by double clicking the
@@ -192,7 +192,20 @@ dtedit <- function(input, output,
 #'  feature. For developers, a message is printed using the warning function.
 #' @param datatable.options options passed to \code{DT::renderDataTable}.
 #'  See \url{https://rstudio.github.io/DT/options.html} for more information.
+#' @param datatable.rownames show rownames as part of the datatable? `TRUE` or `FALSE`.
+#'  Note that if datatable.call includes `DT::format*` calls,
+#'  then `datatable.rownames` must equal `TRUE`
+#' @param datatable.call pre-processing call when calling `DT::renderDataTable`. Can be defined,
+#'  for example, to include `DT::format*` calls.
+#'  `dtedit` will pass several arguments to the `datatable.call` function.
+#'  * `data` a dataframe. may have been processed to add `actionButtons`
+#'  * `options` - `datatable.options`
+#'  * `rownames` - `datatable.rownames`
+#'  * `escape` - escape all columns except those with action buttons.
+#'  * `selection` - `single`
 #' @param ... arguments not recognized by DTedit are passed to \code{DT::renderDataTable}
+#'  By default, `datatable.call` uses `DT::dataframe`, so this limits the options that
+#'  can be passed through this method.
 #'
 #' @seealso
 #'
@@ -264,6 +277,8 @@ dteditmod <- function(input, output, session,
                       callback.actionButton = function(data, row, buttonID) { },
                       click.time.threshold = 2, # in seconds
                       datatable.options = list(pageLength = defaultPageLength),
+                      datatable.rownames = FALSE,
+                      datatable.call = function(...) {DT::datatable(...)},
                       ...) {
   if (!missing(session) && is.environment(session)) {
     # the function has been called as a module
@@ -441,16 +456,19 @@ dteditmod <- function(input, output, session,
   # to prevent return of vector (instead of dataframe)
   # if only one column in view.cols
   output[[DataTableName]] <- DT::renderDataTable({
-    thedataWithButtons$data
+    datatable.call(
+      data = thedataWithButtons$data,
+      options = datatable.options,
+      rownames = datatable.rownames,
+      escape = which(!names(thedataWithButtons$data) %in% thedataWithButtons$button.colNames),
+      # 'escaped' columns are those without HTML buttons etc.
+      # escape the 'data' columns
+      # but do not escape the columns which have been created by addActionButtons()
+      selection = "single"
+    )
   },
-  options = datatable.options,
   server = TRUE,
-  escape = which(!names(thedataWithButtons$data) %in% thedataWithButtons$button.colNames),
-  # 'escaped' columns are those without HTML buttons etc.
-  # escape the 'data' columns
-  # but do not escape the columns which have been created by addActionButtons()
-  selection = "single",
-  rownames = FALSE, ...
+  ...
   )
   outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
   # without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
@@ -777,7 +795,7 @@ dteditmod <- function(input, output, session,
                  result$thedata[, view.cols, drop = FALSE],
                  # was "result$thedata[,view.cols]",
                  # but that returns vector if view.cols is a single column
-                 rownames = FALSE
+                 rownames = datatable.rownames
       )
       result$edit.count <- result$edit.count + 1
       shiny::removeModal()
@@ -821,6 +839,11 @@ dteditmod <- function(input, output, session,
     fields <- getFields("_edit_", values = result$thedata[row, , drop = FALSE])
     shiny::modalDialog(
       title = title.edit,
+      ifelse(
+        datatable.rownames, # rownames are being displayed
+        rownames(thedata)[row],
+        ""
+      ),
       shiny::div(
         shiny::textOutput(
           ns(paste0(name, "_message"))),
@@ -889,7 +912,7 @@ dteditmod <- function(input, output, session,
                    # was "result$thedata[,view.cols]",
                    # but that returns vector (not dataframe) if
                    # view.cols is only a single column
-                   rownames = FALSE
+                   rownames = datatable.rownames
         )
         result$edit.count <- result$edit.count + 1
         shiny::removeModal()
@@ -926,6 +949,11 @@ dteditmod <- function(input, output, session,
     output[[paste0(name, "_message")]] <- shiny::renderText("")
     shiny::modalDialog(
       title = title.delete,
+      ifelse(
+        datatable.rownames, # rownames are being displayed
+        shiny::HTML(shiny::tags$h3(rownames(thedata)[row])),
+        ""
+      ),
       shiny::div(
         shiny::textOutput(
           ns(paste0(name, "_message"))), style = "color:red"
@@ -961,7 +989,7 @@ dteditmod <- function(input, output, session,
                    # was "result$thedata[,view.cols]",
                    # but that only returns a vector (instead of dataframe)
                    # if view.cols is single column
-                   rownames = FALSE
+                   rownames = datatable.rownames
         )
         result$edit.count <- result$edit.count + 1
         shiny::removeModal()
@@ -1007,7 +1035,7 @@ dteditmod <- function(input, output, session,
                  # was "result$thedata[,view.cols]",
                  # but that only returns a vector (instead of dataframe)
                  # if view.cols is single column
-                 rownames = FALSE
+                 rownames = datatable.rownames
       )
       result$edit.count <- result$edit.count + 1
       shiny::removeModal()
@@ -1030,7 +1058,7 @@ dteditmod <- function(input, output, session,
                  # was "result$thedata[,view.cols]",
                  # but that returns vector (not dataframe)
                  # if view.cols is only a single column
-                 rownames = FALSE
+                 rownames = datatable.rownames
       )
     })
   }

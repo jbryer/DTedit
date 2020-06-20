@@ -51,6 +51,8 @@ dteditmod(
   callback.actionButton = function(data, row, buttonID) { },
   click.time.threshold = 2,
   datatable.options = list(pageLength = defaultPageLength),
+  datatable.rownames = FALSE,
+  datatable.call = function(...) {     DT::datatable(...) },
   ...
 )
 }
@@ -68,7 +70,9 @@ to the \code{session} argument of dteditmod.)}
 
 \item{thedata}{a data frame to view and edit. can be a reactive}
 
-\item{...}{arguments not recognized by DTedit are passed to \code{DT::renderDataTable}}
+\item{...}{arguments not recognized by DTedit are passed to \code{DT::renderDataTable}
+By default, \code{datatable.call} uses \code{DT::dataframe}, so this limits the options that
+can be passed through this method.}
 
 \item{session}{Shiny session object (an environment) passed from the server.
 Alternatively, the 'name' (character) of the outputted editable datatable.}
@@ -192,7 +196,7 @@ The limit can be modified by using shiny.maxRequestSize option.}
 
 \item{show.insert}{whether to show/enable the insert button.}
 
-\item{show.copy}{whether to show/enablre the copy button.}
+\item{show.copy}{whether to show/enable the copy button.}
 
 \item{callback.delete}{a function called when the user deletes a row.
 This function should return an updated data.frame.}
@@ -204,7 +208,7 @@ This function should return an updated data.frame.}
 This function should return an updated data.frame.}
 
 \item{callback.actionButton}{a function called when the user clicks an action button.
-called with arguments 'data', 'row' and 'buttonID'.
+called with arguments \code{data}, \code{row} and \code{buttonID}.
 This function can return an updated data.frame,
 alternatively return NULL if data is not to be changed.}
 
@@ -215,6 +219,21 @@ feature. For developers, a message is printed using the warning function.}
 
 \item{datatable.options}{options passed to \code{DT::renderDataTable}.
 See \url{https://rstudio.github.io/DT/options.html} for more information.}
+
+\item{datatable.rownames}{show rownames as part of the datatable? \code{TRUE} or \code{FALSE}.
+Note that if datatable.call includes \verb{DT::format*} calls,
+then \code{datatable.rownames} must equal \code{TRUE}}
+
+\item{datatable.call}{pre-processing call when calling \code{DT::renderDataTable}. Can be defined,
+for example, to include \verb{DT::format*} calls.
+\code{dtedit} will pass several arguments to the \code{datatable.call} function.
+\itemize{
+\item \code{data} a dataframe. may have been processed to add \code{actionButtons}
+\item \code{options} - \code{datatable.options}
+\item \code{rownames} - \code{datatable.rownames}
+\item \code{escape} - escape all columns except those with action buttons.
+\item \code{selection} - \code{single}
+}}
 }
 \value{
 Returns reactiveValues

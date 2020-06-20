@@ -351,6 +351,64 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
+## Formatting columns `datatable.call` and `datatable.rownames`
+
+`DTedit` uses `DT`. `DT` [provides *helper* functions `format*()`](https://rstudio.github.io/DT/functions.html)
+to format table columns as currency, percentages or round numbers. To use the helper functions,
+the data needs to be pre-processed by `DT::datatable` and `DT::format*()` *before* being
+passed to `DT::renderDataTable`. These helper functions can be accessed by defining 
+`datatable.call` as pre-processing function.
+
+The formatting demonstrated below is not actually appropriate to the `mtcars` data,
+but is used simply for demonstration purposes. Unfortunately, the formatting does
+not work [unless `datatable.rownames` is set to `TRUE`](https://stackoverflow.com/questions/56879672/how-to-replacedata-in-dt-rendered-in-r-shiny-using-the-datatable-function),
+which is not the default.
+
+```{r, warning = FALSE, message = FALSE}
+library(magrittr) # provides the pipe '%>%' operator
+
+server <- function(input, output, session) {
+  dtedit(
+    input, output,
+    name = 'mtcarstable',
+    thedata = mtcars,
+    datatable.rownames = TRUE, # needed for the format*() functions to work
+    datatable.call = function(...) {
+      datatable(...) %>%
+        formatSignif('qsec', 2) %>%
+        formatCurrency('mpg') %>%
+        formatStyle(
+          'cyl',
+          color = 'red', backgroundColor = 'orange', fontWeight = 'bold'
+        )
+      # note, none of this is proper formatting for the mtcars data!
+      # but serves to demonstrate the formatting
+    }
+  )
+}
+
+ui <- fluidPage(
+  h3('mtcars'),
+  uiOutput('mtcarstable')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+By default, `datatable.call` is defined as :
+
+```{r, eval = FALSE}
+function(...) {DT::datatable(...)}
+```
+
+`DTedit` will pass several arguments to `datatable.call`.
+
+* `data` a dataframe. May have been processed to add `actionButtons`
+* `options` - `datatable.options`
+* `rownames` - `datatable.rownames`
+* `escape` - escape all columns except those with `actionButtons`.
+* `selection` - `single`
+
 ## `input.types`
 
 The data class of the column determines the default input type of the column. The mappings are :
