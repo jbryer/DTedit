@@ -17,6 +17,8 @@ dteditmod(
   edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
     else {     thedata })),
   edit.label.cols = edit.cols,
+  delete.info.cols = view.cols,
+  delete.info.label.cols = delete.info.cols,
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
@@ -51,6 +53,8 @@ dteditmod(
   callback.actionButton = function(data, row, buttonID) { },
   click.time.threshold = 2,
   datatable.options = list(pageLength = defaultPageLength),
+  datatable.rownames = FALSE,
+  datatable.call = function(...) {     DT::datatable(...) },
   ...
 )
 }
@@ -68,7 +72,9 @@ to the \code{session} argument of dteditmod.)}
 
 \item{thedata}{a data frame to view and edit. can be a reactive}
 
-\item{...}{arguments not recognized by DTedit are passed to \code{DT::renderDataTable}}
+\item{...}{arguments not recognized by DTedit are passed to \code{DT::renderDataTable}
+By default, \code{datatable.call} uses \code{DT::dataframe}, so this limits the options that
+can be passed through this method.}
 
 \item{session}{Shiny session object (an environment) passed from the server.
 Alternatively, the 'name' (character) of the outputted editable datatable.}
@@ -82,6 +88,15 @@ This can be a subset of the full \code{data.frame}.}
 \item{edit.label.cols}{character vector with the labels to use on the edit
 and add dialogs. The length and order of \code{code.cols.labels} must
 correspond to \code{edit.cols}.}
+
+\item{delete.info.cols}{character vector with the column names specifying
+which values are presented on the delete dialog.
+This can be a subset of the full \code{data.frame}. Defaults to \code{view.cols}.
+If \code{NULL}, no data values are shown on the delete dialog.}
+
+\item{delete.info.label.cols}{character vector with the labels to use on the delete
+dialog. The length and order of \code{delete.info.label.cols} must
+correspond to \code{delete.info.cols}.}
 
 \item{input.types}{a character vector where the name corresponds to a column
 in \code{edit.cols} and the value is the input type. Possible values
@@ -192,7 +207,7 @@ The limit can be modified by using shiny.maxRequestSize option.}
 
 \item{show.insert}{whether to show/enable the insert button.}
 
-\item{show.copy}{whether to show/enablre the copy button.}
+\item{show.copy}{whether to show/enable the copy button.}
 
 \item{callback.delete}{a function called when the user deletes a row.
 This function should return an updated data.frame.}
@@ -204,7 +219,7 @@ This function should return an updated data.frame.}
 This function should return an updated data.frame.}
 
 \item{callback.actionButton}{a function called when the user clicks an action button.
-called with arguments 'data', 'row' and 'buttonID'.
+called with arguments \code{data}, \code{row} and \code{buttonID}.
 This function can return an updated data.frame,
 alternatively return NULL if data is not to be changed.}
 
@@ -215,6 +230,21 @@ feature. For developers, a message is printed using the warning function.}
 
 \item{datatable.options}{options passed to \code{DT::renderDataTable}.
 See \url{https://rstudio.github.io/DT/options.html} for more information.}
+
+\item{datatable.rownames}{show rownames as part of the datatable? \code{TRUE} or \code{FALSE}.
+Note that if datatable.call includes \verb{DT::format*} calls,
+then \code{datatable.rownames} must equal \code{TRUE}}
+
+\item{datatable.call}{pre-processing call when calling \code{DT::renderDataTable}. Can be defined,
+for example, to include \verb{DT::format*} calls.
+\code{dtedit} will pass several arguments to the \code{datatable.call} function.
+\itemize{
+\item \code{data} a dataframe. may have been processed to add \code{actionButtons}
+\item \code{options} - \code{datatable.options}
+\item \code{rownames} - \code{datatable.rownames}
+\item \code{escape} - escape all columns except those with action buttons.
+\item \code{selection} - \code{single}
+}}
 }
 \value{
 Returns reactiveValues

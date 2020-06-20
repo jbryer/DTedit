@@ -48,7 +48,7 @@ dtedit_test <- function(appname = "simple", ...) {
     )
 
     if (interactive() || isTRUE(getOption("shiny.testmode")))
-      return (shiny::shinyApp(ui = ui, server = server, ...))
+      return(shiny::shinyApp(ui = ui, server = server, ...))
   }
 
   if (appname == "simple_modular") {
@@ -61,7 +61,9 @@ dtedit_test <- function(appname = "simple", ...) {
           Buy = c('Tea', 'Biscuits', 'Apples'),
           Quantity = c(7, 2, 5),
           stringsAsFactors = FALSE
-        )
+        ),
+        delete.info.cols = c("Buy"),
+        delete.info.label.cols = c("Product")
       )
 
       #### shinytest code for testing purposes only ########
@@ -345,6 +347,35 @@ dtedit_test <- function(appname = "simple", ...) {
             stringsAsFactors = FALSE
           ),
           input.types = list(Buy = "textInput", Quantity = "mySpecialNumeric")
+        ),
+        error = function(e) error_message(e)
+      )
+
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "DeleteInfoCols_notEqual_DeleteLabelCols",
+          thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = as.integer(c(7, 2, 5)),
+            stringsAsFactors = FALSE
+          ),
+          delete.info.cols = c("Buy", "Quantity"),
+          delete.info.label.cols = c("Product")
+        ),
+        error = function(e) error_message(e)
+      )
+
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "DeleteInfoCols_notDefined",
+          thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = as.integer(c(7, 2, 5)),
+            stringsAsFactors = FALSE
+          ),
+          delete.info.cols = c("Buy", "Comment")
         ),
         error = function(e) error_message(e)
       )
