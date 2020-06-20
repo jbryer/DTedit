@@ -17,6 +17,8 @@ dteditmod(
   edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
     else {     thedata })),
   edit.label.cols = edit.cols,
+  delete.info.cols = view.cols,
+  delete.info.label.cols = delete.info.cols,
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
@@ -86,6 +88,15 @@ This can be a subset of the full \code{data.frame}.}
 \item{edit.label.cols}{character vector with the labels to use on the edit
 and add dialogs. The length and order of \code{code.cols.labels} must
 correspond to \code{edit.cols}.}
+
+\item{delete.info.cols}{character vector with the column names specifying
+which values are presented on the delete dialog.
+This can be a subset of the full \code{data.frame}. Defaults to \code{view.cols}.
+If \code{NULL}, no data values are shown on the delete dialog.}
+
+\item{delete.info.label.cols}{character vector with the labels to use on the delete
+dialog. The length and order of \code{delete.info.label.cols} must
+correspond to \code{delete.info.cols}.}
 
 \item{input.types}{a character vector where the name corresponds to a column
 in \code{edit.cols} and the value is the input type. Possible values
