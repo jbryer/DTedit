@@ -852,16 +852,17 @@ dteditmod <- function(input, output, session,
     fields <- getFields("_edit_", values = result$thedata[row, , drop = FALSE])
     shiny::modalDialog(
       title = title.edit,
-      ifelse(
-        datatable.rownames, # rownames are being displayed
-        rownames(thedata)[row],
-        ""
+      shiny::fluidPage(
+        shiny::div(
+          if (datatable.rownames) # rownames are being displayed
+            shiny::h4(rownames(thedata)[row])
+        ),
+        shiny::div(
+          shiny::textOutput(
+            ns(paste0(name, "_message"))),
+          style = "color:red"),
+        fields
       ),
-      shiny::div(
-        shiny::textOutput(
-          ns(paste0(name, "_message"))),
-        style = "color:red"),
-      fields,
       footer = column(
         shiny::modalButton(label.cancel),
         shiny::actionButton(ns(paste0(name, "_update")), label.save),
@@ -963,17 +964,18 @@ dteditmod <- function(input, output, session,
     output[[paste0(name, "_message")]] <- shiny::renderText("")
     shiny::modalDialog(
       title = title.delete,
-      ifelse(
-        datatable.rownames, # rownames are being displayed
-        shiny::HTML(shiny::tags$h3(rownames(thedata)[row])),
-        ""
+      shiny::fluidPage(
+        shiny::div(
+          if (datatable.rownames) # rownames are being displayed
+            shiny::h4(rownames(thedata)[row])
+        ),
+        shiny::div(
+          shiny::textOutput(
+            ns(paste0(name, "_message"))), style = "color:red"
+        ),
+        shiny::p(text.delete.modal),
+        fields
       ),
-      shiny::div(
-        shiny::textOutput(
-          ns(paste0(name, "_message"))), style = "color:red"
-      ),
-      shiny::p(text.delete.modal),
-      fields,
       footer = shiny::column(modalButton(label.cancel),
                              shiny::actionButton(
                                ns(paste0(name, "_delete")), label.delete
