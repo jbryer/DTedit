@@ -25,7 +25,7 @@ Sys.sleep(2)
 app$setInputs(`Grocery_List-editdt_insert` = "click")
 app$setInputs(`Grocery_List-editdt_add` = "click")
 app$setInputs(`Grocery_List-editdt_add_Buy` = "Carrots",
-              `Grocery_List-editdt_add_Quantity `= 7)
+              `Grocery_List-editdt_add_Quantity ` = 7)
 Sys.sleep(2)
 app$setInputs(`Grocery_List-editdt_insert` = "click")
 Sys.sleep(2)
