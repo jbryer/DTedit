@@ -16,8 +16,8 @@ output: html_document
   + written by László Szakács (@cocinerox)
 * Allow display of rownames.
   + `datatable.rownames`. By default, set to `FALSE`.
-  If set to `TRUE`, then row names are also displyaed in edit and update modal dialogs.
-  `datatable.rownames` must be set to `TRUE` is using `DT::format*()` functions in
+  If set to `TRUE`, then row names are also displayed in edit and update modal dialogs.
+  `datatable.rownames` must be set to `TRUE` if using `DT::format*()` functions in
   `datatable.call`.
 * Allow changes in the transfer of data to `DT::renderDataTable`
   + `datatable.call` For example this allows the use of `DT::format*()` functions.
@@ -25,7 +25,8 @@ output: html_document
   as `datatable.rownames` must be set to `TRUE` to use `DT::format*()`. 
   See vignette and `help(dtedit)` for further details.
   + 'under the hood' there is a significant change in the way `DT::renderDataTable` is
-  called.
+  called. **This is a breaking change**. Some uses of `dtedit` where `datatable.options`
+  is used will not work without change.
 
 # DTedit 2.1.0
 16th June 2020

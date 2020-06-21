@@ -249,10 +249,10 @@ for example, to include \verb{DT::format*} calls.
 \value{
 Returns reactiveValues
 \itemize{
-\item \verb{$theData} - the current state of \code{DTedit}'s copy of the data
-\item \verb{$view.cols}
-\item \verb{$edit.cols}
-\item \verb{$edit.count} - number of edits to data done within \code{DTedit} (does not
+\item \code{theData} - the current state of \code{DTedit}'s copy of the data
+\item \code{view.cols}
+\item \code{edit.cols}
+\item \code{edit.count} - number of edits to data done within \code{DTedit} (does not
 include changes to \code{DTedit}'s copy of the data secondary to changes
 of a reactive \code{thedata})
 }

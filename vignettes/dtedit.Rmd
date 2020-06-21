@@ -58,8 +58,6 @@ library(DTedit)
 
 Package version : `r packageVersion("DTedit")`
 
-<br/>
-
 # Introduction
 
 The DTedit package allows the viewing and editing of dataframes, via the shiny DT (DataTables) package.
@@ -246,11 +244,16 @@ in the `app_mod.R` tab.
 
 ## Reactive `thedata` dataframe
 
-`thedata` can be a reactive, in which case `dtedit`'s copy of the `thedata` will change in response to changes in the original dataframe. In the example below, the input buttons **more** and **less** trigger changes in **mydata**, which will be detected by `dtedit`.
+`thedata` can be a reactive `reactiveVal`, in which case `dtedit`'s copy of the `thedata` will change in response to changes in the original dataframe. In the example below, the input buttons **more** and **less** trigger changes in **mydata**, which will be detected by `dtedit`.
 
 In the call to `dtedit`, **mydata** is referred to in the `thedata` definition as **mydata**, *not* **mydata()**.
 
-Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in **Grocery_List_Results$thedata**, which then changes **mydata**. Note that **Grocery_List_Results$thedata** does *not* have trailing parentheses '()'.
+Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to 
+
+* detect changes in **Grocery_List_Results$thedata**
+* which then changes **mydata** 
+
+Note that **Grocery_List_Results$thedata** does *not* have trailing parentheses '()'.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -351,18 +354,18 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
-## Formatting columns `datatable.call` and `datatable.rownames`
+## Formatting columns : `datatable.call` and `datatable.rownames`
 
-`DTedit` uses `DT`. `DT` [provides *helper* functions `format*()`](https://rstudio.github.io/DT/functions.html)
+`DTedit` uses `DT` by calling `DT::renderDataTable`.
+`DT` [provides *helper* functions `format*()`](https://rstudio.github.io/DT/functions.html)
 to format table columns as currency, percentages or round numbers. To use the helper functions,
 the data needs to be pre-processed by `DT::datatable` and `DT::format*()` *before* being
 passed to `DT::renderDataTable`. These helper functions can be accessed by defining 
-`datatable.call` as pre-processing function.
+`datatable.call` as a pre-processing function.
 
 The formatting demonstrated below is not actually appropriate to the `mtcars` data,
-but is used simply for demonstration purposes. Unfortunately, the formatting does
-not work [unless `datatable.rownames` is set to `TRUE`](https://stackoverflow.com/questions/56879672/how-to-replacedata-in-dt-rendered-in-r-shiny-using-the-datatable-function),
-which is not the default.
+but is used for demonstration purposes. The formatting does not work
+[unless `datatable.rownames` is set to `TRUE`](https://stackoverflow.com/questions/56879672/how-to-replacedata-in-dt-rendered-in-r-shiny-using-the-datatable-function).
 
 ```{r, warning = FALSE, message = FALSE}
 library(magrittr) # provides the pipe '%>%' operator
@@ -517,9 +520,11 @@ with source code in the `app_mod.R` tab. The interacting datatables are in the `
 
 ## Datatables options - buttons
 
-`dtedit` uses the [`DT`](https://rstudio.github.io/DT/) package to create datatables. [`DT`](https://rstudio.github.io/DT/) is based on [`datatables`](https://datatables.net/). `DT` has an `options` argument. `options` can be passed through to `DT` with `dtedit`'s `datatables.options` argument. Any argument that is not recognized by `dtedit` is passed through to `DT`.
+`dtedit` uses the [`DT`](https://rstudio.github.io/DT/) package to create datatables. [`DT`](https://rstudio.github.io/DT/) is based on [`datatables`](https://datatables.net/). `DT::datatable` has an `options` argument. `options` can be passed through to `DT::datatable` with `dtedit`'s `datatables.options` argument. In this case, we can add further arguments to `DT::datatable` by customizing the `datatable.call` function.
 
-The following example adds [copy, CSV and PDF buttons](https://rstudio.github.io/DT/003-tabletools-buttons.html) to `dtedit`'s datatable by defining `datatable.options` and `extensions` (extensions is not a recognized argument of `dtedit`).
+Any argument that is not recognized by `dtedit` is passed through to `DT::renderDataTable`.
+
+The following example adds [copy, CSV, PDF and Excel buttons](https://rstudio.github.io/DT/003-tabletools-buttons.html) to `dtedit`'s datatable by defining `datatable.options` and `datatable.call`. Note that 'Excel' might not be available on all R installations.
 
 ```{r, message = FALSE}
 server <- function(input, output) {
@@ -532,10 +537,11 @@ server <- function(input, output) {
       Quantity = c(7, 2, 5),
       stringsAsFactors = FALSE
     ),
-    extensions = 'Buttons',
+    datatable.call = function(...)
+      {DT::datatable(..., extensions = 'Buttons')},
     datatable.options = list(
       dom = 'Bfrtip',
-      buttons = c('copy', 'csv', 'pdf')
+      buttons = c('copy', 'csv', 'pdf', 'excel')
     )
   )
 }

@@ -77,10 +77,10 @@ dtedit <- function(input, output,
 #' @md
 #'
 #' @return Returns reactiveValues
-#'  * `$theData` - the current state of `DTedit`'s copy of the data
-#'  * `$view.cols`
-#'  * `$edit.cols`
-#'  * `$edit.count` - number of edits to data done within `DTedit` (does not
+#'  * `theData` - the current state of `DTedit`'s copy of the data
+#'  * `view.cols`
+#'  * `edit.cols`
+#'  * `edit.count` - number of edits to data done within `DTedit` (does not
 #'     include changes to `DTedit`'s copy of the data secondary to changes
 #'     of a reactive `thedata`)
 #'
