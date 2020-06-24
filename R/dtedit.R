@@ -178,6 +178,10 @@ dtedit <- function(input, output,
 #' @param label.copy the label of the copy button.
 #' @param label.save the label of the save button.
 #' @param label.cancel the label of the cancel button.
+#' @param icon.delete the icon for the delete button, e.g. \code{icon("trash")}. Defaults to \code{NULL}.
+#' @param icon.edit the icon for the edit button, e.g. \code{icon("edit")}. Defaults to \code{NULL}.
+#' @param icon.add the icon for the add button, e.g. \code{icon("plus")}. Defaults to \code{NULL}.
+#' @param icon.copy the icon for the copy button, e.g. \code{icon("copy")}. Defaults to \code{NULL}.
 #' @param text.delete.modal the text shown in the delete modal dialog.
 #' @param show.delete whether to show/enable the delete button.
 #' @param show.update whether to show/enable the update button.
@@ -275,6 +279,10 @@ dteditmod <- function(input, output, session,
                       label.copy = "Copy",
                       label.save = "Save",
                       label.cancel = "Cancel",
+                      icon.delete = NULL,
+                      icon.edit = NULL,
+                      icon.add = NULL,
+                      icon.copy = NULL,
                       text.delete.modal = "Are you sure you want to delete this record?",
                       show.delete = TRUE,
                       show.update = TRUE,
@@ -1084,16 +1092,16 @@ dteditmod <- function(input, output, session,
   output[[name]] <- shiny::renderUI({
     shiny::div(
       if (show.insert) {
-        shiny::actionButton(ns(paste0(name, "_add")), label.add)
+        shiny::actionButton(ns(paste0(name, "_add")), label.add, icon = icon.add)
       },
       if (show.update) {
-        shiny::actionButton(ns(paste0(name, "_edit")), label.edit)
+        shiny::actionButton(ns(paste0(name, "_edit")), label.edit, icon = icon.edit)
       },
       if (show.delete) {
-        shiny::actionButton(ns(paste0(name, "_remove")), label.delete)
+        shiny::actionButton(ns(paste0(name, "_remove")), label.delete, icon = icon.delete)
       },
       if (show.copy) {
-        shiny::actionButton(ns(paste0(name, "_copy")), label.copy)
+        shiny::actionButton(ns(paste0(name, "_copy")), label.copy, icon = icon.copy)
       },
       shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
     )
