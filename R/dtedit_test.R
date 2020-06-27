@@ -63,7 +63,11 @@ dtedit_test <- function(appname = "simple", ...) {
           stringsAsFactors = FALSE
         ),
         delete.info.cols = c("Buy"),
-        delete.info.label.cols = c("Product")
+        delete.info.label.cols = c("Product"),
+        icon.delete = shiny::icon("trash"),
+        icon.edit = shiny::icon("edit"),
+        icon.add = shiny::icon("plus"),
+        icon.copy = shiny::icon("copy")
       )
 
       #### shinytest code for testing purposes only ########
