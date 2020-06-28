@@ -709,7 +709,7 @@ dteditmod <- function(input, output, session,
     return(fields)
   }
 
-  output[[paste0(name, "_message")]] <- shiny::renderText("")
+  output[[paste0(name, "_message")]] <- shiny::renderUI("")
 
   updateData <- function(proxy, data, ...) {
     # updates data displayed in DT datatable
@@ -750,12 +750,12 @@ dteditmod <- function(input, output, session,
     #
     # other than being closed/cancelled
     # the 'addModal' popup can create an '_insert' event
-    output[[paste0(name, "_message")]] <- shiny::renderText("")
+    output[[paste0(name, "_message")]] <- shiny::renderUI("")
     fields <- getFields("_add_", values)
     shiny::modalDialog(
       title = title.add,
       shiny::div(
-        shiny::textOutput(
+        shiny::htmlOutput(
           ns(paste0(name, "_message"))
         ),
         style = "color:red"
@@ -845,7 +845,7 @@ dteditmod <- function(input, output, session,
       shiny::removeModal()
       return(TRUE)
     }, error = function(e) {
-      output[[paste0(name, "_message")]] <<- shiny::renderText(geterrmessage())
+      output[[paste0(name, "_message")]] <<- shiny::renderUI(HTML(geterrmessage()))
       return(FALSE)
     })
   })
@@ -879,7 +879,7 @@ dteditmod <- function(input, output, session,
     #
     # other than being closed/cancelled, the 'editModal' popup
     # can also be closed when the '_update' event is observed
-    output[[paste0(name, "_message")]] <- renderText("")
+    output[[paste0(name, "_message")]] <- renderUI("")
     fields <- getFields("_edit_", values = result$thedata[row, , drop = FALSE])
     shiny::modalDialog(
       title = title.edit,
@@ -889,7 +889,7 @@ dteditmod <- function(input, output, session,
             shiny::h4(rownames(thedata)[row])
         ),
         shiny::div(
-          shiny::textOutput(
+          shiny::htmlOutput(
             ns(paste0(name, "_message"))),
           style = "color:red"),
         fields
@@ -963,7 +963,7 @@ dteditmod <- function(input, output, session,
         shiny::removeModal()
         return(TRUE)
       }, error = function(e) {
-        output[[paste0(name, "_message")]] <<- shiny::renderText(geterrmessage())
+        output[[paste0(name, "_message")]] <<- shiny::renderUI(HTML(geterrmessage()))
         return(FALSE)
       })
     }
@@ -992,7 +992,7 @@ dteditmod <- function(input, output, session,
       fields[[i]] <- div(paste0(delete.info.label.cols[i], " = ",
                                 result$thedata[row, delete.info.cols[i]]))
     }
-    output[[paste0(name, "_message")]] <- shiny::renderText("")
+    output[[paste0(name, "_message")]] <- shiny::renderUI("")
     shiny::modalDialog(
       title = title.delete,
       shiny::fluidPage(
@@ -1001,7 +1001,7 @@ dteditmod <- function(input, output, session,
             shiny::h4(rownames(thedata)[row])
         ),
         shiny::div(
-          shiny::textOutput(
+          shiny::htmlOutput(
             ns(paste0(name, "_message"))), style = "color:red"
         ),
         shiny::p(text.delete.modal),
@@ -1043,7 +1043,7 @@ dteditmod <- function(input, output, session,
         return(TRUE)
       },
       error = function(e) {
-        output[[paste0(name, "_message")]] <<- shiny::renderText(geterrmessage())
+        output[[paste0(name, "_message")]] <<- shiny::renderUI(HTML(geterrmessage()))
         return(FALSE)
       }
       )
@@ -1089,7 +1089,7 @@ dteditmod <- function(input, output, session,
       return(TRUE)
     },
     error = function(e) {
-      output[[paste0(name, "_message")]] <<- shiny::renderText(geterrmessage())
+      output[[paste0(name, "_message")]] <<- shiny::renderUI(HTML(geterrmessage()))
       return(FALSE)
     }
     )
