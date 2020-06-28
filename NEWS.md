@@ -67,7 +67,7 @@ output: html_document
   + Many accessible through `dtedit_*_demo` and `dtedit_test`
 * Improvements in handling of input choices for `selectInputMultiple`
 
-### Bux fixes
+### Bug fixes
 
 * inserting a new row failed with particular variable classes of columns - FIXED
 

@@ -9,7 +9,10 @@ server <- function(input, output, session) {
     # do not allow an updated user-type which is the same as another
     ## if this is attempted, show a warning
     if (data[row,] %in% data[-row,]) {
-      stop(paste0("Cannot change user-type to '", data[row,],"', that user-type already exists!"))
+      stop(paste0(
+        "Cannot change user-type to '", data[row,],
+        "', that user-type already exists!"
+      ))
     }
     return(data)
   }
@@ -19,7 +22,9 @@ server <- function(input, output, session) {
     # do not allow a new user-type which is the same as an old one
     ## if this is attempted, show a warning
     if (data[row,] %in% data[-row,]) {
-      stop(paste0("Cannot add '", data[row,],"', that user-type already exists!"))
+      stop(paste0(
+        "Cannot add '", data[row,],"', that user-type already exists!"
+      ))
     }
     return(data)
   }
@@ -29,7 +34,8 @@ server <- function(input, output, session) {
     # it is possible for this user-type to be currently used
     # by an entry in names()  (names has been explicitly passed by reference
     # to the dtedit function), in which case this function will show a warning
-    if (data[row,] %in% get("input.choices.reactive", parent.frame())[["names"]]()$Type) {
+    if (data[row,] %in%
+        get("input.choices.reactive", parent.frame())[["names"]]()$Type) {
       stop(paste0("Cannot delete '", data[row,],
                   "', this user-type currently assigned to a user."))
     } else {
@@ -43,7 +49,10 @@ server <- function(input, output, session) {
     # do not allow an updated like which is the same as another
     ## if this is attempted, show a warning
     if (data[row,] %in% data[-row,]) {
-      stop(paste0("Cannot change like to '", data[row,],"', that like already exists!"))
+      stop(paste0(
+        "Cannot change like to '", data[row,],
+        "', that like already exists!")
+      )
     }
     return(data)
   }
@@ -63,7 +72,11 @@ server <- function(input, output, session) {
     # it is possible for this like to be currently used
     # by an entry in names()  (names has been explicitly passed by reference
     # to the dtedit function), in which case this function will show a warning
-    if (data[row,] %in% unlist(get("input.choices.reactive", parent.frame())[["names"]]()$Like)) {
+    if (data[row,] %in%
+        unlist(
+          get("input.choices.reactive", parent.frame())[["names"]]()$Like
+        )
+    ) {
       stop(paste0("Cannot delete '", data[row,],
                   "', this like currently assigned to a user."))
     } else {
@@ -91,7 +104,10 @@ server <- function(input, output, session) {
   names.Likes <- reactiveVal(isolate(names.Like()$Likees))
 
   names.Type <- reactiveVal()
-  names.Type(data.frame(Types = c("Admin", "User"), stringsAsFactors = FALSE))
+  names.Type(data.frame(
+    Types = c("Admin", "User"),
+    stringsAsFactors = FALSE)
+  )
   names.Typedt <- dtedit(
     input, output,
     'names.Type',
@@ -116,7 +132,8 @@ server <- function(input, output, session) {
       Date=as.Date(integer(), origin='1970-01-01'),
       Type = character(),
       Like = character(),
-      # Like = I(list(isolate(factor(character(), levels = names.Likes())))),
+      # Like = I(list(isolate(factor(character(),
+      #          levels = names.Likes())))),
       stringsAsFactors=FALSE
     )
   )
@@ -130,9 +147,14 @@ server <- function(input, output, session) {
     input, output,
     'names',
     thedata = names,
-    input.types = c(Type = "selectInputReactive", Like = "selectInputMultipleReactive"),
+    input.types = c(
+      Type = "selectInputReactive",
+      Like = "selectInputMultipleReactive"
+    ),
     input.choices = c(Type = "names.Types", Like = "names.Likes"),
-    input.choices.reactive = list(names.Types = names.Types, names.Likes = names.Likes)
+    input.choices.reactive = list(
+      names.Types = names.Types, names.Likes = names.Likes
+    )
   )
 
   observe({
@@ -151,14 +173,21 @@ server <- function(input, output, session) {
                "github.com", "bigpond.com",
                "medscape.com")
     extra_email <- data.frame( # create random user
-      Name = randomNames::randomNames(name.order = "first.last", name.sep = " "),
+      Name = randomNames::randomNames(
+        name.order = "first.last",
+        name.sep = " "
+      ),
       Email = paste0(
-        do.call(paste0, replicate(sample(5:8, 1), sample(tolower(LETTERS), 1, TRUE), FALSE)),
+        do.call(
+          paste0,
+          replicate(sample(5:8, 1), sample(tolower(LETTERS), 1, TRUE), FALSE)
+        ),
         '@',sample(email, 1)
       ),
-      Date = as.Date(Sys.Date()-sample(1:1000, 1), origin = "1970-01=01"),
+      Date = as.Date(Sys.Date() - sample(1:1000, 1), origin = "1970-01=01"),
       Type = factor(sample(names.Types(), 1), levels = names.Types()),
-      Like = I(list(factor(sample(names.Likes(), sample(1:length(names.Likes()), 1)),
+      Like = I(list(factor(sample(names.Likes(),
+                                  sample(seq_len(length(names.Likes())), 1)),
                            levels = names.Likes()))),
       stringsAsFactors = FALSE
     )

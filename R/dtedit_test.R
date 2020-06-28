@@ -77,7 +77,9 @@ dtedit_test <- function(appname = "simple", ...) {
         data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
         edit_count[[length(edit_count) + 1]] <<- Grocery_List$edit.count
       })
-      shiny::exportTestValues(data_list = {data_list}, edit_count = {edit_count})
+      shiny::exportTestValues(
+        data_list = {data_list}, edit_count = {edit_count}
+      )
       ######################################################
     }
 
@@ -137,9 +139,12 @@ dtedit_test <- function(appname = "simple", ...) {
         # copy the changes to our own copy
         mydata(Grocery_List_Results$thedata)
         data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
-        edit_count[[length(edit_count) + 1]] <<- Grocery_List_Results$edit.count
+        edit_count[[length(edit_count) + 1]] <<-
+          Grocery_List_Results$edit.count
       })
-      shiny::exportTestValues(data_list = {data_list}, edit_count = {edit_count})
+      shiny::exportTestValues(
+        data_list = {data_list}, edit_count = {edit_count}
+      )
       #### shinytest code for testing purposes only ########
     }
 
@@ -241,9 +246,12 @@ dtedit_test <- function(appname = "simple", ...) {
       edit_count <- list()
       observeEvent(Grocery_List_Results$thedata, {
         data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
-        edit_count[[length(edit_count) + 1]] <<- Grocery_List_Results$edit.count
+        edit_count[[length(edit_count) + 1]] <<-
+          Grocery_List_Results$edit.count
       })
-      shiny::exportTestValues(data_list = {data_list}, edit_count = {edit_count})
+      shiny::exportTestValues(
+        data_list = {data_list}, edit_count = {edit_count}
+      )
       #### shinytest code for testing purposes only ########
     }
 
@@ -442,7 +450,9 @@ dtedit_test <- function(appname = "simple", ...) {
       shiny::observeEvent(Grocery_List$thedata, {
         data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
       })
-      shiny::exportTestValues(data_list = {data_list}, error_list = {error_list})
+      shiny::exportTestValues(
+        data_list = {data_list}, error_list = {error_list}
+      )
       #### shinytest code for testing purposes only ########
     }
 

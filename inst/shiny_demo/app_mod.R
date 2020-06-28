@@ -8,14 +8,14 @@ server <- function(input, output, session) {
   ##### Load books data.frame as a SQLite database
   conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
 
-  if(!'books' %in% dbListTables(conn) || isTRUE(getOption("shiny.testmode"))) {
+  if (!'books' %in% dbListTables(conn) || isTRUE(getOption("shiny.testmode"))) {
     # the sqlite file doesn't have the right data
     # OR we are running in test mode (test mode -> reset the data)
     books <- read.csv('books.csv', stringsAsFactors = FALSE)
     books$Authors <- strsplit(books$Authors, ';')
     books$Authors <- lapply(books$Authors, trimws) # Strip white space
     books$Authors <- unlist(lapply(books$Authors, paste0, collapse = ';'))
-    books$id <- 1:nrow(books)
+    books$id <- 1:nrow(books) # can also use 'seq_length(nrow(books))'
     books$Date <- paste0(books$Date, '-01-01')
     dbWriteTable(conn, "books", books, overwrite = TRUE)
   }
@@ -76,7 +76,10 @@ server <- function(input, output, session) {
 	  # do not allow an updated user-type which is the same as another
 	  ## if this is attempted, show a warning
 	  if (data[row,] %in% data[-row,]) {
-	    stop(paste0("Cannot change user-type to '", data[row,],"', that user-type already exists!"))
+	    stop(paste0(
+	      "Cannot change user-type to '", data[row,],
+	      "', that user-type already exists!"
+	    ))
 	  }
 	  return(data)
 	}
@@ -86,7 +89,9 @@ server <- function(input, output, session) {
 	  # do not allow a new user-type which is the same as an old one
 	  ## if this is attempted, show a warning
 	  if (data[row,] %in% data[-row,]) {
-	    stop(paste0("Cannot add '", data[row,],"', that user-type already exists!"))
+	    stop(paste0(
+	      "Cannot add '", data[row,],"', that user-type already exists!"
+	    ))
 	  }
 	  return(data)
 	}
@@ -96,8 +101,10 @@ server <- function(input, output, session) {
 	  # it is possible for this user-type to be currently used
 	  # by an entry in names()  (names has been explicitly passed by reference
 	  # to the dtedit function), in which case this function will show a warning
-	  if (data[row,] %in% get("input.choices.reactive", parent.frame())[["names"]]()$Type) {
-	    stop(paste0("Cannot delete '", data[row,],
+	  if (data[row,] %in%
+	      get("input.choices.reactive", parent.frame())[["names"]]()$Type) {
+	    stop(paste0(
+	      "Cannot delete '", data[row,],
 	      "', this user-type currently assigned to a user."))
 	  } else {
 	    data <- data[-row,, drop = FALSE]
@@ -110,7 +117,10 @@ server <- function(input, output, session) {
 	  # do not allow an updated like which is the same as another
 	  ## if this is attempted, show a warning
 	  if (data[row,] %in% data[-row,]) {
-	    stop(paste0("Cannot change like to '", data[row,],"', that like already exists!"))
+	    stop(paste0(
+	      "Cannot change like to '", data[row,],
+	      "', that like already exists!"
+	    ))
 	  }
 	  return(data)
 	}
@@ -130,7 +140,9 @@ server <- function(input, output, session) {
 	  # it is possible for this like to be currently used
 	  # by an entry in names()  (names has been explicitly passed by reference
 	  # to the dtedit function), in which case this function will show a warning
-	  if (data[row,] %in% unlist(get("input.choices.reactive", parent.frame())[["names"]]()$Like)) {
+	  if (data[row,] %in%
+	      unlist(get("input.choices.reactive", parent.frame())[["names"]]()$Like
+	      )) {
 	    stop(paste0("Cannot delete '", data[row,],
 	      "', this like currently assigned to a user."))
 	  } else {
@@ -144,8 +156,10 @@ server <- function(input, output, session) {
 	  'books',
 	  thedata = books,
 	  edit.cols = c('Title', 'Authors', 'Date', 'Publisher'),
-	  edit.label.cols = c('Book Title', 'Authors', 'Publication Date', 'Publisher'),
-	  input.types = c(Title='textAreaInput'),
+	  edit.label.cols = c(
+	    'Book Title', 'Authors', 'Publication Date', 'Publisher'
+	  ),
+	  input.types = c(Title = 'textAreaInput'),
 	  input.choices = list(Authors = unique(unlist(books$Authors))),
 	  view.cols = names(books)[c(5,1,3)],
 	  callback.update = books.update.callback,
@@ -193,12 +207,12 @@ server <- function(input, output, session) {
 	names <- reactiveVal()
 	names(
 	  data.frame(
-	    Name=character(), Email=character(),
-	    Date=as.Date(integer(), origin='1970-01-01'),
+	    Name = character(), Email = character(),
+	    Date = as.Date(integer(), origin = '1970-01-01'),
 	    Type = isolate(factor(character(), levels = names.Types())),
 	    Like = character(),
 	    # Like = I(list(isolate(factor(character(), levels = names.Likes())))),
-	    stringsAsFactors=FALSE
+	    stringsAsFactors = FALSE
 	  )
 	)
 
@@ -241,8 +255,8 @@ server <- function(input, output, session) {
 		           "github.com", "bigpond.com", "medscape.com")
 		extra_email <- data.frame( # create random user
 			Name = paste(
-			  first[sample(1:length(first), 1)],
-			  second[sample(1:length(second), 1)]
+			  first[sample(seq_len(length(first)), 1)],
+			  second[sample(seq_len(length(second)), 1)]
 			),
 			Email = paste0(
 			  do.call(
@@ -255,12 +269,12 @@ server <- function(input, output, session) {
 			  ),
 			  '@',sample(email, 1)
 			),
-			Date = as.Date(Sys.Date()-sample(1:1000, 1), origin = "1970-01=01"),
+			Date = as.Date(Sys.Date() - sample(1:1000, 1), origin = "1970-01=01"),
 			Type = factor(sample(names.Types(), 1), levels = names.Types()),
 			Like = I(
 			  list(
 			    factor(sample(names.Likes(),
-			                  sample(1:length(names.Likes()), 1)),
+			                  sample(seq_len(length(names.Likes())), 1)),
 			           levels = names.Likes()
 			    )
 			  )

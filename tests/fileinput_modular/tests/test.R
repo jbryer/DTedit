@@ -2,12 +2,19 @@ app <- ShinyDriver$new("../")
 app$snapshotInit("test")
 
 app$snapshot(items = list(export = TRUE))
-app$setInputs(`Grocery_List-editdtdt_rows_selected` = 1, allowInputNoBinding_ = TRUE)
-app$setInputs(`Grocery_List-editdtdt_rows_last_clicked` = 1, allowInputNoBinding_ = TRUE)
+app$setInputs(
+  `Grocery_List-editdtdt_rows_selected` = 1, allowInputNoBinding_ = TRUE
+)
+app$setInputs(
+  `Grocery_List-editdtdt_rows_last_clicked` = 1, allowInputNoBinding_ = TRUE
+)
 app$setInputs(`Grocery_List-editdt_edit` = "click")
 app$uploadFile(`Grocery_List-editdt_edit_Picture` = "bee_agapanthus.jpg")
-# <-- This should be the path to the file, relative to the app's tests/ directory
-app$uploadFile(`Grocery_List-editdt_edit_Spreadsheet` = "DiabetesSIP_Report.csv")
+# <-- This should be the path to the file,
+# relative to the app's tests/ directory
+app$uploadFile(
+  `Grocery_List-editdt_edit_Spreadsheet` = "DiabetesSIP_Report.csv"
+  )
 app$setInputs(`Grocery_List-editdt_update` = "click")
 Sys.sleep(1.5)
 

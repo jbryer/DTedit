@@ -283,7 +283,8 @@ dteditmod <- function(input, output, session,
                       icon.edit = NULL,
                       icon.add = NULL,
                       icon.copy = NULL,
-                      text.delete.modal = "Are you sure you want to delete this record?",
+                      text.delete.modal =
+                        "Are you sure you want to delete this record?",
                       show.delete = TRUE,
                       show.update = TRUE,
                       show.insert = TRUE,
@@ -379,7 +380,7 @@ dteditmod <- function(input, output, session,
     inputTypes[names(input.types)] <- input.types
   }
   # Convert any list columns to characters before displaying
-  for (i in 1:ncol(thedataCopy)) {
+  for (i in seq_len(ncol(thedataCopy))) {
     if (nrow(thedataCopy) == 0) {
       thedataCopy[, i] <- character()
     } else if (is.list(thedataCopy[, i])) {
@@ -448,7 +449,8 @@ dteditmod <- function(input, output, session,
           )
         )
         if (is.null(i$afterColumn)) {
-          # this button column has no defined position, so place at end of view column vector
+          # this button column has no defined position,
+          #  so place at end of view column vector
           view.cols.andButtons <- append(
             view.cols.andButtons,
             i$columnLabel
@@ -481,10 +483,13 @@ dteditmod <- function(input, output, session,
       data = thedataWithButtons$data,
       options = datatable.options,
       rownames = datatable.rownames,
-      escape = which(!names(thedataWithButtons$data) %in% thedataWithButtons$button.colNames),
+      escape = which(
+        !names(thedataWithButtons$data) %in% thedataWithButtons$button.colNames
+      ),
       # 'escaped' columns are those without HTML buttons etc.
       # escape the 'data' columns
-      # but do not escape the columns which have been created by addActionButtons()
+      # but do not escape the columns which
+      #  have been created by addActionButtons()
       selection = "single"
     )
   },
@@ -492,12 +497,14 @@ dteditmod <- function(input, output, session,
   ...
   )
   outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
-  # without turning off suspendWhenHidden, changes are not rendered if containing tab is not visible
+  # without turning off suspendWhenHidden, changes are
+  #  not rendered if containing tab is not visible
 
   getFields <- function(typeName, values) {
     # creates input fields when adding or editing a row
     # 'typeName' is either '_add_' or '_edit_'
-    # 'values' are current values of the row (if already existing, or being copied)
+    # 'values' are current values of the row
+    #  (if already existing, or being copied)
     # if adding a 'new' row, then 'values' will be 'missing'
     #
     # returns a list of shiny inputs, 'fields'
@@ -521,7 +528,8 @@ dteditmod <- function(input, output, session,
           value <- value[[1]]
         }
         choices <- ""
-        if (!is.null(input.choices) && (edit.cols[i] %in% names(input.choices))) {
+        if (!is.null(input.choices) &&
+            edit.cols[i] %in% names(input.choices)) {
           choices <- input.choices[[edit.cols[i]]]
         } else if (nrow(result$thedata) > 0) {
           choices <- unique(unlist(result$thedata[, edit.cols[i]]))
@@ -551,12 +559,17 @@ dteditmod <- function(input, output, session,
           width = select.width
         )
       } else if (inputTypes[i] == "selectInput") {
-        value <- ifelse(missing(values), "", as.character(values[, edit.cols[i]]))
+        value <- ifelse(
+          missing(values),
+          "",
+          as.character(values[, edit.cols[i]])
+        )
         if (is.list(value)) {
           value <- value[[1]]
         }
         choices <- ""
-        if (!is.null(input.choices) && edit.cols[i] %in% names(input.choices)) {
+        if (!is.null(input.choices) &&
+            edit.cols[i] %in% names(input.choices)) {
           choices <- input.choices[[edit.cols[i]]]
         } else if (is.factor(result$thedata[, edit.cols[i]])) {
           choices <- levels(result$thedata[, edit.cols[i]])
@@ -596,15 +609,17 @@ dteditmod <- function(input, output, session,
         if (!is.null(input.choices.reactive)) {
           if (edit.cols[i] %in% names(input.choices)) {
             choices <- input.choices.reactive[[input.choices[[edit.cols[i]]]]]()
-            # it is the responsiblity of the calling functions/reactive variable handlers
-            # that the list of choices includes all CURRENT choices that have already
-            # been chosen in the data.
+            # it is the responsiblity of the
+            #  calling functions/reactive variable handlers
+            # that the list of choices includes all CURRENT choices
+            #  that have already been chosen in the data.
           }
         }
         if (is.null(choices)) {
           warning(paste0(
             "No choices available for ", edit.cols[i], ". ",
-            "Specify them using the input.choices and input.choices.reactive parameter"
+            "Specify them using the input.choices and ",
+            "input.choices.reactive parameter"
           ))
         }
         fields[[i]] <- selectInputMultiple(
@@ -615,20 +630,26 @@ dteditmod <- function(input, output, session,
           width = select.width
         )
       } else if (inputTypes[i] == "selectInputReactive") {
-        value <- ifelse(missing(values), "", as.character(values[, edit.cols[i]]))
+        value <- ifelse(
+          missing(values),
+          "",
+          as.character(values[, edit.cols[i]])
+        )
         choices <- NULL
         if (!is.null(input.choices.reactive)) {
           if (edit.cols[i] %in% names(input.choices)) {
             choices <- input.choices.reactive[[input.choices[[edit.cols[i]]]]]()
-            # it is the responsiblity of the calling functions/reactive variable handlers
-            # that the list of choices includes all CURRENT choices that have already
-            # been chosen in the data.
+            # it is the responsiblity of
+            #  the calling functions/reactive variable handlers
+            # that the list of choices includes all CURRENT choices
+            #  that have already been chosen in the data.
           }
         }
         if (is.null(choices)) {
           warning(paste0(
             "No choices available for ", edit.cols[i], ". ",
-            "Specify them using the input.choices and input.choices.reactive parameter"
+            "Specify them using the input.choices and ",
+            "input.choices.reactive parameter"
           ))
         }
         fields[[i]] <- shiny::selectInput(
@@ -697,7 +718,7 @@ dteditmod <- function(input, output, session,
     #  when callling function 'addActionButtons'
 
     # Convert any list columns to characters before displaying
-    for (i in 1:ncol(data)) {
+    for (i in seq_len(ncol(data))) {
       if (is.list(data[, i])) {
         data[, i] <- as.character(sapply(data[, i], FUN = function(x) {
           paste0(x, collapse = ", ")
@@ -769,10 +790,11 @@ dteditmod <- function(input, output, session,
     # the following loop can be tested on the following dataframes
     # data.frame(a = character(), b = numeric(),
     #            x = as.Date(numeric(), origin = "1970-01-01"), y = raw())
-    # data.frame(a = "a", b = 7, x = as.Date(NA, origin = "1970-01-01"), y = raw(1))
+    # data.frame(a = "a", b = 7,
+    #            x = as.Date(NA, origin = "1970-01-01"), y = raw(1))
     #  'raw(1)' can be changed to as.blob(raw(0))
     #  but as.blob can't be used to create a NULL blob object!
-    for (i in 1:ncol(newdata)) {
+    for (i in seq_len(ncol(newdata))) {
       new_row[[i]] <- switch(
         class(newdata[, i]),
         "factor" = as.factor(NA),
@@ -788,7 +810,8 @@ dteditmod <- function(input, output, session,
     # create a new empty row, compatible with blob columns
     # the new row is ready for filling
     for (i in edit.cols) {
-      if (inputTypes[i] %in% c("selectInputMultiple", "selectInputMultipleReactive")) {
+      if (inputTypes[i] %in%
+          c("selectInputMultiple", "selectInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
       } else if (inputTypes[i] == "fileInput") { # file read into binary blob
         datapath <- input[[paste0(name, "_add_", i)]]$datapath
@@ -1092,26 +1115,36 @@ dteditmod <- function(input, output, session,
   output[[name]] <- shiny::renderUI({
     shiny::div(
       if (show.insert) {
-        shiny::actionButton(ns(paste0(name, "_add")), label.add, icon = icon.add)
+        shiny::actionButton(
+          ns(paste0(name, "_add")), label.add, icon = icon.add
+        )
       },
       if (show.update) {
-        shiny::actionButton(ns(paste0(name, "_edit")), label.edit, icon = icon.edit)
+        shiny::actionButton(
+          ns(paste0(name, "_edit")), label.edit, icon = icon.edit
+        )
       },
       if (show.delete) {
-        shiny::actionButton(ns(paste0(name, "_remove")), label.delete, icon = icon.delete)
+        shiny::actionButton(
+          ns(paste0(name, "_remove")), label.delete, icon = icon.delete
+        )
       },
       if (show.copy) {
-        shiny::actionButton(ns(paste0(name, "_copy")), label.copy, icon = icon.copy)
+        shiny::actionButton(
+          ns(paste0(name, "_copy")), label.copy, icon = icon.copy
+        )
       },
       shiny::br(), shiny::br(), DT::dataTableOutput(ns(DataTableName))
     )
   })
   outputOptions(output, name, suspendWhenHidden = FALSE)
-  # if suspendWhenHidden is true, then the table is not rendered if the tab is hidden
+  # if suspendWhenHidden is true, then
+  # the table is not rendered if the tab is hidden
 
   return(result)
   # $edit.count only incremented by changes made through dtedit GUI
-  # does not include edits created through response to changes in reactiveval 'thedata'
+  # does not include edits created through response
+  #  to changes in reactiveval 'thedata'
   # this might help determine the source of changes in result$thedata
 }
 
@@ -1120,17 +1153,19 @@ dteditmod <- function(input, output, session,
 #' dteditmodUI - user-interface function for module use
 #'
 #' Use in conjunction with \code{callModule} and \code{dtedit} to create
-#' editable datatables. \code{dteditUI} is used in the 'user interface' component
-#' of the shiny app.
+#' editable datatables. \code{dteditUI} is used in the 'user interface'
+#' component of the shiny app.
 #'
 #' @param id the namespace of the module
 #' @family Datatable Edit functions
 #' @seealso \code{\link{dteditmod}} : the companion server-component function.\cr
-# !
+#'
 #'  \itemize{
-#'  \item \code{example("dteditmodUI")} a simple example with a reactive dataframe
-#'  \item \code{dteditmod_demo()} a more complex example. Includes database interaction
-#'  and interactions between the data of multiple datatables.
+#'  \item \code{example("dteditmodUI")} a simple example
+#'   with a reactive dataframe
+#'  \item \code{dteditmod_demo()} a more complex example.
+#'   Includes database interaction and interactions between
+#'   the data of multiple datatables.
 #'  }
 #' @example inst/examples/reactivedataframe_modular/app.R
 #' @export

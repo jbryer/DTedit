@@ -8,7 +8,9 @@ app$setInputs(Password_List_insert = "click")
 
 Sys.sleep(2)
 app$setInputs(Password_Listdt_rows_selected = 2, allowInputNoBinding_ = TRUE)
-app$setInputs(Password_Listdt_rows_last_clicked = 2, allowInputNoBinding_ = TRUE)
+app$setInputs(
+  Password_Listdt_rows_last_clicked = 2, allowInputNoBinding_ = TRUE
+)
 app$setInputs(Password_List_edit = "click")
 app$setInputs(Password_List_edit_Name = "Eric",
               Password_List_edit_Password = "abracadabra")

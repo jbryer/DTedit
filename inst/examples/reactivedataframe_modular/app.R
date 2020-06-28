@@ -34,7 +34,7 @@ server <- function(input, output) {
     print("Scrambling...")
     temp <- data()
     if (nrow(temp)>0) {
-      row <- sample(1:nrow(temp), 1)  # row
+      row <- sample(seq_len(nrow(temp)), 1)  # row
       col <- sample(1:2, 1)           # column
       temp[row, col] <- paste(
         sample(unlist(strsplit(temp[row, col], "")),
