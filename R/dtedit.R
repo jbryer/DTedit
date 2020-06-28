@@ -845,7 +845,8 @@ dteditmod <- function(input, output, session,
       shiny::removeModal()
       return(TRUE)
     }, error = function(e) {
-      output[[paste0(name, "_message")]] <<- shiny::renderUI(HTML(geterrmessage()))
+      output[[paste0(name, "_message")]] <<-
+        shiny::renderUI(shiny::HTML(geterrmessage()))
       return(FALSE)
     })
   })
@@ -963,7 +964,8 @@ dteditmod <- function(input, output, session,
         shiny::removeModal()
         return(TRUE)
       }, error = function(e) {
-        output[[paste0(name, "_message")]] <<- shiny::renderUI(HTML(geterrmessage()))
+        output[[paste0(name, "_message")]] <<-
+          shiny::renderUI(shiny::HTML(geterrmessage()))
         return(FALSE)
       })
     }
@@ -1043,7 +1045,8 @@ dteditmod <- function(input, output, session,
         return(TRUE)
       },
       error = function(e) {
-        output[[paste0(name, "_message")]] <<- shiny::renderUI(HTML(geterrmessage()))
+        output[[paste0(name, "_message")]] <<-
+          shiny::renderUI(shiny::HTML(geterrmessage()))
         return(FALSE)
       }
       )
@@ -1089,7 +1092,8 @@ dteditmod <- function(input, output, session,
       return(TRUE)
     },
     error = function(e) {
-      output[[paste0(name, "_message")]] <<- shiny::renderUI(HTML(geterrmessage()))
+      output[[paste0(name, "_message")]] <<-
+        shiny::renderUI(shiny::HTML(geterrmessage()))
       return(FALSE)
     }
     )
