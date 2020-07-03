@@ -36,8 +36,15 @@ output: html_document
   as `datatable.rownames` must be set to `TRUE` to use `DT::format*()`. 
   See vignette and `help(dtedit)` for further details.
   + 'under the hood' there is a significant change in the way `DT::renderDataTable` is
-  called. **This is a breaking change**. Some uses of `dtedit` where `datatable.options`
-  is used will not work without change.
+  called. 
+  + **This is a breaking change**. Previously, if unrecognized options were used when
+  calling `dtedit`/`dteditmod`, the unrecognized options were passed through to
+  `DT::renderDataTable`. If `DT::renderDatatable` did not recognize the options, those
+  options were passed through to `DT::datatable`. However, since `DT::renderDataTable`
+  is now called with the results of a `DT::datatable` call, instead of `thedata`,
+  unrecognized options are *not* passed through to `DT::datatable` (this is a quirk
+  of `DT::renderDataTable`). This change in behaviour can be worked around (by defining
+  `datatable.call` with required `DT::datatable` options).
 
 ## DTedit 2.1.0
 16th June 2020
