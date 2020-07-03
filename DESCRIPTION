@@ -1,13 +1,30 @@
 Package: DTedit
 Title: Editable DataTables for Shiny Apps
-Version: 2.2.0
-Authors@R: c(person(given = "Jason", family = "Bryer", email = "jason@bryer.org", role = c("aut", "cre")),
-             person(given = "David", family = "Fong", email = "vkelim@bigpond.com", role = c("aut")),
-             person(given = "Klodian", family = "Dhana", role = c("ctb")),
-             person(given = "László", family = "Szakács", role = c("ctb")))
-Description: Extends DT::DataTable to allow users to create, edit, and delete
-    rows from the data table.
-Depends: R (>= 3.3), DT, shiny, blob, methods
+Version: 2.2.1
+Authors@R:
+    c(person(given = "Jason",
+             family = "Bryer",
+             email = "jason@bryer.org",
+             role = c("aut", "cre")),
+      person(given = "David",
+             family = "Fong",
+             email = "vkelim@bigpond.com",
+             role = c("aut")),
+      person(given = "Klodian",
+             family = "Dhana", role = c("ctb")),
+      person(given = "László",
+             family = "Szakács", role = c("ctb")))
+Description: Allows user to create, edit and delete rows in datatable() from the 'DT' package.
+License: LGPL
+URL: https://github.com/jbryer/DTedit
+BugReports: https://github.com/DavidPatShuiFong/DTedit/issues
+Depends: 
+    R (>= 3.3)
+Imports: 
+    DT (>= 0.6),
+    shiny,
+    blob,
+    methods
 Suggests: 
     RSQLite,
     base64enc,
@@ -20,7 +37,6 @@ Suggests:
     devtools,
     withr,
     magrittr
-License: LGPL
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.0.9000

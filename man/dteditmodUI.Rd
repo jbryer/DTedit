@@ -14,8 +14,8 @@ dteditmodUI - user-interface function for module use
 }
 \details{
 Use in conjunction with \code{callModule} and \code{dtedit} to create
-editable datatables. \code{dteditUI} is used in the 'user interface' component
-of the shiny app.
+editable datatables. \code{dteditUI} is used in the 'user interface'
+component of the shiny app.
 }
 \examples{
 ##### Minimal DTedit example using reactive dataframe #####
@@ -54,7 +54,7 @@ server <- function(input, output) {
     print("Scrambling...")
     temp <- data()
     if (nrow(temp)>0) {
-      row <- sample(1:nrow(temp), 1)  # row
+      row <- sample(seq_len(nrow(temp)), 1)  # row
       col <- sample(1:2, 1)           # column
       temp[row, col] <- paste(
         sample(unlist(strsplit(temp[row, col], "")),
@@ -78,10 +78,13 @@ if (interactive() || isTRUE(getOption("shiny.testmode")))
 }
 \seealso{
 \code{\link{dteditmod}} : the companion server-component function.\cr
+
  \itemize{
- \item \code{example("dteditmodUI")} a simple example with a reactive dataframe
- \item \code{dteditmod_demo()} a more complex example. Includes database interaction
- and interactions between the data of multiple datatables.
+ \item \code{example("dteditmodUI")} a simple example
+  with a reactive dataframe
+ \item \code{dteditmod_demo()} a more complex example.
+  Includes database interaction and interactions between
+  the data of multiple datatables.
  }
 
 Other Datatable Edit functions: 

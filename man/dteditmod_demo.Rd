@@ -9,13 +9,13 @@ dteditmod_demo(...)
 \arguments{
 \item{...}{arguments pass to \code{runApp}
 
-For example, can launch in showcase mode:
+ For example, can launch in showcase mode:
 
-\code{DTedit::dteditmod_demo(display.mode = "showcase")}
+ \code{DTedit::dteditmod_demo(display.mode = "showcase")}
 
-Note that 'showcase' mode shows all
-the .R files in the 'shiny_demo' directory, not
-just the .R file used for this demonstration!}
+ Note that 'showcase' mode shows all
+ the .R files in the 'shiny_demo' directory, not
+ just the .R file used for this demonstration!}
 }
 \description{
 modularized version of dtedit_demo and dtedit_selectInputReactive_demo.
@@ -24,6 +24,6 @@ modularized version of dtedit_demo and dtedit_selectInputReactive_demo.
 \details{
 Demonstrates adding/editing/deleting data rows, callbacks,
  interaction with database.
- 
+
 Demonstrates interaction between datatables using reactives
 }

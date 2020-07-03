@@ -58,8 +58,6 @@ library(DTedit)
 
 Package version : `r packageVersion("DTedit")`
 
-<br/>
-
 # Introduction
 
 The DTedit package allows the viewing and editing of dataframes, via the shiny DT (DataTables) package.
@@ -91,6 +89,7 @@ For the 'standard' (non-module) version, the `dtedit` object is defined within t
 # you can try this example in interactive mode
 # with 'example("dtedit")'
 library(shiny)
+library(DT)
 library(DTedit)
 
 server <- function(input, output) {
@@ -194,7 +193,9 @@ A more sophisticated approach to handling changing of the data is by using **cal
 
 In the example below, `callback.update` is defined, and checks whether the purchase `Quantity` is less than zero. If `Quantity` is less than zero, an error is thrown, and it is not possible to store the updated data.
 
-Note that `callback.insert` has *not* been defined, and so it is still possible to create a *new* entry/row which has a negative purchase amount! However, it is of course possible to define `callback.insert` so that negative `Quantity` is also prevented when creating a new entry/row.
+Note that `callback.insert` has been defined  *differently*, and so it is still possible to create a *new* entry/row which has a negative purchase amount! In `grocery.insert.callback`, new entries must have a non-empty **Buy** entry, and does not allow more than ten quantity. Of course, `grocery.update.callback` and `grocery.insert.callback` could be re-defined to be consistent with each other.
+
+Note that `grocery.insert.callback` combines error messages, and makes use of HTML line breaks.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -211,6 +212,22 @@ server <- function(input, output) {
     return(data)
   }
 
+  grocery.insert.callback <- function(data, row) {
+    # 'data' contains the dataframe *after* the row has been inserted
+    
+    msg <- list()
+    if (data[row, "Buy"] == "") {
+      msg[[1]] <- "Item name can't be empty!"
+    }
+    if (data[row, "Quantity"] > 10) {
+      msg[[2]] <- "Can't buy more than ten (10)!"
+    }
+    msg <- Filter(Negate(is.null), msg)
+    if (length(msg)) stop(paste(msg, collapse = "<br>"))
+    
+    return(data)
+  }
+  
   Grocery_List_Results <- dtedit(
     input, output,
     name = 'Grocery_List',
@@ -219,7 +236,8 @@ server <- function(input, output) {
       Quantity = c(7, 2, 5),
       stringsAsFactors = FALSE
     ),
-    callback.update = grocery.update.callback
+    callback.update = grocery.update.callback,
+    callback.insert = grocery.insert.callback
   )
 
 }
@@ -246,11 +264,16 @@ in the `app_mod.R` tab.
 
 ## Reactive `thedata` dataframe
 
-`thedata` can be a reactive, in which case `dtedit`'s copy of the `thedata` will change in response to changes in the original dataframe. In the example below, the input buttons **more** and **less** trigger changes in **mydata**, which will be detected by `dtedit`.
+`thedata` can be a reactive `reactiveVal`, in which case `dtedit`'s copy of the `thedata` will change in response to changes in the original dataframe. In the example below, the input buttons **more** and **less** trigger changes in **mydata**, which will be detected by `dtedit`.
 
 In the call to `dtedit`, **mydata** is referred to in the `thedata` definition as **mydata**, *not* **mydata()**.
 
-Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to detect changes in **Grocery_List_Results$thedata**, which then changes **mydata**. Note that **Grocery_List_Results$thedata** does *not* have trailing parentheses '()'.
+Changes in `dtedit`'s copy of the data as the result of editing within `dtedit` do **not** automatically change the original dataframe **mydata**. The example below has set up an `observeEvent` to 
+
+* detect changes in **Grocery_List_Results$thedata**
+* which then changes **mydata** 
+
+Note that **Grocery_List_Results$thedata** does *not* have trailing parentheses '()'.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -351,18 +374,57 @@ ui <- fluidPage(
 shinyApp(ui = ui, server = server)
 ```
 
-## Formatting columns `datatable.call` and `datatable.rownames`
+## Custom icons for New/Edit/Delete/Copy buttons
 
-`DTedit` uses `DT`. `DT` [provides *helper* functions `format*()`](https://rstudio.github.io/DT/functions.html)
+By default, the **Add**, **Edit**, **Delete** and **Copy** buttons have no icons.
+Icons can be added with the `icon.add`, `icon.edit`, `icon.delete` and `icon.copy` options.
+
+```{r}
+server <- function(input, output, session) {
+    
+    Grocery_List <- dtedit(
+        input, output,
+        name = 'Grocery_List',
+        thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = c(7, 2, 5),
+            stringsAsFactors = FALSE
+        ), 
+		icon.delete = shiny::icon("trash"), 
+		icon.edit = shiny::icon("edit"), 
+		icon.add = shiny::icon("plus"), 
+		icon.copy = shiny::icon("copy")
+    )
+    
+    #### shinytest code for testing purposes only ########
+    data_list <- list() # exported list for shinytest
+    shiny::observeEvent(Grocery_List$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
+    })
+    shiny::exportTestValues(data_list = {data_list})
+    ######################################################
+}
+
+ui <- shiny::fluidPage(
+    shiny::h3('Grocery List'),
+    shiny::uiOutput('Grocery_List')
+)
+
+shiny::shinyApp(ui = ui, server = server)
+```
+
+## Formatting columns : `datatable.call` and `datatable.rownames`
+
+`DTedit` uses `DT` by calling `DT::renderDataTable`.
+`DT` [provides *helper* functions `format*()`](https://rstudio.github.io/DT/functions.html)
 to format table columns as currency, percentages or round numbers. To use the helper functions,
 the data needs to be pre-processed by `DT::datatable` and `DT::format*()` *before* being
 passed to `DT::renderDataTable`. These helper functions can be accessed by defining 
-`datatable.call` as pre-processing function.
+`datatable.call` as a pre-processing function.
 
 The formatting demonstrated below is not actually appropriate to the `mtcars` data,
-but is used simply for demonstration purposes. Unfortunately, the formatting does
-not work [unless `datatable.rownames` is set to `TRUE`](https://stackoverflow.com/questions/56879672/how-to-replacedata-in-dt-rendered-in-r-shiny-using-the-datatable-function),
-which is not the default.
+but is used for demonstration purposes. The formatting does not work
+[unless `datatable.rownames` is set to `TRUE`](https://stackoverflow.com/questions/56879672/how-to-replacedata-in-dt-rendered-in-r-shiny-using-the-datatable-function).
 
 ```{r, warning = FALSE, message = FALSE}
 library(magrittr) # provides the pipe '%>%' operator
@@ -374,7 +436,7 @@ server <- function(input, output, session) {
     thedata = mtcars,
     datatable.rownames = TRUE, # needed for the format*() functions to work
     datatable.call = function(...) {
-      datatable(...) %>%
+      DT::datatable(...) %>%
         formatSignif('qsec', 2) %>%
         formatCurrency('mpg') %>%
         formatStyle(
@@ -517,9 +579,11 @@ with source code in the `app_mod.R` tab. The interacting datatables are in the `
 
 ## Datatables options - buttons
 
-`dtedit` uses the [`DT`](https://rstudio.github.io/DT/) package to create datatables. [`DT`](https://rstudio.github.io/DT/) is based on [`datatables`](https://datatables.net/). `DT` has an `options` argument. `options` can be passed through to `DT` with `dtedit`'s `datatables.options` argument. Any argument that is not recognized by `dtedit` is passed through to `DT`.
+`dtedit` uses the [`DT`](https://rstudio.github.io/DT/) package to create datatables. [`DT`](https://rstudio.github.io/DT/) is based on [`datatables`](https://datatables.net/). `DT::datatable` has an `options` argument. `options` can be passed through to `DT::datatable` with `dtedit`'s `datatables.options` argument. In this case, we can add further arguments to `DT::datatable` by customizing the `datatable.call` function.
 
-The following example adds [copy, CSV and PDF buttons](https://rstudio.github.io/DT/003-tabletools-buttons.html) to `dtedit`'s datatable by defining `datatable.options` and `extensions` (extensions is not a recognized argument of `dtedit`).
+Any argument that is not recognized by `dtedit` is passed through to `DT::renderDataTable`.
+
+The following example adds [copy, CSV, PDF and Excel buttons](https://rstudio.github.io/DT/003-tabletools-buttons.html) to `dtedit`'s datatable by defining `datatable.options` and `datatable.call`. Note that 'Excel' might not be available on all R installations.
 
 ```{r, message = FALSE}
 server <- function(input, output) {
@@ -532,10 +596,11 @@ server <- function(input, output) {
       Quantity = c(7, 2, 5),
       stringsAsFactors = FALSE
     ),
-    extensions = 'Buttons',
+    datatable.call = function(...)
+      {DT::datatable(..., extensions = 'Buttons')},
     datatable.options = list(
       dom = 'Bfrtip',
-      buttons = c('copy', 'csv', 'pdf')
+      buttons = c('copy', 'csv', 'pdf', 'excel')
     )
   )
 }

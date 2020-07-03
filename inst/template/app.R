@@ -41,8 +41,10 @@ server <- function(input, output) {
 	  name = 'mycontacts',
 	  thedata = mydata,
 	  edit.cols = c('name', 'email', 'useR', 'notes'),
-	  edit.label.cols = c('Name', 'Email Address', 'Are they an R user?', 'Additional notes'),
-	  input.types = c(notes='textAreaInput'),
+	  edit.label.cols = c(
+	    'Name', 'Email Address', 'Are they an R user?', 'Additional notes'
+	  ),
+	  input.types = c(notes = 'textAreaInput'),
 	  view.cols = c('name', 'email', 'useR'),
 	  callback.update = my.update.callback,
 	  callback.insert = my.insert.callback,

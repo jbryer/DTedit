@@ -9,13 +9,13 @@ dtedit_demo(...)
 \arguments{
 \item{...}{arguments pass to \code{runApp}
 
-For example, can launch in showcase mode:
+ For example, can launch in showcase mode:
 
-\code{DTedit::dtedit_demo(display.mode = "showcase")}
+ \code{DTedit::dtedit_demo(display.mode = "showcase")}
 
-Note that 'showcase' mode shows all
-the .R files in the 'shiny_demo' directory, not
-just the .R file used for this demonstration!}
+ Note that 'showcase' mode shows all
+ the .R files in the 'shiny_demo' directory, not
+ just the .R file used for this demonstration!}
 }
 \description{
 Demonstrates adding/editing/deleting data rows,

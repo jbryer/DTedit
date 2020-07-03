@@ -42,6 +42,10 @@ dteditmod(
   label.copy = "Copy",
   label.save = "Save",
   label.cancel = "Cancel",
+  icon.delete = NULL,
+  icon.edit = NULL,
+  icon.add = NULL,
+  icon.copy = NULL,
   text.delete.modal = "Are you sure you want to delete this record?",
   show.delete = TRUE,
   show.update = TRUE,
@@ -199,6 +203,14 @@ The limit can be modified by using shiny.maxRequestSize option.}
 
 \item{label.cancel}{the label of the cancel button.}
 
+\item{icon.delete}{the icon for the delete button, e.g. \code{icon("trash")}. Defaults to \code{NULL}.}
+
+\item{icon.edit}{the icon for the edit button, e.g. \code{icon("edit")}. Defaults to \code{NULL}.}
+
+\item{icon.add}{the icon for the add button, e.g. \code{icon("plus")}. Defaults to \code{NULL}.}
+
+\item{icon.copy}{the icon for the copy button, e.g. \code{icon("copy")}. Defaults to \code{NULL}.}
+
 \item{text.delete.modal}{the text shown in the delete modal dialog.}
 
 \item{show.delete}{whether to show/enable the delete button.}
@@ -249,10 +261,10 @@ for example, to include \verb{DT::format*} calls.
 \value{
 Returns reactiveValues
 \itemize{
-\item \verb{$theData} - the current state of \code{DTedit}'s copy of the data
-\item \verb{$view.cols}
-\item \verb{$edit.cols}
-\item \verb{$edit.count} - number of edits to data done within \code{DTedit} (does not
+\item \code{theData} - the current state of \code{DTedit}'s copy of the data
+\item \code{view.cols}
+\item \code{edit.cols}
+\item \code{edit.count} - number of edits to data done within \code{DTedit} (does not
 include changes to \code{DTedit}'s copy of the data secondary to changes
 of a reactive \code{thedata})
 }

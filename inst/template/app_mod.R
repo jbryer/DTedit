@@ -8,7 +8,7 @@ server <- function(input, output, session) {
                        useR = factor(levels = c('Yes', 'No')),
                        notes = character(),
                        stringsAsFactors = FALSE)
-  
+
   ##### Callback functions.
   my.insert.callback <- function(data, row) {
     # 'data' contains the dataframe *after* the row has been inserted/added
@@ -17,7 +17,7 @@ server <- function(input, output, session) {
     # in this case, 'mydata' should just be the same as 'data'
     return(mydata)
   }
-  
+
   my.update.callback <- function(data, olddata, row) {
     # 'data' contains the dataframe *after* the row has been updated
     # 'row' is the row number where data has been updated
@@ -26,7 +26,7 @@ server <- function(input, output, session) {
     # in this case, 'mydata' should just be the same as 'data'
     return(mydata)
   }
-  
+
   my.delete.callback <- function(data, row) {
     # 'data' contains the dataframe *before* the row has been deleted
     # 'row' is the row number where data is to be deleted
@@ -34,15 +34,17 @@ server <- function(input, output, session) {
     # in this case, 'mydata' should just be the same as data[-c(row),]
     return(mydata)
   }
-  
+
   ##### Create the DTedit object
   callModule(
     DTedit::dteditmod,
     id = 'mycontacts',
     thedata = mydata,
     edit.cols = c('name', 'email', 'useR', 'notes'),
-    edit.label.cols = c('Name', 'Email Address', 'Are they an R user?', 'Additional notes'),
-    input.types = c(notes='textAreaInput'),
+    edit.label.cols = c(
+      'Name', 'Email Address', 'Are they an R user?', 'Additional notes'
+    ),
+    input.types = c(notes = 'textAreaInput'),
     view.cols = c('name', 'email', 'useR'),
     callback.update = my.update.callback,
     callback.insert = my.insert.callback,
