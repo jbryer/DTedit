@@ -5,6 +5,22 @@ date: "27th June 2020"
 output: html_document
 ---
 
+## DTedit 2.2.2
+6th August 2020
+
+### New features
+
+* `datetimeInput` for date and time input of `POSIXct` fields
+  + requires `useairDatepicker` to be set to TRUE
+  + associated option `datetime.width` to set width of input widget
+* `useairDatepicker` allows use of `shinyWidgets` date/time picker
+  + requires `shinyWidgets` >= 0.5.2
+### Bug fixes
+
+* references to `class()` now just refer to the first value in the
+  returned vector, as calls to `switch(class(x), ...)` failed when `class`
+  returns a multi-element vector.
+
 ## DTedit 2.2.1
 28th June 2020
 

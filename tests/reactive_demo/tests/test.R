@@ -1,3 +1,4 @@
+RNGkind(sample.kind = "Rounding") # the old random sampling method
 app <- ShinyDriver$new("../", seed = 123456)
 # data_scramble results in a random event, so need to set seed
 app$snapshotInit("test")
