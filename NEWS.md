@@ -15,11 +15,14 @@ output: html_document
   + associated option `datetime.width` to set width of input widget
 * `useairDatepicker` allows use of `shinyWidgets` date/time picker
   + requires `shinyWidgets` >= 0.5.2
+  
 ### Bug fixes
 
 * references to `class()` now just refer to the first value in the
   returned vector, as calls to `switch(class(x), ...)` failed when `class`
   returns a multi-element vector.
+* fix `dteditmod`/`dteditmodUI` examples to accurately reflect actual use
+  inside modules.
 
 ## DTedit 2.2.1
 28th June 2020
