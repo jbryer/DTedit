@@ -127,7 +127,9 @@ The `id` parameter will define the name of the object available to the `dteditmo
 The `id` you will pass to `dteditmodUI` is the id you passed to the `callModule` created on the server side.
 
 ```r
-dteditmodUI('mycontacts')
+ns <- shiny::NS(id)
+...
+dteditmodUI(ns('mycontacts'))
 ```
 
 #### Vignette

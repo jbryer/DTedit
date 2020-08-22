@@ -5,6 +5,25 @@ date: "27th June 2020"
 output: html_document
 ---
 
+## DTedit 2.2.2
+22nd August 2020
+
+### New features
+
+* `datetimeInput` for date and time input of `POSIXct` fields
+  + requires `useairDatepicker` to be set to TRUE
+  + associated option `datetime.width` to set width of input widget
+* `useairDatepicker` allows use of `shinyWidgets` date/time picker
+  + requires `shinyWidgets` >= 0.5.2
+  
+### Bug fixes
+
+* references to `class()` now just refer to the first value in the
+  returned vector, as calls to `switch(class(x), ...)` failed when `class`
+  returns a multi-element vector.
+* fix `dteditmod`/`dteditmodUI` examples to accurately reflect actual use
+  inside modules.
+
 ## DTedit 2.2.1
 28th June 2020
 
@@ -36,8 +55,15 @@ output: html_document
   as `datatable.rownames` must be set to `TRUE` to use `DT::format*()`. 
   See vignette and `help(dtedit)` for further details.
   + 'under the hood' there is a significant change in the way `DT::renderDataTable` is
-  called. **This is a breaking change**. Some uses of `dtedit` where `datatable.options`
-  is used will not work without change.
+  called. 
+  + **This is a breaking change**. Previously, if unrecognized options were used when
+  calling `dtedit`/`dteditmod`, the unrecognized options were passed through to
+  `DT::renderDataTable`. If `DT::renderDatatable` did not recognize the options, those
+  options were passed through to `DT::datatable`. However, since `DT::renderDataTable`
+  is now called with the results of a `DT::datatable` call, instead of `thedata`,
+  unrecognized options are *not* passed through to `DT::datatable` (this is a quirk
+  of `DT::renderDataTable`). This change in behaviour can be worked around (by defining
+  `datatable.call` with required `DT::datatable` options).
 
 ## DTedit 2.1.0
 16th June 2020

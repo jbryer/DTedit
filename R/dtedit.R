@@ -104,10 +104,12 @@ dtedit <- function(input, output,
 #'        dialog. The length and order of \code{delete.info.label.cols} must
 #'        correspond to \code{delete.info.cols}.
 #' @param input.types a character vector where the name corresponds to a column
-#' in \code{edit.cols} and the value is the input type. Possible values
-#' are:
+#'   in \code{edit.cols} and the value is the input type. Possible values
+#'   are:
 #'
 #'  * `dateInput` - input changed by `date.width`
+#'  * `datetimeInput` - input changed by `datetime.width`. needs
+#'      `useairDatepicker` set to `TRUE` and requires package `shinyWidgets`.
 #'  * `selectInput` - choices determined by `input.choices`,
 #'    or the levels of the data column
 #'    variable (if the column variable is of class `factor`),
@@ -131,6 +133,7 @@ dtedit <- function(input, output,
 #'
 #'  One case where this parameter is desirable is when a text
 #'  area is required instead of a simple text input.
+#'
 #' @param input.choices a list of character vectors. The names of each element in the list must
 #'  correspond to a column name in the data. The value, a character vector, are the options
 #'  presented to the user for data entry, in the case of input type \code{selectInput}).
@@ -164,6 +167,7 @@ dtedit <- function(input, output,
 #' @param textarea.width the width of text area inputs.
 #' @param textarea.height the height of text area inputs.
 #' @param date.width the width of data inputs
+#' @param datetime.width the width of datetime inputs
 #' @param numeric.width the width of numeric inputs.
 #' @param select.width the width of drop down inputs.
 #' @param max.fileInputLength the maximum length (in bytes) of \code{fileInput}.
@@ -201,6 +205,7 @@ dtedit <- function(input, output,
 #'  save or update buttons. If the user clicks the save button again within this amount of
 #'  time (in seconds), the subsequent click will be ignored. Set to zero to disable this
 #'  feature. For developers, a message is printed using the warning function.
+#' @param useairDatepicker use `shinyWidgets` package `airDatepickerInput`
 #' @param datatable.options options passed to \code{DT::renderDataTable}.
 #'  See \url{https://rstudio.github.io/DT/options.html} for more information.
 #' @param datatable.rownames show rownames as part of the datatable? `TRUE` or `FALSE`.
@@ -266,6 +271,7 @@ dteditmod <- function(input, output, session,
                       textarea.width = "570px",
                       textarea.height = "200px",
                       date.width = "100px",
+                      datetime.width = "200px",
                       numeric.width = "100px",
                       select.width = "100%",
                       defaultPageLength = 10,
@@ -294,6 +300,7 @@ dteditmod <- function(input, output, session,
                       callback.insert = function(data, row) { },
                       callback.actionButton = function(data, row, buttonID) { },
                       click.time.threshold = 2, # in seconds
+                      useairDatepicker = FALSE,
                       datatable.options = list(pageLength = defaultPageLength),
                       datatable.rownames = FALSE,
                       datatable.call = function(...) {DT::datatable(...)},
@@ -349,21 +356,32 @@ dteditmod <- function(input, output, session,
   }
 
   valid.input.types <- c(
-    "dateInput", "selectInput", "numericInput",
+    "dateInput", "datetimeInput", "selectInput", "numericInput",
     "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
     "selectInputReactive", "selectInputMultipleReactive", "fileInput"
   )
   inputTypes <- sapply(thedataCopy[, edit.cols], FUN = function(x) {
-    switch(class(x),
+    switch(class(x)[[1]],
            list = "selectInputMultiple",
            character = "textInput",
            Date = "dateInput",
+           POSIXct = "datetimeInput",
            factor = "selectInput",
            integer = "numericInput",
            numeric = "numericInput",
            blob = "fileInput"
     )
   })
+  if ("datetimeInput" %in% inputTypes && !useairDatepicker) {
+    # standard dateInput does not have a time picker
+    stop (
+      "'datetimeInput' not available if 'useairDatepicker' is set to false: ",
+      paste(
+        names(thedataCopy[, edit.cols])
+        [[which("datetimeInput" %in% inputTypes)]]
+      )
+    )
+  }
   if (!missing(input.types)) {
     if (!all(names(input.types) %in% edit.cols)) {
       stop(
@@ -516,11 +534,36 @@ dteditmod <- function(input, output, session,
                         as.character(Sys.Date()),
                         as.character(values[, edit.cols[i]])
         )
-        fields[[i]] <- dateInput(
+        if (!useairDatepicker) {
+          fields[[i]] <- shiny::dateInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            value = value,
+            width = date.width
+          )
+        } else {
+          fields[[i]] <- shinyWidgets::airDatepickerInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            value = value,
+            timepicker = FALSE,
+            addon = "none",
+            width = date.width
+          )
+        }
+      } else if (inputTypes[i] == "datetimeInput") {
+        # note that this uses shinyWidgets::airDatepickerInput
+        value <- ifelse(missing(values),
+                        as.character(Sys.time()),
+                        as.character(values[, edit.cols[i]])
+        )
+        fields[[i]] <- shinyWidgets::airDatepickerInput(
           ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
           value = value,
-          width = date.width
+          timepicker = TRUE,
+          addon = "none",
+          width = datetime.width
         )
       } else if (inputTypes[i] == "selectInputMultiple") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
@@ -796,7 +839,7 @@ dteditmod <- function(input, output, session,
     #  but as.blob can't be used to create a NULL blob object!
     for (i in seq_len(ncol(newdata))) {
       new_row[[i]] <- switch(
-        class(newdata[, i]),
+        class(newdata[, i])[[1]],
         "factor" = as.factor(NA),
         "Date" = as.Date(NA, origin = "1970-01-01"),
         "raw" = list(blob::as.blob(raw(1))),
@@ -804,7 +847,7 @@ dteditmod <- function(input, output, session,
         "character" = as.character(NA),
         "numeric" = as.numeric(NA),
         "AsIs" = as.list(NA), # for lists
-        methods::as(NA, class(newdata[, i])))
+        methods::as(NA, class(newdata[, i])[[1]]))
     }
     newdata[row, ] <- data.frame(new_row, stringsAsFactors = FALSE)
     # create a new empty row, compatible with blob columns

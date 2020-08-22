@@ -29,6 +29,7 @@ dteditmod(
   textarea.width = "570px",
   textarea.height = "200px",
   date.width = "100px",
+  datetime.width = "200px",
   numeric.width = "100px",
   select.width = "100\%",
   defaultPageLength = 10,
@@ -56,6 +57,7 @@ dteditmod(
   callback.insert = function(data, row) { },
   callback.actionButton = function(data, row, buttonID) { },
   click.time.threshold = 2,
+  useairDatepicker = FALSE,
   datatable.options = list(pageLength = defaultPageLength),
   datatable.rownames = FALSE,
   datatable.call = function(...) {     DT::datatable(...) },
@@ -107,6 +109,8 @@ in \code{edit.cols} and the value is the input type. Possible values
 are:
 \itemize{
 \item \code{dateInput} - input changed by \code{date.width}
+\item \code{datetimeInput} - input changed by \code{datetime.width}. needs
+\code{useairDatepicker} set to \code{TRUE} and requires package \code{shinyWidgets}.
 \item \code{selectInput} - choices determined by \code{input.choices},
 or the levels of the data column
 variable (if the column variable is of class \code{factor}),
@@ -175,6 +179,8 @@ placed after this named column.
 
 \item{date.width}{the width of data inputs}
 
+\item{datetime.width}{the width of datetime inputs}
+
 \item{numeric.width}{the width of numeric inputs.}
 
 \item{select.width}{the width of drop down inputs.}
@@ -239,6 +245,8 @@ alternatively return NULL if data is not to be changed.}
 save or update buttons. If the user clicks the save button again within this amount of
 time (in seconds), the subsequent click will be ignored. Set to zero to disable this
 feature. For developers, a message is printed using the warning function.}
+
+\item{useairDatepicker}{use \code{shinyWidgets} package \code{airDatepickerInput}}
 
 \item{datatable.options}{options passed to \code{DT::renderDataTable}.
 See \url{https://rstudio.github.io/DT/options.html} for more information.}
@@ -349,14 +357,20 @@ if (interactive())
 # unfortunately, this application cannot be
 # tried with 'example("dteditmod")', but you can copy
 # and paste to execute in 'interactive' console mode,
-# or copy the lines into an '.R' file and choose 
+# or copy the lines into an '.R' file and choose
 # 'Run App' from RStudio.
 library(shiny)
 library(DTedit)
 
-server <- function(input, output, session) {
-  
-  Grocery_List <- callModule(
+myModuleUI <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    dteditmodUI(ns('Grocery_List'))
+  )
+}
+
+myModule <- function(input, output, session) {
+  Grocery_List_Results <- shiny::callModule(
     dteditmod,
     id = 'Grocery_List',
     thedata = data.frame(
@@ -367,9 +381,15 @@ server <- function(input, output, session) {
   )
 }
 
+server <- function(input, output, session) {
+
+  shiny::callModule(myModule, 'myModule1')
+
+}
+
 ui <- fluidPage(
   h3('Grocery List'),
-  dteditmodUI('Grocery_List')
+  myModuleUI('myModule1')
 )
 
 if (interactive() || isTRUE(getOption("shiny.testmode")))

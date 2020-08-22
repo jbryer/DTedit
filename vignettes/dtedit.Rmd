@@ -119,16 +119,22 @@ shinyApp(ui = ui, server = server)
 
 The module version `dteditmod` is very similar to `dtedit`, and accepts many of the same arguments.
 
-`dteditmod` is referenced by the `callModule` function, which in turn is defined in shiny's `server` function. Instead of using `name`, `dteditmod` uses `id` (in this case **Grocery_List**). The same `id` is referenced by `dteditmodUI` object in the `ui` (user interface) definition, as seen in the example below.
+`dteditmod` is referenced by the `callModule` function, which in turn is defined in shiny's `server` function. Instead of using `name`, `dteditmod` uses `id` (in this case **Grocery_List**). The same `id` is referenced by `dteditmodUI` object in the `ui` (user interface) definition, surrounded by a `shiny::NS` function call, as seen in the example below.
 
 ```{r, eval = FALSE}
 # minimal DTedit example 'dteditmod'
 library(shiny)
 library(DTedit)
 
-server <- function(input, output, session) {
+myModuleUI <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    dteditmodUI(ns('Grocery_List'))
+  )
+}
 
-  Grocery_List_Results <- callModule(
+myModule <- function(input, output, session) {
+  Grocery_List_Results <- shiny::callModule(
     dteditmod,
     id = 'Grocery_List',
     thedata = data.frame(
@@ -141,8 +147,12 @@ server <- function(input, output, session) {
 
 ui <- fluidPage(
   h3('Grocery List'),
-  dteditmodUI('Grocery_List')
+  myModuleUI('myModule1')
 )
+
+server <- function(input, output, session) {
+  shiny::callModule(myModule, 'myModule1')
+}
 
 shinyApp(ui = ui, server = server)
 ```
@@ -475,12 +485,13 @@ function(...) {DT::datatable(...)}
 
 The data class of the column determines the default input type of the column. The mappings are :
 
-* list $\rightarrow$ "selectInputMultiple",
-* character $\rightarrow$ "textInput",
-* Date $\rightarrow$ "dateInput",
-* factor $\rightarrow$ "selectInput",
-* integer $\rightarrow$ "numericInput",
-* numeric $\rightarrow$ "numericInput",
+* list $\rightarrow$ "selectInputMultiple"
+* character $\rightarrow$ "textInput"
+* Date $\rightarrow$ "dateInput"
+* POSIXct $\rightarrow$ "datetimeInput"
+* factor $\rightarrow$ "selectInput"
+* integer $\rightarrow$ "numericInput"
+* numeric $\rightarrow$ "numericInput"
 * blob $\rightarrow$ "fileInput"
 
 `input.types` can be explicitly defined.
@@ -488,6 +499,8 @@ The data class of the column determines the default input type of the column. Th
 Valid `input.types` are :
 
 * dateInput
+* datetimeInput - **note** this requires `shinyWidgets` (>= 0.5.2) package and 
+  `useairDatepicker` option.
 * selectInput
 * selectInputMultiple
 * selectInputReactive
@@ -502,7 +515,9 @@ For an example of explicit definition, see [`selectInput`](#selectInput).
 
 ## `selectInput` and `selectInputReactive` {#selectInput}
 
-Drop down choices can be defined statically by defining `input.types` as `selectInput`. `selectInput` will look for possible input choices in the following ways :
+Drop down choices can be defined statically by defining `input.types` as
+`selectInput`. `selectInput` will look for possible input choices in the
+following ways :
 
 * if `input.choices` is defined (as in the example below)
 * the column is a 'factor/categorical' variable, with defined `factor`s 

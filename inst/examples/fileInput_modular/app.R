@@ -3,10 +3,17 @@ library(shiny)
 library(DTedit)
 library(blob)
 
-server <- function(input, output) {
+myModuleUI <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    dteditmodUI(ns('Grocery_List'))
+  )
+}
 
-  picture <- reactiveVal(NULL)
-  spreadsheet <- reactiveVal(NULL)
+myModule <- function(input, output, session) {
+
+  myModule_picture <- reactiveVal()
+  myModule_spreadsheet <- reactiveVal()
 
   my.actionButton.callback <- function(data, row, buttonID) {
     if (substr(buttonID, 1, nchar("picture")) == "picture") {
@@ -22,12 +29,12 @@ server <- function(input, output) {
         close(zz)
 
         # read the picture from the temporary file
-        picture(base64enc::dataURI(file = outfile))
+        myModule_picture(base64enc::dataURI(file = outfile))
 
         # cleanup (remove the temporary file)
         file.remove(outfile)
       } else {
-        picture(NULL)
+        myModule_picture(NULL)
       }
     }
     if (substr(buttonID, 1, nchar("spreadsheet")) == "spreadsheet") {
@@ -38,18 +45,18 @@ server <- function(input, output) {
         writeBin(object = unlist(data[row, "Spreadsheet"]), con = zz)
         close(zz)
 
-        spreadsheet(read.csv(outfile))
+        myModule_spreadsheet(read.csv(outfile))
 
         # cleanup
         file.remove(outfile)
       } else {
-        spreadsheet(NULL)
+        myModule_spreadsheet(NULL)
       }
     }
     return(NULL)
   }
 
-  Grocery_List <- callModule(
+  Grocery_List_Results <- callModule(
     dteditmod,
     'Grocery_List',
     thedata = data.frame(
@@ -89,26 +96,39 @@ server <- function(input, output) {
     callback.actionButton = my.actionButton.callback
   )
 
+  return(
+    list(
+      thedata = reactive({Grocery_List_Results$thedata}),
+      picture = reactive({myModule_picture()}),
+      spreadsheet = reactive({myModule_spreadsheet()})
+    )
+  )
+}
+
+server <- function(input, output) {
+
   output$listPicture <- shiny::renderUI({
     shiny::tags$img(
-      src = picture(),
+      src = module_results$picture(),
       width = "100%"
     )
   })
 
   output$showSpreadsheet <- DT::renderDataTable({
-    spreadsheet()
+    module_results$spreadsheet()
   })
+
+  module_results <- shiny::callModule(myModule, 'myModule1')
 
   #### following code for shinytest, not essential for application function ####
   data_list <- list() # exported list for shinytest
-  shiny::observeEvent(Grocery_List$thedata, {
-    data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
+  shiny::observeEvent(module_results$thedata(), {
+    data_list[[length(data_list) + 1]] <<- module_results$thedata()
   })
   shiny::exportTestValues(data_list = {data_list})
   spreadsheet_list <- list() # exported list for shinytest
-  shiny::observeEvent(spreadsheet(), {
-    spreadsheet_list[[length(spreadsheet_list) + 1]] <<- spreadsheet()
+  shiny::observeEvent(module_results$spreadsheet(), {
+    spreadsheet_list[[length(spreadsheet_list) + 1]] <<- module_results$spreadsheet()
   })
   shiny::exportTestValues(spreadsheet_list = {spreadsheet_list})
   ##############################################################################
@@ -119,7 +139,7 @@ ui <- fluidPage(
   "Pictures must be in JPEG (.jpg) format. Spreadsheets must be",
   "in comma-separated-value (.csv) format!",
   br(), br(), br(),
-  dteditmodUI("Grocery_List"),
+  myModuleUI('myModule1'),
   uiOutput("listPicture"),
   DT::dataTableOutput("showSpreadsheet")
 )
