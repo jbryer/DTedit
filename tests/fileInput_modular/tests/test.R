@@ -3,27 +3,27 @@ app$snapshotInit("test")
 
 app$snapshot(items = list(export = TRUE))
 app$setInputs(
-  `Grocery_List-editdtdt_rows_selected` = 1, allowInputNoBinding_ = TRUE
+  `myModule1-Grocery_List-editdtdt_rows_selected` = 1, allowInputNoBinding_ = TRUE
 )
 app$setInputs(
-  `Grocery_List-editdtdt_rows_last_clicked` = 1, allowInputNoBinding_ = TRUE
+  `myModule1-Grocery_List-editdtdt_rows_last_clicked` = 1, allowInputNoBinding_ = TRUE
 )
-app$setInputs(`Grocery_List-editdt_edit` = "click")
-app$uploadFile(`Grocery_List-editdt_edit_Picture` = "bee_agapanthus.jpg")
+app$setInputs(`myModule1-Grocery_List-editdt_edit` = "click")
+app$uploadFile(`myModule1-Grocery_List-editdt_edit_Picture` = "bee_agapanthus.jpg")
 # <-- This should be the path to the file,
 # relative to the app's tests/ directory
 app$uploadFile(
-  `Grocery_List-editdt_edit_Spreadsheet` = "DiabetesSIP_Report.csv"
+  `myModule1-Grocery_List-editdt_edit_Spreadsheet` = "DiabetesSIP_Report.csv"
   )
-app$setInputs(`Grocery_List-editdt_update` = "click")
+app$setInputs(`myModule1-Grocery_List-editdt_update` = "click")
 Sys.sleep(1.5)
 
-app$setInputs(`Grocery_List-editdt_add` = "click")
-app$setInputs(`Grocery_List-editdt_add_Buy` = "Locquats",
-              `Grocery_List-editdt_add_Quantity` = 3)
-app$uploadFile(`Grocery_List-editdt_add_Picture` = "epiphyllum.jpg")
-app$uploadFile(`Grocery_List-editdt_add_Spreadsheet` = "Zostavax_Report.csv")
-app$setInputs(`Grocery_List-editdt_insert` = "click")
+app$setInputs(`myModule1-Grocery_List-editdt_add` = "click")
+app$setInputs(`myModule1-Grocery_List-editdt_add_Buy` = "Locquats",
+              `myModule1-Grocery_List-editdt_add_Quantity` = 3)
+app$uploadFile(`myModule1-Grocery_List-editdt_add_Picture` = "epiphyllum.jpg")
+app$uploadFile(`myModule1-Grocery_List-editdt_add_Spreadsheet` = "Zostavax_Report.csv")
+app$setInputs(`myModule1-Grocery_List-editdt_insert` = "click")
 Sys.sleep(1.5)
 
 app$executeScript('document.getElementById("picture_1").click()')
