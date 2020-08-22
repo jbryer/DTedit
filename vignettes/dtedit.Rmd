@@ -485,12 +485,13 @@ function(...) {DT::datatable(...)}
 
 The data class of the column determines the default input type of the column. The mappings are :
 
-* list $\rightarrow$ "selectInputMultiple",
-* character $\rightarrow$ "textInput",
-* Date $\rightarrow$ "dateInput",
-* factor $\rightarrow$ "selectInput",
-* integer $\rightarrow$ "numericInput",
-* numeric $\rightarrow$ "numericInput",
+* list $\rightarrow$ "selectInputMultiple"
+* character $\rightarrow$ "textInput"
+* Date $\rightarrow$ "dateInput"
+* POSIXct $\rightarrow$ "datetimeInput"
+* factor $\rightarrow$ "selectInput"
+* integer $\rightarrow$ "numericInput"
+* numeric $\rightarrow$ "numericInput"
 * blob $\rightarrow$ "fileInput"
 
 `input.types` can be explicitly defined.
@@ -498,6 +499,8 @@ The data class of the column determines the default input type of the column. Th
 Valid `input.types` are :
 
 * dateInput
+* datetimeInput - **note** this requires `shinyWidgets` (>= 0.5.2) package and 
+  `useairDatepicker` option.
 * selectInput
 * selectInputMultiple
 * selectInputReactive
@@ -512,7 +515,9 @@ For an example of explicit definition, see [`selectInput`](#selectInput).
 
 ## `selectInput` and `selectInputReactive` {#selectInput}
 
-Drop down choices can be defined statically by defining `input.types` as `selectInput`. `selectInput` will look for possible input choices in the following ways :
+Drop down choices can be defined statically by defining `input.types` as
+`selectInput`. `selectInput` will look for possible input choices in the
+following ways :
 
 * if `input.choices` is defined (as in the example below)
 * the column is a 'factor/categorical' variable, with defined `factor`s 
