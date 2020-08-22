@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ## DTedit 2.2.2
-6th August 2020
+22nd August 2020
 
 ### New features
 
