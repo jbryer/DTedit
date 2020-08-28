@@ -83,6 +83,7 @@ dtedit <- function(input, output,
 #'  * `edit.count` - number of edits to data done within `DTedit` (does not
 #'     include changes to `DTedit`'s copy of the data secondary to changes
 #'     of a reactive `thedata`)
+#'  * `rows_selected` - the row number selected. initially set to `NULL`
 #'
 #' @param input Shiny input object passed from the server.
 #' @param output Shiny output object passed from the server.
@@ -348,6 +349,7 @@ dteditmod <- function(input, output, session,
   result$view.cols <- view.cols
   result$edit.cols <- edit.cols
   result$edit.count <- 0 # number of edits (Add/Delete/Edit/Copy) through dtedit
+  result$rows_selected <- NULL # no row selected initially
 
   dt.proxy <- DT::dataTableProxy(DataTableName)
 
@@ -517,6 +519,14 @@ dteditmod <- function(input, output, session,
   outputOptions(output, DataTableName, suspendWhenHidden = FALSE)
   # without turning off suspendWhenHidden, changes are
   #  not rendered if containing tab is not visible
+
+  # if a row is selected in the dataframe named in 'DataTableName'
+  # then set result$rows_selected to that row
+  # this will be returned to the caller
+  shiny::observeEvent(
+    input[[paste0(DataTableName, "_rows_selected")]], {
+      result$rows_selected <- input[[paste0(DataTableName, "_rows_selected")]]
+    })
 
   getFields <- function(typeName, values) {
     # creates input fields when adding or editing a row

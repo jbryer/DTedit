@@ -5,6 +5,13 @@ date: "27th June 2020"
 output: html_document
 ---
 
+## DTedit 2.2.3
+28th August 2020
+
+### New features
+
+* `result$rows_selected` returns the row selected, issue #10
+
 ## DTedit 2.2.2
 22nd August 2020
 
