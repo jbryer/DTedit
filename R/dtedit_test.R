@@ -38,6 +38,10 @@ dtedit_test <- function(appname = "simple", ...) {
       shiny::observeEvent(Grocery_List$thedata, {
         data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
       })
+      shiny::observeEvent(Grocery_List$rows_selected, ignoreNULL = FALSE, {
+        data_list[[length(data_list) + 1]] <<-
+          paste("Row selected: ", Grocery_List$rows_selected)
+      }) # record the selected row
       shiny::exportTestValues(data_list = {data_list})
       ######################################################
     }

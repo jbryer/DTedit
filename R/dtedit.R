@@ -780,6 +780,7 @@ dteditmod <- function(input, output, session,
     }
 
     DT::replaceData(proxy, addActionButtons(data, action.buttons)$data, ...)
+    result$rows_selected <- NULL # no row selected after each edit
   }
 
   ##### Insert functions #####################################################
