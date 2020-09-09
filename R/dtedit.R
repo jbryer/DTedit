@@ -377,11 +377,7 @@ dteditmod <- function(input, output, session,
   if ("datetimeInput" %in% inputTypes && !useairDatepicker) {
     # standard dateInput does not have a time picker
     stop (
-      "'datetimeInput' not available if 'useairDatepicker' is set to false: ",
-      paste(
-        names(thedataCopy[, edit.cols])
-        [[which("datetimeInput" %in% inputTypes)]]
-      )
+      "'datetimeInput', or POSIXct types, are not available if 'useairDatepicker' is set to false."
     )
   }
   if (!missing(input.types)) {
@@ -856,6 +852,7 @@ dteditmod <- function(input, output, session,
         "blob" = list(blob::as.blob(raw(1))),
         "character" = as.character(NA),
         "numeric" = as.numeric(NA),
+        "POSIXct" = as.POSIXct(NA),
         "AsIs" = as.list(NA), # for lists
         methods::as(NA, class(newdata[, i])[[1]]))
     }

@@ -12,6 +12,14 @@ output: html_document
 
 * `result$rows_selected` returns the row selected, issue #10
 
+### Improvements
+
+* testing for `datetimeInput`
+
+### Bug fix
+
+* adding row with `datetimeInput` did not work
+
 ## DTedit 2.2.2
 22nd August 2020
 
