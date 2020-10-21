@@ -275,6 +275,7 @@ Returns reactiveValues
 \item \code{edit.count} - number of edits to data done within \code{DTedit} (does not
 include changes to \code{DTedit}'s copy of the data secondary to changes
 of a reactive \code{thedata})
+\item \code{rows_selected} - the row number selected. initially set to \code{NULL}
 }
 }
 \description{

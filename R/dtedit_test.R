@@ -38,6 +38,10 @@ dtedit_test <- function(appname = "simple", ...) {
       shiny::observeEvent(Grocery_List$thedata, {
         data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
       })
+      shiny::observeEvent(Grocery_List$rows_selected, ignoreNULL = FALSE, {
+        data_list[[length(data_list) + 1]] <<-
+          paste("Row selected: ", Grocery_List$rows_selected)
+      }) # record the selected row
       shiny::exportTestValues(data_list = {data_list})
       ######################################################
     }
@@ -409,6 +413,20 @@ dtedit_test <- function(appname = "simple", ...) {
         error = function(e) error_message(e)
       )
 
+      tryCatch(
+        dtedit(
+          input, output,
+          name = "datetimeInput_notAllowed",
+          thedata = data.frame(
+            Buy = c('Tea', 'Biscuits', 'Apples'),
+            Quantity = as.integer(c(7,2,3)),
+            DueDate = as.POSIXct(c("2020-09-10", "2020-11-14", "2021-05-23")),
+            stringsAsFactors = FALSE
+          )
+        ),
+        error = function(e) error_message(e)
+      )
+
       # following will generate warning when trying to add a new row
       tryCatch(
         w1 <- dtedit(
@@ -476,7 +494,7 @@ dtedit_test <- function(appname = "simple", ...) {
     ui <- shiny::fluidPage(
       shiny::h3('Grocery List'),
       shiny::uiOutput('Grocery_List'),
-      shiny::h4("No choices selecInput"),
+      shiny::h4("No choices selectInput"),
       shiny::uiOutput('NoChoice_selectInput'),
       shiny::h4("No choices selectInput Reactive"),
       shiny::uiOutput('NoChoice_selectInputReactive'),
@@ -583,6 +601,45 @@ dtedit_test <- function(appname = "simple", ...) {
     ui <- shiny::fluidPage(
       shiny::h3('Passwords'),
       shiny::uiOutput('Password_List')
+    )
+
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return (shiny::shinyApp(ui = ui, server = server, ...))
+  }
+
+  if (appname == "datetimeInput") {
+    server <- function(input, output, session) {
+      Due_List <- dtedit(
+        input, output,
+        name = "ToBuy",
+        thedata = data.frame(
+          Buy = c('Tea', 'Biscuits', 'Apples'),
+          Quantity = as.integer(c(7,2,3)),
+          DueTime = as.POSIXct(c("2020-09-10", "2020-11-14", "2021-05-23")),
+          stringsAsFactors = FALSE
+        ),
+        useairDatepicker = TRUE
+      )
+
+      #### shinytest code for testing purposes only ########
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Due_List$thedata, {
+        data_list[[length(data_list) + 1]] <<- Due_List$thedata
+      })
+      shiny::exportTestValues(data_list = {data_list})
+      # unfortunately, there is no testing for datetimeInput yet
+      # because
+      # `app$setInputs(ToBuy_edit_DueTime = 1605548460000)`
+      # does not set the widget's value, and I am unable
+      # to find an alternative app$executeScript which will
+      # set the vlaue
+      # see https://github.com/rstudio/shinytest/issues/252
+      ######################################################
+    }
+
+    ui <- shiny::fluidPage(
+      shiny::h3('ToDo List'),
+      shiny::uiOutput('ToBuy')
     )
 
     if (interactive() || isTRUE(getOption("shiny.testmode")))

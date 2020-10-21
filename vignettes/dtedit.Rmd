@@ -5,14 +5,6 @@ date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette:
     toc: yes
-  prettydoc::html_pretty:
-    theme: cayman
-    highlight: vignette
-    toc: yes
-    toc_depth: 4
-  pdf_document:
-    toc: yes
-    toc_depth: '3'
   html_document:
     number_sections: yes
     theme: lumen
@@ -21,6 +13,14 @@ output:
     toc_float:
       collapsed: yes
       smooth_scroll: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: vignette
+    toc: yes
+    toc_depth: 4
 abstract: Editable DataTables (DT) package for shiny apps. Originally created by Jason
   Bryer. Data columns to view or edit can be selected. Different datatypes can be edited.
   Valid input choices and interaction with persistent storage can be defined through
@@ -157,18 +157,25 @@ server <- function(input, output, session) {
 shinyApp(ui = ui, server = server)
 ```
 
-In this vignette, the 'standard' `dtedit` is mostly used. Some examples referenced, but not fully described, in the `DTedit` package use the modular `dteditmod`.
+In this vignette, the 'standard' `dtedit` is mostly used. Some examples referenced,
+but not fully described, in the `DTedit` package use the modular `dteditmod`.
 
 ## Receiving changes from `dtedit` (or `dteditmod`)
 
-`dtedit` returns a list. The list includes `$thedata`, which is a reactive and will change when `dtedit`'s copy of the dataframe changes.
+`dtedit` returns a list. The list includes `$thedata`, which is a reactive and
+will change when `dtedit`'s copy of the dataframe changes. The list also includes
+`$rows_selected`, which is a reactive and will change when a different row
+is selected.
 
 In the example below, the results are stored in a variable name **Grocery_List_Results**.
 Every time the internal copy of `thedata` changes, so does **Grocery_List_Results$thedata**.
 
 An `observeEvent` waits for changes in **Grocery_List_Results$thedata**.
 
-The `observeEvent` then messages the contents of **Grocery_List_Results$thedata** to the console.
+The `observeEvent` then messages the contents of **Grocery_List_Results$thedata**
+to the console.
+
+Similarly, an `observeEvent` waits for changes in **Grocery_List_Results$rows_selected**.
 
 ```{r, eval = FALSE}
 server <- function(input, output) {
@@ -185,6 +192,11 @@ server <- function(input, output) {
 
   observeEvent(Grocery_List_Results$thedata, {
     message(Grocery_List_Results$thedata)
+  })
+  
+  observeEvent(Grocery_List_Results$rows_selected, ignoreNULL = FALSE, {
+    # 'no' (NULL) row will be 'selected' after each edit of the data
+    message(paste("Selected row:", Grocery_List_Results$rows_selected))
   })
 
 }

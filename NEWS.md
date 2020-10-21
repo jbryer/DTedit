@@ -5,6 +5,26 @@ date: "27th June 2020"
 output: html_document
 ---
 
+## DTedit 2.2.3
+21st October 2020
+
+### New features
+
+* `result$rows_selected` returns the row selected, issue #10
+
+### Improvements
+
+* testing for `datetimeInput`
+
+### Bug fix
+
+* adding row with `datetimeInput` did not work
+
+### Other changes
+
+* reactive_demo test set to R 4.0+ random number generator method
+* removal of some tests from error_test due to unusual locale error
+
 ## DTedit 2.2.2
 22nd August 2020
 

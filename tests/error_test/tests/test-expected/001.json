@@ -36,7 +36,8 @@
       "Error in dteditmod(input, output, session = name, thedata = thedata, ...): input.types column not a valid editing column: Quantity\n",
       "Error in dteditmod(input, output, session = name, thedata = thedata, ...): input.types must only contain values of: dateInput, datetimeInput, selectInput, numericInput, textInput, textAreaInput, passwordInput, selectInputMultiple, selectInputReactive, selectInputMultipleReactive, fileInput\n",
       "Error in dteditmod(input, output, session = name, thedata = thedata, ...): delete.info.cols and delete.info.label.cols must be the same length.\n",
-      "Error in dteditmod(input, output, session = name, thedata = thedata, ...): Not all delete.info.cols are in the data.\n"
+      "Error in dteditmod(input, output, session = name, thedata = thedata, ...): Not all delete.info.cols are in the data.\n",
+      "Error in dteditmod(input, output, session = name, thedata = thedata, ...): 'datetimeInput', or POSIXct types, are not available if 'useairDatepicker' is set to false.\n"
     ]
   }
 }
