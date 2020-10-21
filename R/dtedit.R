@@ -989,6 +989,15 @@ dteditmod <- function(input, output, session,
               )
             )
           }
+        } else if (inputTypes[i] %in% c("dateInput", "datetimeInput")) {
+          if (length(input[[paste0(name, "_edit_", i)]]) == 0) {
+            newdata[row, i] <- as.Date(NA)
+            # 'dateInput' returns length 0 if empty, but date of length 0
+            # fails to 'replace' the current contents of newdata[row, i]!
+            # address issue #21
+          } else {
+            newdata[row, i] <- input[[paste0(name, "_edit_", i)]]
+          }
         } else {
           newdata[row, i] <- input[[paste0(name, "_edit_", i)]]
         }

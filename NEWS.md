@@ -5,6 +5,14 @@ date: "27th June 2020"
 output: html_document
 ---
 
+## DTedit 2.2.4
+21st October 2020
+
+### Bug fix
+
+* fix entering an empty (NA) date in `dateInput` and `datetimeInput` when
+  editing an entry (issue #21)
+
 ## DTedit 2.2.3
 21st October 2020
 
