@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ## DTedit 2.2.3
-28th August 2020
+21st October 2020
 
 ### New features
 
@@ -19,6 +19,11 @@ output: html_document
 ### Bug fix
 
 * adding row with `datetimeInput` did not work
+
+### Other changes
+
+* reactive_demo test set to R 4.0+ random number generator method
+* removal of some tests from error_test due to unusual locale error
 
 ## DTedit 2.2.2
 22nd August 2020

@@ -494,7 +494,7 @@ dtedit_test <- function(appname = "simple", ...) {
     ui <- shiny::fluidPage(
       shiny::h3('Grocery List'),
       shiny::uiOutput('Grocery_List'),
-      shiny::h4("No choices selecInput"),
+      shiny::h4("No choices selectInput"),
       shiny::uiOutput('NoChoice_selectInput'),
       shiny::h4("No choices selectInput Reactive"),
       shiny::uiOutput('NoChoice_selectInputReactive'),

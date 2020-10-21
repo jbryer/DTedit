@@ -10,7 +10,7 @@ coverage:
       default:
         target: auto
         threshold: 1%
-        
+
 codecov:
   token: deae9e1f-ee2b-45fb-a095-ee90d9c2f299
 
@@ -19,4 +19,3 @@ sudo: false
 cache: packages
 after_success:
  - Rscript -e 'covr::codecov()'
- 
