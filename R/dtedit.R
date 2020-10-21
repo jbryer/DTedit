@@ -151,6 +151,8 @@ dtedit <- function(input, output,
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
 #'  to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 #'  The reactive itself is a character vector.
+#' @param shinyFeedback a named list of functions, taking the name of an inputID,
+#'  to be used with `shinyFeedback`
 #' @param action.buttons a named list of action button columns.
 #'  Each column description is a list of \code{columnLabel}, \code{buttonLabel},
 #'  \code{buttonPrefix}, \code{afterColumn}.
@@ -265,6 +267,7 @@ dteditmod <- function(input, output, session,
                       input.types,
                       input.choices = NULL,
                       input.choices.reactive = NULL,
+                      shinyFeedback = NULL,
                       action.buttons = NULL,
                       selectize = TRUE,
                       modal.size = "m",
@@ -790,6 +793,17 @@ dteditmod <- function(input, output, session,
     # the 'addModal' popup is generated, with 'missing' values
     if (!is.null(row)) {
       shiny::showModal(addModal())
+      if (!is.null(shinyFeedback)) {
+        for (i in edit.cols) {
+          if (!is.null(shinyFeedback[[i]])) {
+            input_name <- paste0(name, "_add_", i)
+            observeEvent(input[[input_name]], {
+              shinyFeedback[[i]](input_name)
+            }
+            )
+          }
+        }
+      }
     }
   })
 

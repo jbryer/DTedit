@@ -22,6 +22,7 @@ dteditmod(
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
+  shinyFeedback = NULL,
   action.buttons = NULL,
   selectize = TRUE,
   modal.size = "m",
@@ -153,6 +154,9 @@ is acceptable. Can be a case insensitive file extension
 \item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
 to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 The reactive itself is a character vector.}
+
+\item{shinyFeedback}{a named list of functions, taking the name of an inputID,
+to be used with \code{shinyFeedback}}
 
 \item{action.buttons}{a named list of action button columns.
 Each column description is a list of \code{columnLabel}, \code{buttonLabel},
