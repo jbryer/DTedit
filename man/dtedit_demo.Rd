@@ -4,8 +4,21 @@
 \alias{dtedit_demo}
 \title{Run a shiny app showing how the DTedit function works.}
 \usage{
-dtedit_demo()
+dtedit_demo(...)
+}
+\arguments{
+\item{...}{arguments pass to \code{runApp}
+
+ For example, can launch in showcase mode:
+
+ \code{DTedit::dtedit_demo(display.mode = "showcase")}
+
+ Note that 'showcase' mode shows all
+ the .R files in the 'shiny_demo' directory, not
+ just the .R file used for this demonstration!}
 }
 \description{
-Run a shiny app showing how the DTedit function works.
+Demonstrates adding/editing/deleting data rows,
+ callbacks, interacting with a database,
+ selectInput and selectInputMultiple.
 }

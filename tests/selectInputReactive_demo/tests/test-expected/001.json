@@ -1,0 +1,109 @@
+{
+  "export": {
+    "data_list": [
+      {
+        "Name": [
+
+        ],
+        "Email": [
+
+        ],
+        "Date": [
+
+        ],
+        "Type": [
+
+        ],
+        "Like": [
+
+        ]
+      },
+      {
+        "Name": [
+          "Jane Elias"
+        ],
+        "Email": [
+          "je@alibaba.com"
+        ],
+        "Date": [
+          "2020-06-17"
+        ],
+        "Type": [
+          "Admin"
+        ],
+        "Like": [
+          [
+            "Apple",
+            "Pear"
+          ]
+        ]
+      },
+      {
+        "Name": [
+          "Jane Elias",
+          "John Doe"
+        ],
+        "Email": [
+          "je@alibaba.com",
+          "jd@jd.com"
+        ],
+        "Date": [
+          "2020-06-17",
+          "2020-06-01"
+        ],
+        "Type": [
+          "Admin",
+          "Visitor"
+        ],
+        "Like": [
+          [
+            "Apple",
+            "Pear"
+          ],
+          [
+            "Apple",
+            "Pear",
+            "Oranges"
+          ]
+        ]
+      },
+      {
+        "Name": [
+          "Jane Elias",
+          "John Doe",
+          "Augusta Ada"
+        ],
+        "Email": [
+          "je@alibaba.com",
+          "jd@jd.com",
+          "ada@defence.gov"
+        ],
+        "Date": [
+          "2020-06-17",
+          "2020-06-01",
+          "2020-07-11"
+        ],
+        "Type": [
+          "Admin",
+          "Visitor",
+          "Admin"
+        ],
+        "Like": [
+          [
+            "Apple",
+            "Pear"
+          ],
+          [
+            "Apple",
+            "Pear",
+            "Oranges"
+          ],
+          [
+            "Apple",
+            "Pear"
+          ]
+        ]
+      }
+    ]
+  }
+}

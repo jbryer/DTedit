@@ -4,3 +4,9 @@ build.R
 .gitignore
 .Rhistory
 README.md
+^doc$
+^Meta$
+^build_vignettes_to_inst\.R$
+^vignettes/rsconnect$
+^\.travis\.yml$
+^codecov\.yml$
