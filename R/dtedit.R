@@ -131,6 +131,7 @@ dtedit <- function(input, output,
 #'  * `fileInput` - type of acceptable file types is defined by
 #'    `input.choices`. Maximum file length is modifed by
 #'    `max.fileInputLength`
+#'  * `checkboxInput`- input changed by `checkbox.width`
 #'
 #'  One case where this parameter is desirable is when a text
 #'  area is required instead of a simple text input.
@@ -171,6 +172,7 @@ dtedit <- function(input, output,
 #' @param datetime.width the width of datetime inputs
 #' @param numeric.width the width of numeric inputs.
 #' @param select.width the width of drop down inputs.
+#' @param checkbox.width the width of checkbox inputs.
 #' @param max.fileInputLength the maximum length (in bytes) of \code{fileInput}.
 #'  Shiny itself has a default limit of 5 megabytes per file.
 #'  The limit can be modified by using shiny.maxRequestSize option.
@@ -275,6 +277,7 @@ dteditmod <- function(input, output, session,
                       datetime.width = "200px",
                       numeric.width = "100px",
                       select.width = "100%",
+                      checkbox.width = "100%",
                       defaultPageLength = 10,
                       max.fileInputLength = 100000000,
                       title.delete = "Delete",
@@ -360,9 +363,11 @@ dteditmod <- function(input, output, session,
   valid.input.types <- c(
     "dateInput", "datetimeInput", "selectInput", "numericInput",
     "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
-    "selectInputReactive", "selectInputMultipleReactive", "fileInput"
+    "selectInputReactive", "selectInputMultipleReactive", "fileInput", "checkboxInput"
   )
-  inputTypes <- sapply(thedataCopy[, edit.cols], FUN = function(x) {
+  # data.frames are coerced to unnamed vectors when selecting a single column using thedataCopy[, edit.cols]
+  # therefore, use the subset-function to avoid errors:
+  inputTypes <- sapply(subset(thedataCopy, select=edit.cols), FUN = function(x) {
     switch(class(x)[[1]],
            list = "selectInputMultiple",
            character = "textInput",
@@ -371,7 +376,8 @@ dteditmod <- function(input, output, session,
            factor = "selectInput",
            integer = "numericInput",
            numeric = "numericInput",
-           blob = "fileInput"
+           blob = "fileInput",
+           logical = "checkboxInput"
     )
   })
   if ("datetimeInput" %in% inputTypes && !useairDatepicker) {
@@ -751,6 +757,14 @@ dteditmod <- function(input, output, session,
           # e.g. case insensitive file extension '.csv'
           #      MIME types "text/plain"
         )
+      } else if (inputTypes[i] == "checkboxInput") {
+        value <- ifelse(missing(values), FALSE, values[, edit.cols[i]])
+        fields[[i]] <- shiny::checkboxInput(
+          ns(paste0(name, typeName, edit.cols[i])),
+          label = edit.label.cols[i],
+          value = value,
+          width = checkbox.width
+        )
       } else {
         stop("Invalid input type!")
       }
@@ -855,6 +869,7 @@ dteditmod <- function(input, output, session,
         "numeric" = as.numeric(NA),
         "POSIXct" = as.POSIXct(NA),
         "AsIs" = as.list(NA), # for lists
+        "logical" = as.logical(NA),
         methods::as(NA, class(newdata[, i])[[1]]))
     }
     newdata[row, ] <- data.frame(new_row, stringsAsFactors = FALSE)
