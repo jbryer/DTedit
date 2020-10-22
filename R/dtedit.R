@@ -135,9 +135,10 @@ dtedit <- function(input, output,
 #'  One case where this parameter is desirable is when a text
 #'  area is required instead of a simple text input.
 #'
-#' @param input.choices a list of character vectors. The names of each element in the list must
-#'  correspond to a column name in the data. The value, a character vector, are the options
-#'  presented to the user for data entry, in the case of input type \code{selectInput}).
+#' @param input.choices a list of character vectors. The names of each element
+#'  in the list must correspond to a column name in the data. The value,
+#'  a character vector, are the options presented to the user for data entry,
+#'  in the case of input type \code{selectInput}).
 #'
 #'  In the case of input type `selectInputReactive`
 #'  or `selectInputMultipleReactive``, the value is the name
@@ -151,8 +152,11 @@ dtedit <- function(input, output,
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
 #'  to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 #'  The reactive itself is a character vector.
-#' @param shinyFeedback a named list of functions, taking the name of an inputID,
-#'  to be used with `shinyFeedback`
+#' @param inputEvent a named list of functions. The names of each element in
+#'  the list must correspond to an editable column name in the data. The
+#'  function is called when the associated input widget event is observed
+#'  during editing/adding a data row. Can be used, for example,
+#'  with `shinyFeedback`.
 #' @param action.buttons a named list of action button columns.
 #'  Each column description is a list of \code{columnLabel}, \code{buttonLabel},
 #'  \code{buttonPrefix}, \code{afterColumn}.
@@ -267,7 +271,7 @@ dteditmod <- function(input, output, session,
                       input.types,
                       input.choices = NULL,
                       input.choices.reactive = NULL,
-                      shinyFeedback = NULL,
+                      inputEvent = NULL,
                       action.buttons = NULL,
                       selectize = TRUE,
                       modal.size = "m",
@@ -786,24 +790,36 @@ dteditmod <- function(input, output, session,
     result$rows_selected <- NULL # no row selected after each edit
   }
 
-  ##### shinyFeedback observeEvent helper ####################################
+  ##### inputEvent observeEvent helper ####################################
 
-  shinyFeedback_event <- function(input_infix) {
-    # input_infix e.g. "_add", or "_edit"
-    # creates observeEvents to use package 'shinyFeedback'
-    # done for edit.cols with functions defined in parameter 'shinyFeedback'
+  inputEvent_handler <- function(input_infix) {
+    # parameters : input_infix e.g. "_add", or "_edit"
+    # returns    : list of observeEvents (already created)
+    #
+    # creates observeEvents watching the edit/add input widgets
+    # e.g. to use package 'shinyFeedback'
+    # for edit.cols with functions defined in parameter 'inputEvent'
+    #
+    # the return list is required so the caller can explicitly destroy the
+    # observeEvents when the add/edit/copy modal is closed. Otherwise the
+    # observeEvents accumulate
 
-    lapply(
-      X = edit.cols[grepl(names(shinyFeedback), edit.cols)],
-      # choose only edit.cols which are defined in 'shinyFeedback'
+    handler <- lapply(
+      X = edit.cols[grepl(names(inputEvent), edit.cols)],
+      # choose only edit.cols which are defined in 'inputEvent'
       FUN = function(x) {
         input_name <- paste0(name, input_infix, "_", x)
         observeEvent(input[[input_name]], {
-          shinyFeedback[[x]](input_name)
+          inputEvent[[x]](input_name)
         })
       }
     )
+
+    return(handler)
   }
+
+  inputEvent_handles <- NULL
+  # will be used by the functions which call inputEvent_handler
 
   ##### Insert functions #####################################################
 
@@ -812,7 +828,7 @@ dteditmod <- function(input, output, session,
     # the 'addModal' popup is generated, with 'missing' values
     if (!is.null(row)) {
       shiny::showModal(addModal())
-      shinyFeedback_event("_add")
+      inputEvent_handles <- inputEvent_handler("_add")
     }
   })
 
@@ -935,7 +951,7 @@ dteditmod <- function(input, output, session,
     if (!is.null(row)) {
       if (row > 0) {
         shiny::showModal(addModal(values = result$thedata[row, , drop = FALSE]))
-        shinyFeedback_event("_add") # shares the same input names as '_add'
+        inputEvent_handler("_add") # shares the same input names as '_add'
       }
     }
   })
@@ -947,7 +963,7 @@ dteditmod <- function(input, output, session,
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       shiny::showModal(editModal(row))
-      shinyFeedback_event("_edit")
+      inputEvent_handler("_edit")
     }
   })
 
