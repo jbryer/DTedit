@@ -786,6 +786,25 @@ dteditmod <- function(input, output, session,
     result$rows_selected <- NULL # no row selected after each edit
   }
 
+  ##### shinyFeedback observeEvent helper ####################################
+
+  shinyFeedback_event <- function(input_infix) {
+    # input_infix e.g. "_add", or "_edit"
+    # creates observeEvents to use package 'shinyFeedback'
+    # done for edit.cols with functions defined in parameter 'shinyFeedback'
+
+    lapply(
+      X = edit.cols[grepl(names(shinyFeedback), edit.cols)],
+      # choose only edit.cols which are defined in 'shinyFeedback'
+      FUN = function(x) {
+        input_name <- paste0(name, input_infix, "_", x)
+        observeEvent(input[[input_name]], {
+          shinyFeedback[[x]](input_name)
+        })
+      }
+    )
+  }
+
   ##### Insert functions #####################################################
 
   observeEvent(input[[paste0(name, "_add")]], {
@@ -793,17 +812,7 @@ dteditmod <- function(input, output, session,
     # the 'addModal' popup is generated, with 'missing' values
     if (!is.null(row)) {
       shiny::showModal(addModal())
-      if (!is.null(shinyFeedback)) {
-        for (i in edit.cols) {
-          if (!is.null(shinyFeedback[[i]])) {
-            input_name <- paste0(name, "_add_", i)
-            observeEvent(input[[input_name]], {
-              shinyFeedback[[i]](input_name)
-            }
-            )
-          }
-        }
-      }
+      shinyFeedback_event("_add")
     }
   })
 
@@ -926,6 +935,7 @@ dteditmod <- function(input, output, session,
     if (!is.null(row)) {
       if (row > 0) {
         shiny::showModal(addModal(values = result$thedata[row, , drop = FALSE]))
+        shinyFeedback_event("_add") # shares the same input names as '_add'
       }
     }
   })
@@ -937,6 +947,7 @@ dteditmod <- function(input, output, session,
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       shiny::showModal(editModal(row))
+      shinyFeedback_event("_edit")
     }
   })
 
