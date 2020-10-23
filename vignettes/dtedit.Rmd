@@ -29,8 +29,8 @@ abstract: Editable DataTables (DT) package for shiny apps. Originally created by
   and module versions.<br/><br/>
 vignette: >
   %\VignetteIndexEntry{DTedit} 
-  \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
 ---
   
 ```{r setup, include = FALSE}
