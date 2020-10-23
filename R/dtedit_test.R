@@ -14,6 +14,8 @@ NULL
 #'   error_test
 #'   selectInputReactive
 #'   password
+#'   datetimeInput
+#'   inputEvent
 #' @param ... extra options passed to shiny::shinyApp
 #'
 #' @return a shiny app
@@ -256,6 +258,7 @@ dtedit_test <- function(appname = "simple", ...) {
             buttonPrefix = "subtractOne"
           )
         ),
+        click.time.threshold = 0.1, # very short, for auto-testing
         callback.update = grocery.update.callback,
         callback.delete = grocery.delete.callback,
         callback.insert = grocery.insert.callback,
