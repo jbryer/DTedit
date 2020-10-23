@@ -805,7 +805,7 @@ dteditmod <- function(input, output, session,
       # (so they can be later destroyed)
       #
       self$handles <- lapply(
-        X = edit.cols[grepl(names(inputEvent), edit.cols)],
+        X = edit.cols[grepl(paste(names(inputEvent), collapse = "|"), edit.cols)],
         # choose only edit.cols which are defined in 'inputEvent'
         FUN = function(x) {
           input_name <- paste0(name, input_infix, "_", x)
