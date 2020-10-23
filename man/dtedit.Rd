@@ -22,6 +22,7 @@ dteditmod(
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
+  inputEvent = NULL,
   action.buttons = NULL,
   selectize = TRUE,
   modal.size = "m",
@@ -136,9 +137,10 @@ reactive variable, as defined by \code{input.choices} and
 One case where this parameter is desirable is when a text
 area is required instead of a simple text input.}
 
-\item{input.choices}{a list of character vectors. The names of each element in the list must
-correspond to a column name in the data. The value, a character vector, are the options
-presented to the user for data entry, in the case of input type \code{selectInput}).
+\item{input.choices}{a list of character vectors. The names of each element
+in the list must correspond to a column name in the data. The value,
+a character vector, are the options presented to the user for data entry,
+in the case of input type \code{selectInput}).
 
 In the case of input type \code{selectInputReactive}
 or `selectInputMultipleReactive``, the value is the name
@@ -153,6 +155,12 @@ is acceptable. Can be a case insensitive file extension
 \item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
 to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 The reactive itself is a character vector.}
+
+\item{inputEvent}{a named list of functions. The names of each element in
+the list must correspond to an editable column name in the data. The
+function is called when the associated input widget event is observed
+during editing/adding a data row. Can be used, for example,
+with \code{shinyFeedback}.}
 
 \item{action.buttons}{a named list of action button columns.
 Each column description is a list of \code{columnLabel}, \code{buttonLabel},

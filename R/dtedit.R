@@ -135,9 +135,10 @@ dtedit <- function(input, output,
 #'  One case where this parameter is desirable is when a text
 #'  area is required instead of a simple text input.
 #'
-#' @param input.choices a list of character vectors. The names of each element in the list must
-#'  correspond to a column name in the data. The value, a character vector, are the options
-#'  presented to the user for data entry, in the case of input type \code{selectInput}).
+#' @param input.choices a list of character vectors. The names of each element
+#'  in the list must correspond to a column name in the data. The value,
+#'  a character vector, are the options presented to the user for data entry,
+#'  in the case of input type \code{selectInput}).
 #'
 #'  In the case of input type `selectInputReactive`
 #'  or `selectInputMultipleReactive``, the value is the name
@@ -151,6 +152,11 @@ dtedit <- function(input, output,
 #' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
 #'  to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
 #'  The reactive itself is a character vector.
+#' @param inputEvent a named list of functions. The names of each element in
+#'  the list must correspond to an editable column name in the data. The
+#'  function is called when the associated input widget event is observed
+#'  during editing/adding a data row. Can be used, for example,
+#'  with `shinyFeedback`.
 #' @param action.buttons a named list of action button columns.
 #'  Each column description is a list of \code{columnLabel}, \code{buttonLabel},
 #'  \code{buttonPrefix}, \code{afterColumn}.
@@ -265,6 +271,7 @@ dteditmod <- function(input, output, session,
                       input.types,
                       input.choices = NULL,
                       input.choices.reactive = NULL,
+                      inputEvent = NULL,
                       action.buttons = NULL,
                       selectize = TRUE,
                       modal.size = "m",
@@ -783,6 +790,55 @@ dteditmod <- function(input, output, session,
     result$rows_selected <- NULL # no row selected after each edit
   }
 
+  ##### inputEvent observeEvent helper ####################################
+
+  inputEvent_object <- R6::R6Class("inputEvent_object", list(
+    handles = NULL,
+    # list of observeEvents
+    initialize = function(input_infix) {
+      # parameters : input_infix e.g. "_add", or "_edit"
+      # creates observeEvents watching the edit/add input widgets
+      # e.g. to use package 'shinyFeedback'
+      # for edit.cols with functions defined in parameter 'inputEvent'
+      #
+      # stores the observeEvents in self$handler
+      # (so they can be later destroyed)
+      #
+      self$handles <- lapply(
+        X = edit.cols[
+          grepl(
+            paste(paste0('^', names(inputEvent), '$'), collapse = "|"),
+            # enforce exact pattern matching with '^' and '$'
+            # otherwise can match subsets, including NULL (!!!)
+            edit.cols
+          )],
+        # choose only edit.cols which are defined in 'inputEvent'
+        FUN = function(x) {
+          input_name <- paste0(name, input_infix, "_", x)
+          observeEvent(input[[input_name]], {
+            inputEvent[[x]](input_name)
+          })
+        }
+      )
+    },
+    finalize = function() {
+      # remove the observeEvents, if they exist
+      # otherwise, when the modal dialog closes, observeEvents will accumulate
+      if (!is.null(self$handles)) {
+        lapply(
+          X = self$handles,
+          FUN = function(x) {
+            x$destroy()
+          }
+        )
+        self$handles <- NULL
+      }
+    }
+  ))
+
+  inputEvent_handles <- NULL
+  # will be used by the functions which call inputEvent_handler
+
   ##### Insert functions #####################################################
 
   observeEvent(input[[paste0(name, "_add")]], {
@@ -790,6 +846,7 @@ dteditmod <- function(input, output, session,
     # the 'addModal' popup is generated, with 'missing' values
     if (!is.null(row)) {
       shiny::showModal(addModal())
+      inputEvent_handles <<- inputEvent_object$new("_add")
     }
   })
 
@@ -812,7 +869,7 @@ dteditmod <- function(input, output, session,
       ),
       fields,
       footer = shiny::column(
-        shiny::modalButton(label.cancel),
+        shiny::actionButton(ns(paste0(name, "_insert_cancel")), label.cancel),
         shiny::actionButton(ns(paste0(name, "_insert")), label.save),
         width = 12
       ),
@@ -821,6 +878,21 @@ dteditmod <- function(input, output, session,
   }
 
   insert.click <- NA # click timer (to avoid overly fast double-click)
+
+  observeEvent(input[[paste0(name, "_insert_cancel")]], {
+    # the '_cancel' event is observed from the 'addModal' popup
+    if (!is.na(insert.click)) {
+      lastclick <- as.numeric(Sys.time() - insert.click, units = "secs")
+      if (lastclick < click.time.threshold) {
+        warning(paste0("Double click detected. Ignoring update call for ",
+                       name, "."))
+        return()
+      }
+    }
+    insert.click <- Sys.time()
+    inputEvent_handles$finalize() # remove the observeEvents
+    shiny::removeModal() # close the modal without saving
+  })
 
   observeEvent(input[[paste0(name, "_insert")]], {
     # '_insert' event generated from the 'addModal' popup
@@ -893,6 +965,7 @@ dteditmod <- function(input, output, session,
                  rownames = datatable.rownames
       )
       result$edit.count <- result$edit.count + 1
+      inputEvent_handles$finalize() # remove the observeEvents
       shiny::removeModal()
       return(TRUE)
     }, error = function(e) {
@@ -912,6 +985,8 @@ dteditmod <- function(input, output, session,
     if (!is.null(row)) {
       if (row > 0) {
         shiny::showModal(addModal(values = result$thedata[row, , drop = FALSE]))
+        inputEvent_handles <<- inputEvent_object$new("_add")
+        # shares the same input names as '_add'
       }
     }
   })
@@ -923,6 +998,7 @@ dteditmod <- function(input, output, session,
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       shiny::showModal(editModal(row))
+      inputEvent_handles <<- inputEvent_object$new("_edit")
     }
   })
 
@@ -947,7 +1023,7 @@ dteditmod <- function(input, output, session,
         fields
       ),
       footer = column(
-        shiny::modalButton(label.cancel),
+        shiny::actionButton(ns(paste0(name, "_update_cancel")), label.cancel),
         shiny::actionButton(ns(paste0(name, "_update")), label.save),
         width = 12
       ),
@@ -956,6 +1032,22 @@ dteditmod <- function(input, output, session,
   }
 
   update.click <- NA # a timer to avoid 'double-clicks'
+
+  observeEvent(input[[paste0(name, "_update_cancel")]], {
+    # the '_cancel' event is observed from the 'editModal' popup
+
+    if (!is.na(update.click)) {
+      lastclick <- as.numeric(Sys.time() - update.click, units = "secs")
+      if (lastclick < click.time.threshold) {
+        warning(paste0("Double click detected. Ignoring update call for ",
+                       name, "."))
+        return()
+      }
+    }
+    update.click <- Sys.time()
+    inputEvent_handles$finalize() # remove the observeEvents
+    shiny::removeModal() # close the modal without saving
+  })
 
   observeEvent(input[[paste0(name, "_update")]], {
     # the '_update' event is observed from the 'editModal' popup
@@ -1021,6 +1113,7 @@ dteditmod <- function(input, output, session,
                    rownames = datatable.rownames
         )
         result$edit.count <- result$edit.count + 1
+        inputEvent_handles$finalize() # remove the observeEvents
         shiny::removeModal()
         return(TRUE)
       }, error = function(e) {

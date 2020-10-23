@@ -17,7 +17,7 @@ Use the `devtools` package to install the development version of `DTedit`:
 devtools::install_github('jbryer/DTedit')
 ```
 
-To install a release branch, e.g. `2.2.1`, of `DavidPatShuiFong/DTedit' :
+To install a release branch, e.g. `2.2.4`, of `DavidPatShuiFong/DTedit' :
 
 ```r
 devtools::install_github('DavidPatShuiFong/DTedit@2.2.1')
