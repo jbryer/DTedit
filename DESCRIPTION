@@ -24,7 +24,8 @@ Imports:
     DT (>= 0.6),
     shiny,
     blob,
-    methods
+    methods,
+    R6
 Suggests: 
     RSQLite,
     base64enc,
