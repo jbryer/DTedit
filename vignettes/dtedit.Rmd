@@ -27,13 +27,13 @@ abstract: Editable DataTables (DT) package for shiny apps. Originally created by
   callbacks. In the case of limited selection choices for data columns with 'dropdown'
   inputs, the choices can be defined and dynamically changed. Available in general-purpose
   and module versions.<br/><br/>
-  vignette: >
+vignette: >
   %\VignetteIndexEntry{DTedit} 
   \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
-  ---
+---
   
-  ```{r setup, include = FALSE}
+```{r setup, include = FALSE}
 # as of 7th June 2020 this vignette CANNOT be successfully generated
 # with RStudio's Build - Document menu option, with 
 # Build Tools - Roxygen settings - Vignette turned on
