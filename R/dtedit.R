@@ -149,9 +149,10 @@ dtedit <- function(input, output,
 #'  is acceptable. Can be a case insensitive file extension
 #'  (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
 #'  'application/pdf').
-#' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
-#'  to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
-#'  The reactive itself is a character vector.
+#' @param input.choices.reactive a named list of reactives, referenced in
+#'  `input.choices` to use for input type \code{selectInputReactive} or
+#'  \code{selectInputMultipleReactive}. The reactive itself is a character
+#'  vector.
 #' @param inputEvent a named list of functions. The names of each element in
 #'  the list must correspond to an editable column name in the data. The
 #'  function is called when the associated input widget event is observed
@@ -167,7 +168,7 @@ dtedit <- function(input, output,
 #'    Prefix and suffix will be separated with an underscore '_'.
 #'  * \code{afterColumn} if provided, the action button column is
 #'    placed after this named column.
-#' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
+#' @param selectize Whether to use `selectize.js` or not. See \code{\link{selectInput}} for more info.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
 #' @param text.width width of text inputs.
@@ -189,10 +190,14 @@ dtedit <- function(input, output,
 #' @param label.copy the label of the copy button.
 #' @param label.save the label of the save button.
 #' @param label.cancel the label of the cancel button.
-#' @param icon.delete the icon for the delete button, e.g. \code{icon("trash")}. Defaults to \code{NULL}.
-#' @param icon.edit the icon for the edit button, e.g. \code{icon("edit")}. Defaults to \code{NULL}.
-#' @param icon.add the icon for the add button, e.g. \code{icon("plus")}. Defaults to \code{NULL}.
-#' @param icon.copy the icon for the copy button, e.g. \code{icon("copy")}. Defaults to \code{NULL}.
+#' @param icon.delete the icon for the delete button, e.g. \code{icon("trash")}.
+#'  Defaults to \code{NULL}.
+#' @param icon.edit the icon for the edit button, e.g. \code{icon("edit")}.
+#'  Defaults to \code{NULL}.
+#' @param icon.add the icon for the add button, e.g. \code{icon("plus")}.
+#'  Defaults to \code{NULL}.
+#' @param icon.copy the icon for the copy button, e.g. \code{icon("copy")}.
+#'  Defaults to \code{NULL}.
 #' @param text.delete.modal the text shown in the delete modal dialog.
 #' @param show.delete whether to show/enable the delete button.
 #' @param show.update whether to show/enable the update button.
@@ -208,18 +213,19 @@ dtedit <- function(input, output,
 #'  called with arguments `data`, `row` and `buttonID`.
 #'  This function can return an updated data.frame,
 #'  alternatively return NULL if data is not to be changed.
-#' @param click.time.threshold This is to prevent duplicate entries usually by double clicking the
-#'  save or update buttons. If the user clicks the save button again within this amount of
-#'  time (in seconds), the subsequent click will be ignored. Set to zero to disable this
-#'  feature. For developers, a message is printed using the warning function.
+#' @param click.time.threshold This is to prevent duplicate entries usually by
+#'  double clicking the save or update buttons. If the user clicks the save
+#'  button again within this amount of time (in seconds), the subsequent click
+#'  will be ignored (using `shiny::throttle`). Set to zero to disable this
+#'  feature.
 #' @param useairDatepicker use `shinyWidgets` package `airDatepickerInput`
 #' @param datatable.options options passed to \code{DT::renderDataTable}.
 #'  See \url{https://rstudio.github.io/DT/options.html} for more information.
 #' @param datatable.rownames show rownames as part of the datatable? `TRUE` or `FALSE`.
 #'  Note that if datatable.call includes `DT::format*` calls,
 #'  then `datatable.rownames` must equal `TRUE`
-#' @param datatable.call pre-processing call when calling `DT::renderDataTable`. Can be defined,
-#'  for example, to include `DT::format*` calls.
+#' @param datatable.call pre-processing call when calling `DT::renderDataTable`.
+#'  Can be defined, for example, to include `DT::format*` calls.
 #'  `dtedit` will pass several arguments to the `datatable.call` function.
 #'  * `data` a dataframe. may have been processed to add `actionButtons`
 #'  * `options` - `datatable.options`
@@ -877,35 +883,17 @@ dteditmod <- function(input, output, session,
     )
   }
 
-  insert.click <- NA # click timer (to avoid overly fast double-click)
-
   observeEvent(input[[paste0(name, "_insert_cancel")]], {
     # the '_cancel' event is observed from the 'addModal' popup
-    if (!is.na(insert.click)) {
-      lastclick <- as.numeric(Sys.time() - insert.click, units = "secs")
-      if (lastclick < click.time.threshold) {
-        warning(paste0("Double click detected. Ignoring update call for ",
-                       name, "."))
-        return()
-      }
-    }
-    insert.click <- Sys.time()
     inputEvent_handles$finalize() # remove the observeEvents
     shiny::removeModal() # close the modal without saving
   })
 
-  observeEvent(input[[paste0(name, "_insert")]], {
-    # '_insert' event generated from the 'addModal' popup
-    if (!is.na(insert.click)) {
-      lastclick <- as.numeric(Sys.time() - insert.click, units = "secs")
-      if (lastclick < click.time.threshold) {
-        warning(
-          paste0("Double click detected. Ignoring insert call for ",
-                 name, "."))
-        return()
-      }
-    }
-    insert.click <<- Sys.time()
+  insert_event <- shiny::reactive({input[[paste0(name, "_insert")]]})
+  insert_event_t <- shiny::throttle(insert_event, click.time.threshold * 1000)
+  # '_insert' event generated from the 'addModal' popup
+  # 'throttled' version of insert button
+  observeEvent(insert_event_t(), {
     newdata <- result$thedata
     row <- nrow(newdata) + 1 # the new row number
     new_row <- list() # to contain a 'blank' new row
@@ -1031,37 +1019,17 @@ dteditmod <- function(input, output, session,
     )
   }
 
-  update.click <- NA # a timer to avoid 'double-clicks'
-
   observeEvent(input[[paste0(name, "_update_cancel")]], {
     # the '_cancel' event is observed from the 'editModal' popup
-
-    if (!is.na(update.click)) {
-      lastclick <- as.numeric(Sys.time() - update.click, units = "secs")
-      if (lastclick < click.time.threshold) {
-        warning(paste0("Double click detected. Ignoring update call for ",
-                       name, "."))
-        return()
-      }
-    }
-    update.click <- Sys.time()
     inputEvent_handles$finalize() # remove the observeEvents
     shiny::removeModal() # close the modal without saving
   })
 
-  observeEvent(input[[paste0(name, "_update")]], {
-    # the '_update' event is observed from the 'editModal' popup
-
-    if (!is.na(update.click)) {
-      lastclick <- as.numeric(Sys.time() - update.click, units = "secs")
-      if (lastclick < click.time.threshold) {
-        warning(paste0("Double click detected. Ignoring update call for ",
-                       name, "."))
-        return()
-      }
-    }
-    update.click <- Sys.time()
-
+  update_event <- shiny::reactive({input[[paste0(name, "_update")]]})
+  update_event_t <- shiny::throttle(update_event, click.time.threshold * 1000)
+  # the '_update' event is observed from the 'editModal' popup
+  # throttled version of 'update' button
+  observeEvent(update_event_t(), {
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       newdata <- result$thedata

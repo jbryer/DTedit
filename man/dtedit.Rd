@@ -152,9 +152,10 @@ is acceptable. Can be a case insensitive file extension
 (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
 'application/pdf').}
 
-\item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
-to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
-The reactive itself is a character vector.}
+\item{input.choices.reactive}{a named list of reactives, referenced in
+\code{input.choices} to use for input type \code{selectInputReactive} or
+\code{selectInputMultipleReactive}. The reactive itself is a character
+vector.}
 
 \item{inputEvent}{a named list of functions. The names of each element in
 the list must correspond to an editable column name in the data. The
@@ -175,7 +176,7 @@ Prefix and suffix will be separated with an underscore '_'.
 placed after this named column.
 }}
 
-\item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}
+\item{selectize}{Whether to use \code{selectize.js} or not. See \code{\link{selectInput}} for more info.}
 
 \item{modal.size}{the size of the modal dialog. See \code{\link{modalDialog}}.}
 
@@ -217,13 +218,17 @@ The limit can be modified by using shiny.maxRequestSize option.}
 
 \item{label.cancel}{the label of the cancel button.}
 
-\item{icon.delete}{the icon for the delete button, e.g. \code{icon("trash")}. Defaults to \code{NULL}.}
+\item{icon.delete}{the icon for the delete button, e.g. \code{icon("trash")}.
+Defaults to \code{NULL}.}
 
-\item{icon.edit}{the icon for the edit button, e.g. \code{icon("edit")}. Defaults to \code{NULL}.}
+\item{icon.edit}{the icon for the edit button, e.g. \code{icon("edit")}.
+Defaults to \code{NULL}.}
 
-\item{icon.add}{the icon for the add button, e.g. \code{icon("plus")}. Defaults to \code{NULL}.}
+\item{icon.add}{the icon for the add button, e.g. \code{icon("plus")}.
+Defaults to \code{NULL}.}
 
-\item{icon.copy}{the icon for the copy button, e.g. \code{icon("copy")}. Defaults to \code{NULL}.}
+\item{icon.copy}{the icon for the copy button, e.g. \code{icon("copy")}.
+Defaults to \code{NULL}.}
 
 \item{text.delete.modal}{the text shown in the delete modal dialog.}
 
@@ -249,10 +254,11 @@ called with arguments \code{data}, \code{row} and \code{buttonID}.
 This function can return an updated data.frame,
 alternatively return NULL if data is not to be changed.}
 
-\item{click.time.threshold}{This is to prevent duplicate entries usually by double clicking the
-save or update buttons. If the user clicks the save button again within this amount of
-time (in seconds), the subsequent click will be ignored. Set to zero to disable this
-feature. For developers, a message is printed using the warning function.}
+\item{click.time.threshold}{This is to prevent duplicate entries usually by
+double clicking the save or update buttons. If the user clicks the save
+button again within this amount of time (in seconds), the subsequent click
+will be ignored (using \code{shiny::throttle}). Set to zero to disable this
+feature.}
 
 \item{useairDatepicker}{use \code{shinyWidgets} package \code{airDatepickerInput}}
 
@@ -263,8 +269,8 @@ See \url{https://rstudio.github.io/DT/options.html} for more information.}
 Note that if datatable.call includes \verb{DT::format*} calls,
 then \code{datatable.rownames} must equal \code{TRUE}}
 
-\item{datatable.call}{pre-processing call when calling \code{DT::renderDataTable}. Can be defined,
-for example, to include \verb{DT::format*} calls.
+\item{datatable.call}{pre-processing call when calling \code{DT::renderDataTable}.
+Can be defined, for example, to include \verb{DT::format*} calls.
 \code{dtedit} will pass several arguments to the \code{datatable.call} function.
 \itemize{
 \item \code{data} a dataframe. may have been processed to add \code{actionButtons}
