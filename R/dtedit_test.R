@@ -645,4 +645,48 @@ dtedit_test <- function(appname = "simple", ...) {
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return (shiny::shinyApp(ui = ui, server = server, ...))
   }
+
+  if (appname == "inputEvent") {
+
+    server <- function(input, output) {
+
+      Grocery_List_Results <- dtedit(
+        input, output,
+        name = 'Grocery_List',
+        thedata = data.frame(
+          Buy = c('Tea', 'Biscuits', 'Apples'),
+          Quantity = c(7, 2, 5),
+          stringsAsFactors = FALSE
+        ),
+        inputEvent = list(
+          Quantity = function(x) {
+            value <- input[[x]] # if empty input box, will be NA
+            if (!is.na(value) && value > 100) {
+              shiny::updateNumericInput(
+                session = shiny::getDefaultReactiveDomain(),
+                inputId = x,
+                value = NA
+              )
+            }
+          }
+        )
+      )
+
+      #### shinytest code for testing purposes only ########
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Grocery_List_Results$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
+      })
+      shiny::exportTestValues(data_list = {data_list})
+      ######################################################
+    }
+
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
+      shiny::uiOutput('Grocery_List')
+    )
+
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return (shiny::shinyApp(ui = ui, server = server, ...))
+  }
 }

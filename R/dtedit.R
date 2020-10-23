@@ -805,7 +805,13 @@ dteditmod <- function(input, output, session,
       # (so they can be later destroyed)
       #
       self$handles <- lapply(
-        X = edit.cols[grepl(paste(names(inputEvent), collapse = "|"), edit.cols)],
+        X = edit.cols[
+          grepl(
+            paste(paste0('^', names(inputEvent), '$'), collapse = "|"),
+            # enforce exact pattern matching with '^' and '$'
+            # otherwise can match subsets, including NULL (!!!)
+            edit.cols
+          )],
         # choose only edit.cols which are defined in 'inputEvent'
         FUN = function(x) {
           input_name <- paste0(name, input_infix, "_", x)

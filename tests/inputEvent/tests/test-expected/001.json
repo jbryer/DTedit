@@ -1,0 +1,18 @@
+{
+  "export": {
+    "data_list": [
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples"
+        ],
+        "Quantity": [
+          7,
+          2,
+          5
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "export": {
+    "data_list": [
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples"
+        ],
+        "Quantity": [
+          7,
+          2,
+          5
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples"
+        ],
+        "Quantity": [
+          12,
+          2,
+          5
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples"
+        ],
+        "Quantity": [
+          12,
+          null,
+          5
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples",
+          "Apple Cider"
+        ],
+        "Quantity": [
+          12,
+          null,
+          5,
+          null
+        ]
+      },
+      {
+        "Buy": [
+          "Tea",
+          "Biscuits",
+          "Apples",
+          "Apple Cider",
+          "Carrots"
+        ],
+        "Quantity": [
+          12,
+          null,
+          5,
+          null,
+          null
+        ]
+      }
+    ]
+  }
+}

@@ -3,8 +3,11 @@ title: "DTedit"
 author: "David Fong"
 date: "`r Sys.Date()`"
 output:
-  rmarkdown::html_vignette:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: vignette
     toc: yes
+    toc_depth: 4
   html_document:
     number_sections: yes
     theme: lumen
@@ -16,24 +19,22 @@ output:
   pdf_document:
     toc: yes
     toc_depth: '3'
-  prettydoc::html_pretty:
-    theme: cayman
-    highlight: vignette
+  rmarkdown::html_vignette:
     toc: yes
-    toc_depth: 4
 abstract: Editable DataTables (DT) package for shiny apps. Originally created by Jason
   Bryer. Data columns to view or edit can be selected. Different datatypes can be edited.
   Valid input choices and interaction with persistent storage can be defined through
   callbacks. In the case of limited selection choices for data columns with 'dropdown'
   inputs, the choices can be defined and dynamically changed. Available in general-purpose
   and module versions.<br/><br/>
-  vignette: >
+vignette: >
   %\VignetteIndexEntry{DTedit} 
   \usepackage[utf8]{inputenc}
   %\VignetteEngine{knitr::rmarkdown}
-  ---
+
+---
   
-  ```{r setup, include = FALSE}
+```{r setup, include = FALSE}
 # as of 7th June 2020 this vignette CANNOT be successfully generated
 # with RStudio's Build - Document menu option, with 
 # Build Tools - Roxygen settings - Vignette turned on
