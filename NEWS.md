@@ -18,6 +18,10 @@ output: html_document
 * fix entering an empty (NA) date in `dateInput` and `datetimeInput` when
   editing an entry (issue #21)
 
+### Internal changes
+
+* use `shiny::throttle` for `click.time.threshold`
+
 ## DTedit 2.2.3
 21st October 2020
 
