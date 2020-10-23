@@ -6,7 +6,12 @@ output: html_document
 ---
 
 ## DTedit 2.2.4
-21st October 2020
+23rd October 2020
+
+### New
+
+* `inputEvent` parameter to use https://github.com/merlinoa/shinyFeedback
+   (issue #17 and issue #9)
 
 ### Bug fix
 
