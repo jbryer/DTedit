@@ -611,38 +611,43 @@ dtedit_test <- function(appname = "simple", ...) {
   }
 
   if (appname == "datetimeInput") {
-    server <- function(input, output, session) {
-      Due_List <- dtedit(
+    server <- function(input, output) {
+
+      Grocery_List_Results <- dtedit(
         input, output,
-        name = "ToBuy",
+        name = 'Grocery_List',
         thedata = data.frame(
           Buy = c('Tea', 'Biscuits', 'Apples'),
-          Quantity = as.integer(c(7,2,3)),
-          DueTime = as.POSIXct(c("2020-09-10", "2020-11-14", "2021-05-23")),
+          Quantity = c(7, 2, 5),
+          DueTime = as.POSIXct(c("2020-09-10", "2020-5-14", "2021-05-23"), tz = "GMT"),
+          PurchaseDate = c(as.Date("2020-05-04"), as.Date(NA), as.Date("2018-07-04")),
           stringsAsFactors = FALSE
         ),
         useairDatepicker = TRUE
+        ######################################################
+        # test (superficially) airDatepicker input
+        # unfortunately, there is no testing for datetimeInput yet
+        # because
+        # `app$setInputs(ToBuy_edit_DueTime = 1605548460000)`
+        # does not set the widget's value, and I am unable
+        # to find an alternative app$executeScript which will
+        # set the vlaue
+        # see https://github.com/rstudio/shinytest/issues/252
+        ######################################################
       )
 
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
-      shiny::observeEvent(Due_List$thedata, {
-        data_list[[length(data_list) + 1]] <<- Due_List$thedata
+      shiny::observeEvent(Grocery_List_Results$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
       })
       shiny::exportTestValues(data_list = {data_list})
-      # unfortunately, there is no testing for datetimeInput yet
-      # because
-      # `app$setInputs(ToBuy_edit_DueTime = 1605548460000)`
-      # does not set the widget's value, and I am unable
-      # to find an alternative app$executeScript which will
-      # set the vlaue
-      # see https://github.com/rstudio/shinytest/issues/252
       ######################################################
     }
 
     ui <- shiny::fluidPage(
-      shiny::h3('ToDo List'),
-      shiny::uiOutput('ToBuy')
+      shiny::h3('Grocery List'),
+      shiny::uiOutput('Grocery_List')
     )
 
     if (interactive() || isTRUE(getOption("shiny.testmode")))
@@ -652,7 +657,6 @@ dtedit_test <- function(appname = "simple", ...) {
   if (appname == "inputEvent") {
 
     server <- function(input, output) {
-
       Grocery_List_Results <- dtedit(
         input, output,
         name = 'Grocery_List',

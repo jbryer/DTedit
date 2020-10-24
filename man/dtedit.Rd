@@ -57,7 +57,7 @@ dteditmod(
   callback.update = function(data, olddata, row) { },
   callback.insert = function(data, row) { },
   callback.actionButton = function(data, row, buttonID) { },
-  click.time.threshold = 2,
+  click.time.threshold = 0.5,
   useairDatepicker = FALSE,
   datatable.options = list(pageLength = defaultPageLength),
   datatable.rownames = FALSE,

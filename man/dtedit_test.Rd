@@ -14,7 +14,9 @@ reactive
 callback
 error_test
 selectInputReactive
-password}
+password
+datetimeInput
+inputEvent}
 
 \item{...}{extra options passed to shiny::shinyApp}
 }

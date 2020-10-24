@@ -20,7 +20,7 @@ devtools::install_github('jbryer/DTedit')
 To install a release branch, e.g. `2.2.4`, of `DavidPatShuiFong/DTedit' :
 
 ```r
-devtools::install_github('DavidPatShuiFong/DTedit@2.2.1')
+devtools::install_github('DavidPatShuiFong/DTedit@2.2.4')
 ```
 
 The `dtedit_demo` will run a sample `shiny` app with to editable data tables.
