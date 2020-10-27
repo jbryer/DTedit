@@ -822,7 +822,7 @@ dteditmod <- function(input, output, session,
         FUN = function(x) {
           input_name <- paste0(name, input_infix, "_", x)
           observeEvent(input[[input_name]], {
-            inputEvent[[x]](input_name)
+            inputEvent[[x]](input_name, input[[input_name]])
           })
         }
       )
