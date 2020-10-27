@@ -666,8 +666,8 @@ dtedit_test <- function(appname = "simple", ...) {
           stringsAsFactors = FALSE
         ),
         inputEvent = list(
-          Quantity = function(x) {
-            value <- input[[x]] # if empty input box, will be NA
+          Quantity = function(x, value) {
+            # value will be NA, if empty input box
             if (!is.na(value) && value > 100) {
               shiny::updateNumericInput(
                 session = shiny::getDefaultReactiveDomain(),

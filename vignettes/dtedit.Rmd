@@ -29,8 +29,8 @@ abstract: Editable DataTables (DT) package for shiny apps. Originally created by
   and module versions.<br/><br/>
 vignette: >
   %\VignetteIndexEntry{DTedit} 
-  %\VignetteEngine{knitr::rmarkdown}
   \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
 ---
   
 ```{r setup, include = FALSE}
@@ -326,10 +326,12 @@ on [`shinyfeedback`](https://github.com/merlinoa/shinyFeedback).
 In the example below, which uses [`shinyfeedback`](https://github.com/merlinoa/shinyFeedback),
 `inputEvent` is a named list, including functions with the names of editable
 columns. The functions takes an `inputId` argument of the input dialog
-which is related to the editable column. The function
-can then access the contents of the input dialog, create
+which is related to the editable column, and the value of the input dialog.
+The function can then use the value of the input dialog, create
 [`shinyfeedback`](https://github.com/merlinoa/shinyFeedback) messages,
 or even change the contents of the input dialog.
+
+(Note the comments in the example regarding some )
 
 ```{r eval = FALSE}
 library(shiny)
@@ -346,8 +348,18 @@ server <- function(input, output) {
       stringsAsFactors = FALSE
     ),
     inputEvent = list(
-      Quantity = function(x) {
-        value <- input[[x]] # if empty input box, will be NA
+      Quantity = function(x, value) {
+        # x will be the inputID of the 'Quantity' widget
+        # value will be the contents of the input widget
+        #
+        # if *not* called as a module, then value == input[[x]]
+        # however, if 'dteditmod' is called, then value != input[[x]] because
+        # 'x' does *not* include the ID 'prefix' of the module. (the module's
+        # ID prefix could be added 'manually' by the function, potentially).
+        # Strangely, the inputId parameter of shinyFeedback can use 'x'
+        # without any modification, even if 'dteditmod' is called.
+        
+        # if the input box is empty, value will be NA
         if (!is.na(value) && value < 0) {
           shinyFeedback::showFeedbackWarning(
             inputId = x,
@@ -368,8 +380,7 @@ server <- function(input, output) {
           )
         }
       },
-      Buy = function(x) {
-        value <- input[[x]]
+      Buy = function(x, value) {
         if (value == "") {
           shinyFeedback::showFeedbackDanger(
             inputId = x,
