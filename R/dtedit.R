@@ -157,7 +157,8 @@ dtedit <- function(input, output,
 #'  the list must correspond to an editable column name in the data. The
 #'  function is called when the associated input widget event is observed
 #'  during editing/adding a data row. Can be used, for example,
-#'  with `shinyFeedback`.
+#'  with `shinyFeedback`. The functions need to accept two parameters,
+#'  the inputID of the input widget, and the value of that widget.
 #' @param action.buttons a named list of action button columns.
 #'  Each column description is a list of \code{columnLabel}, \code{buttonLabel},
 #'  \code{buttonPrefix}, \code{afterColumn}.
@@ -823,6 +824,26 @@ dteditmod <- function(input, output, session,
           input_name <- paste0(name, input_infix, "_", x)
           observeEvent(input[[input_name]], {
             inputEvent[[x]](input_name, input[[input_name]])
+            # sends two parameters - the inputID and the input value
+            #
+            # unfortunately, could not easily just send the inputID alone
+            # for the inputEvent function to refer to the value by input[[input_name]]
+            #
+            # input[[input_name]] for the defined inputEvent function *does* work
+            # in the simple case
+            #
+            # however, if dtedit is called in dteditmod (module) mode,
+            # the function's enclosing environment (where it was defined)
+            # might need to *additionally* prefix the input_name with the
+            # dtedit module ID
+            #
+            # calling session$ns(input_name) from within dteditmod results in adding the
+            # dteditmod module ID and, IF the calling function is *also* a
+            # module, adding the module ID of the calling function ('fully
+            # specified' name). Unfortunately, if the calling function is
+            # a module then the fully specified name is not easily used from
+            # within the inputEvent function!
+            #  e.g. I could only access with ... unlist(input)$impl$get(x)    !!!
           })
         }
       )

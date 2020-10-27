@@ -161,7 +161,8 @@ vector.}
 the list must correspond to an editable column name in the data. The
 function is called when the associated input widget event is observed
 during editing/adding a data row. Can be used, for example,
-with \code{shinyFeedback}.}
+with \code{shinyFeedback}. The functions need to accept two parameters,
+the inputID of the input widget, and the value of that widget.}
 
 \item{action.buttons}{a named list of action button columns.
 Each column description is a list of \code{columnLabel}, \code{buttonLabel},
