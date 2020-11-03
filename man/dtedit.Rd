@@ -122,6 +122,8 @@ defined by \code{selectize.options}.
 \item \code{selectInputMultiple} - choices determined by
 \code{input.choices} or the already present values in the data
 column.
+\item \code{selectizeInputMultiple} - use selectize version of \code{selectInputMultiple}.
+Options defined by \code{selectize.options}
 \item \code{selectInputReactive} - choices determined by a reactive
 variable, as defined by \code{input.choices} and
 \code{input.choices.reactive}.
@@ -160,7 +162,11 @@ is acceptable. Can be a case insensitive file extension
 \code{selectInputMultipleReactive}. The reactive itself is a character
 vector.}
 
-\item{selectize.options}{options for \code{selectizeInput}}
+\item{selectize.options}{options for \code{selectizeInput}. By default, the options
+defined apply to all selectize inputs. However, selectize.options is a named
+list of lists, where each list is named after an editable selectize-style
+column, then the named lists are individualized options lists for each
+selectize-style column.}
 
 \item{inputEvent}{a named list of functions. The names of each element in
 the list must correspond to an editable column name in the data. The
