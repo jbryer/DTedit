@@ -22,6 +22,7 @@ dteditmod(
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
+  selectize.options = NULL,
   inputEvent = NULL,
   action.buttons = NULL,
   selectize = TRUE,
@@ -116,6 +117,8 @@ are:
 or the levels of the data column
 variable (if the column variable is of class \code{factor}),
 or the already present values in the data column.
+\item \code{selectizeInput} - use selectize version of \code{selectInput}. Options
+defined by \code{selectize.options}.
 \item \code{selectInputMultiple} - choices determined by
 \code{input.choices} or the already present values in the data
 column.
@@ -156,6 +159,8 @@ is acceptable. Can be a case insensitive file extension
 \code{input.choices} to use for input type \code{selectInputReactive} or
 \code{selectInputMultipleReactive}. The reactive itself is a character
 vector.}
+
+\item{selectize.options}{options for \code{selectizeInput}}
 
 \item{inputEvent}{a named list of functions. The names of each element in
 the list must correspond to an editable column name in the data. The

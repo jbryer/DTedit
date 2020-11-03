@@ -10,7 +10,8 @@ output: html_document
 
 ### New
 
-* `inputEvent` parameter to use https://github.com/merlinoa/shinyFeedback
+* `inputEvent` allows custom response to changes in add/edit modal dialog inputs.
+   Allows the use of `shinyFeedback` https://github.com/merlinoa/shinyFeedback
    (issue #17 and issue #9)
 
 ### Bug fix

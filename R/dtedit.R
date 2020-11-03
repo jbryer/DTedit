@@ -115,6 +115,8 @@ dtedit <- function(input, output,
 #'    or the levels of the data column
 #'    variable (if the column variable is of class `factor`),
 #'    or the already present values in the data column.
+#'  * `selectizeInput` - use selectize version of `selectInput`. Options
+#'    defined by `selectize.options`.
 #'  * `selectInputMultiple` - choices determined by
 #'    `input.choices` or the already present values in the data
 #'    column.
@@ -153,6 +155,7 @@ dtedit <- function(input, output,
 #'  `input.choices` to use for input type \code{selectInputReactive} or
 #'  \code{selectInputMultipleReactive}. The reactive itself is a character
 #'  vector.
+#' @param selectize.options options for `selectizeInput`
 #' @param inputEvent a named list of functions. The names of each element in
 #'  the list must correspond to an editable column name in the data. The
 #'  function is called when the associated input widget event is observed
@@ -278,6 +281,7 @@ dteditmod <- function(input, output, session,
                       input.types,
                       input.choices = NULL,
                       input.choices.reactive = NULL,
+                      selectize.options = NULL,
                       inputEvent = NULL,
                       action.buttons = NULL,
                       selectize = TRUE,
@@ -372,7 +376,7 @@ dteditmod <- function(input, output, session,
   }
 
   valid.input.types <- c(
-    "dateInput", "datetimeInput", "selectInput", "numericInput",
+    "dateInput", "datetimeInput", "selectInput", "selectizeInput", "numericInput",
     "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
     "selectInputReactive", "selectInputMultipleReactive", "fileInput"
   )
@@ -621,7 +625,7 @@ dteditmod <- function(input, output, session,
           selected = value,
           width = select.width
         )
-      } else if (inputTypes[i] == "selectInput") {
+      } else if (inputTypes[i] == "selectInput" || inputTypes[i] == "selectizeInput") {
         value <- ifelse(
           missing(values),
           "",
@@ -656,13 +660,24 @@ dteditmod <- function(input, output, session,
             ". Specify them using the input.choices parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
+        if (inputTypes[i] == "selectInput") {
+          fields[[i]] <- shiny::selectInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInput") {
+          fields[[i]] <- shiny::selectizeInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.options
+          )
+        }
       } else if (inputTypes[i] == "selectInputMultipleReactive") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
         if (is.list(value)) {
