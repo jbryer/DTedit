@@ -127,9 +127,13 @@ Options defined by \code{selectize.options}
 \item \code{selectInputReactive} - choices determined by a reactive
 variable, as defined by \code{input.choices} and
 \code{input.choices.reactive}.
+\item \code{selectizeInputReactive} - selectize version of \code{selectInputReactive}.
+Options defined by \code{selectize.options}
 \item \code{selectInputMultipleReactive} - choices determined by a
 reactive variable, as defined by \code{input.choices} and
 \code{input.choices.reactive}
+\item \code{selectizeInputMultipleReactive} - selectize version of \code{selectInputReactive}.
+Options defined by \code{selectize.options}
 \item \code{numericInput} - input changed by \code{numeric.width}
 \item \code{textInput} - input changed by \code{text.width}
 \item \code{textAreaInput} - input changed by \code{textarea.width} and \code{textarea.height}

@@ -125,9 +125,13 @@ dtedit <- function(input, output,
 #'  * `selectInputReactive` - choices determined by a reactive
 #'    variable, as defined by `input.choices` and
 #'    `input.choices.reactive`.
+#'  * `selectizeInputReactive` - selectize version of `selectInputReactive`.
+#'    Options defined by `selectize.options`
 #'  * `selectInputMultipleReactive` - choices determined by a
 #'    reactive variable, as defined by `input.choices` and
 #'    `input.choices.reactive`
+#'  * `selectizeInputMultipleReactive` - selectize version of `selectInputReactive`.
+#'    Options defined by `selectize.options`
 #'  * `numericInput` - input changed by `numeric.width`
 #'  * `textInput` - input changed by `text.width`
 #'  * `textAreaInput` - input changed by `textarea.width` and `textarea.height`
@@ -388,7 +392,9 @@ dteditmod <- function(input, output, session,
     "dateInput", "datetimeInput", "selectInput", "selectizeInput",
     "numericInput", "textInput", "textAreaInput", "passwordInput",
     "selectInputMultiple", "selectizeInputMultiple",
-    "selectInputReactive", "selectInputMultipleReactive", "fileInput"
+    "selectInputReactive", "selectizeInputReactive",
+    "selectInputMultipleReactive","selectizeInputMultipleReactive",
+    "fileInput"
   )
   inputTypes <- sapply(thedataCopy[, edit.cols], FUN = function(x) {
     switch(class(x)[[1]],
@@ -742,7 +748,8 @@ dteditmod <- function(input, output, session,
             options = selectize.option
           )
         }
-      } else if (inputTypes[i] == "selectInputMultipleReactive") {
+      } else if (inputTypes[i] == "selectInputMultipleReactive" ||
+                 inputTypes[i] == "selectizeInputMultipleReactive") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
         if (is.list(value)) {
           value <- value[[1]]
@@ -764,14 +771,34 @@ dteditmod <- function(input, output, session,
             "input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
-      } else if (inputTypes[i] == "selectInputReactive") {
+        if (inputTypes[i] == "selectInputMultipleReactive") {
+          fields[[i]] <- selectInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInputMultipleReactive") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- selectizeInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
+      } else if (inputTypes[i] == "selectInputReactive" ||
+                 inputTypes[i] == "selectizeInputReactive") {
         value <- ifelse(
           missing(values),
           "",
@@ -794,13 +821,32 @@ dteditmod <- function(input, output, session,
             "input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
+        if (inputTypes[i] == "selectInputReactive") {
+          fields[[i]] <- shiny::selectInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInputReactive") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- shiny::selectizeInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
       } else if (inputTypes[i] == "numericInput") {
         value <- ifelse(missing(values), 0, values[, edit.cols[i]])
         fields[[i]] <- shiny::numericInput(
@@ -1023,7 +1069,7 @@ dteditmod <- function(input, output, session,
     for (i in edit.cols) {
       if (inputTypes[i] %in%
           c("selectInputMultiple", "selectizeInputMultiple",
-            "selectInputMultipleReactive")) {
+            "selectInputMultipleReactive", "selectizeInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
       } else if (inputTypes[i] == "fileInput") { # file read into binary blob
         datapath <- input[[paste0(name, "_add_", i)]]$datapath
@@ -1137,7 +1183,7 @@ dteditmod <- function(input, output, session,
       for (i in edit.cols) {
         if (inputTypes[i] %in%
             c("selectInputMultiple", "selectizeInputMultiple",
-              "selectInputMultipleReactive")) {
+              "selectInputMultipleReactive", "selectizeInputMultipleReactive")) {
           newdata[[i]][row] <- list(input[[paste0(name, "_edit_", i)]])
         } else if (inputTypes[i] == "fileInput") {
           datapath <- input[[paste0(name, "_edit_", i)]]$datapath
