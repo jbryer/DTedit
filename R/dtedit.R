@@ -182,7 +182,9 @@ dtedit <- function(input, output,
 #'    Prefix and suffix will be separated with an underscore '_'.
 #'  * \code{afterColumn} if provided, the action button column is
 #'    placed after this named column.
-#' @param selectize Whether to use `selectize.js` or not. See \code{\link{selectInput}} for more info.
+#' @param selectize Whether to use `selectize.js` or not for `selectInputMultiple`
+#'  or `selectInputMultipleReactive`. See \code{shiny::\link{selectInput}} for
+#'  more information.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
 #' @param text.width width of text inputs.
@@ -583,7 +585,7 @@ dteditmod <- function(input, output, session,
           # 1. named 2. same name as in the editable columns
           selectize_individual <- FALSE
         } else if (!is.list(selectize.options[[i]])) {
-          # to be individually defined each item in selectize.optiosn must be
+          # to be individually defined each item in selectize.options must be
           # *also* be a list
           selectize_individual <- FALSE
         }

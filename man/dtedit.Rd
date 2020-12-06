@@ -192,7 +192,9 @@ Prefix and suffix will be separated with an underscore '_'.
 placed after this named column.
 }}
 
-\item{selectize}{Whether to use \code{selectize.js} or not. See \code{\link{selectInput}} for more info.}
+\item{selectize}{Whether to use \code{selectize.js} or not for \code{selectInputMultiple}
+or \code{selectInputMultipleReactive}. See \code{shiny::\link{selectInput}} for
+more information.}
 
 \item{modal.size}{the size of the modal dialog. See \code{\link{modalDialog}}.}
 
