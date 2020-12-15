@@ -23,12 +23,6 @@ output:
     highlight: vignette
     toc: yes
     toc_depth: 4
-abstract: Editable DataTables (DT) package for shiny apps. Originally created by Jason
-  Bryer. Data columns to view or edit can be selected. Different datatypes can be edited.
-  Valid input choices and interaction with persistent storage can be defined through
-  callbacks. In the case of limited selection choices for data columns with 'dropdown'
-  inputs, the choices can be defined and dynamically changed. Available in general-purpose
-  and module versions.<br/><br/>
 vignette: >
   %\VignetteIndexEntry{DTedit} 
   \usepackage[utf8]{inputenc}
@@ -56,7 +50,14 @@ comment = "#>"
 library(DTedit)
 ```
 
-<br/>
+# Abstract
+
+> Editable DataTables (DT) package for shiny apps. Originally created by Jason
+  Bryer. Data columns to view or edit can be selected. Different datatypes can be edited.
+  Valid input choices and interaction with persistent storage can be defined through
+  callbacks. In the case of limited selection choices for data columns with 'dropdown'
+  inputs, the choices can be defined and dynamically changed. Available in general-purpose
+  and module versions.
 
 Package version : `r packageVersion("DTedit")`
 
