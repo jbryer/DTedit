@@ -12,6 +12,10 @@ addons:
     packages:
       - libgit2-dev
 
+# libgit2-dev has become required
+# for the gert dependency
+# see https://github.com/r-lib/usethis/issues/1317
+
 # Install PhantomJS (if not cached)
 # We need to install lbzip2 first
 #before_install:

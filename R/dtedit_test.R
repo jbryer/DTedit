@@ -696,4 +696,106 @@ dtedit_test <- function(appname = "simple", ...) {
     if (interactive() || isTRUE(getOption("shiny.testmode")))
       return (shiny::shinyApp(ui = ui, server = server, ...))
   }
+
+  if (appname == "selectizeInput") {
+
+    server <- function(input, output) {
+
+      less_states <- list(
+        Eastern = c(`New York` = 'NY', `New Jersey` = 'NJ'),
+        Western = c(`California` = 'CA', `Washington` = 'WA')
+      )
+      more_states <- list(
+        Eastern = c(`New York` = 'NY', `New Jersey` = 'NJ'),
+        Midwest = c(`Illinois` = 'IL', `Indiana` = 'IN', `Minnestota` = 'MN'),
+        Western = c(`California` = 'CA', `Washington` = 'WA')
+      )
+      less_product <- c('clothes', 'food', 'toys')
+      more_product <- c('clothes', 'food', 'toys', 'tea', 'coffee')
+
+      from.states <- shiny::reactiveVal(less_states)
+      product.types <- shiny::reactiveVal(less_product)
+
+      Grocery_List_Results <- dtedit(
+        input, output,
+        name = 'Grocery_List',
+        thedata = data.frame(
+          Store = c('stor1', 'stor1', 'stor2'),
+          Product = c('food', 'clothes', 'clothes'),
+          FromState = I(list(list('CA', 'NJ'), list('WA'), list('NY'))),
+          ToState = I(list(list('CA'), list('WA'), list('NY'))),
+          Quantity = c(7, 2, 5),
+          stringsAsFactors = FALSE
+        ),
+        edit.label.cols = c('Store', 'Product', 'From State', 'To State', 'Quantity'),
+        input.types = list(
+          Store = 'selectizeInput',
+          Product = 'selectizeInputReactive',
+          FromState = 'selectizeInputMultipleReactive',
+          ToState = 'selectizeInputMultiple'
+        ),
+        input.choices = list(
+          Store = c("stor1","stor2"),
+          Product = 'product.list',
+          FromState = 'from.states.list',
+          ToState = less_states
+        ),
+        input.choices.reactive =
+          list(from.states.list = from.states,
+               product.list = product.types),
+        selectize.options = list(
+          Store = list(
+            placeholder = "Please select an option below",
+            onInitialize = I('function() { this.setValue(""); }')
+          ),
+          FromState = list(create = TRUE, maxItems = 2),
+          ToState = list(create = TRUE, maxItems = 3)
+        )
+      )
+
+      shiny::observeEvent(input$choice_states, {
+        if (input$choice_states == 1) {
+          from.states(less_states)
+        } else {
+          from.states(more_states)
+        }
+      })
+      shiny::observeEvent(input$choice_product, {
+        if (input$choice_product == 1) {
+          product.types(less_product)
+        } else {
+          product.types(more_product)
+        }
+      })
+
+      #### shinytest code for testing purposes only ########
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Grocery_List_Results$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
+      })
+      shiny::exportTestValues(data_list = {data_list})
+      ######################################################
+
+    }
+
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
+      shiny::uiOutput('Grocery_List'),
+      shiny::radioButtons(
+        inputId = 'choice_states',
+        label = "'From State' choices",
+        choices = list('Less' = 1, 'More' = 2),
+        selected = 1
+      ),
+      shiny::radioButtons(
+        inputId = 'choice_product',
+        label = "Product choices",
+        choices = list('Less' = 1, 'More' = 2),
+        selected = 1
+      )
+    )
+
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return (shiny::shinyApp(ui = ui, server = server, ...))
+  }
 }

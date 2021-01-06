@@ -1,0 +1,46 @@
+{
+  "export": {
+    "data_list": [
+      {
+        "Store": [
+          "stor1",
+          "stor1",
+          "stor2"
+        ],
+        "Product": [
+          "food",
+          "clothes",
+          "clothes"
+        ],
+        "FromState": [
+          [
+            "CA",
+            "NJ"
+          ],
+          [
+            "WA"
+          ],
+          [
+            "NY"
+          ]
+        ],
+        "ToState": [
+          [
+            "CA"
+          ],
+          [
+            "WA"
+          ],
+          [
+            "NY"
+          ]
+        ],
+        "Quantity": [
+          7,
+          2,
+          5
+        ]
+      }
+    ]
+  }
+}
