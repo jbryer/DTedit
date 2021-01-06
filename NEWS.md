@@ -10,8 +10,16 @@ output: html_document
 
 ### New
 
-* `inputEvent` parameter to use https://github.com/merlinoa/shinyFeedback
+* `inputEvent` allows custom response to changes in add/edit modal dialog inputs.
+   Allows the use of `shinyFeedback` https://github.com/merlinoa/shinyFeedback
    (issue #17 and issue #9)
+* `selectizeInput`, `selectizeInputReactive`, `selectizeInputMultiple` 
+  `selectizeInputMultipleReactive` input options. uses  `shiny::selectizeInput`
+  instead of `shiny::selectInput`
+  - `selectize.options` - a list of options for `selectizeInput` variants. This
+    can be the same list of options for *all* `selectize*` inputs, but can also
+    be a named list of individually defined options, each named list must be
+    the same as a `selectize*` editable column.
 
 ### Bug fix
 

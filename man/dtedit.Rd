@@ -22,6 +22,7 @@ dteditmod(
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
+  selectize.options = NULL,
   inputEvent = NULL,
   action.buttons = NULL,
   selectize = TRUE,
@@ -116,15 +117,23 @@ are:
 or the levels of the data column
 variable (if the column variable is of class \code{factor}),
 or the already present values in the data column.
+\item \code{selectizeInput} - use selectize version of \code{selectInput}. Options
+defined by \code{selectize.options}.
 \item \code{selectInputMultiple} - choices determined by
 \code{input.choices} or the already present values in the data
 column.
+\item \code{selectizeInputMultiple} - use selectize version of \code{selectInputMultiple}.
+Options defined by \code{selectize.options}
 \item \code{selectInputReactive} - choices determined by a reactive
 variable, as defined by \code{input.choices} and
 \code{input.choices.reactive}.
+\item \code{selectizeInputReactive} - selectize version of \code{selectInputReactive}.
+Options defined by \code{selectize.options}
 \item \code{selectInputMultipleReactive} - choices determined by a
 reactive variable, as defined by \code{input.choices} and
 \code{input.choices.reactive}
+\item \code{selectizeInputMultipleReactive} - selectize version of \code{selectInputReactive}.
+Options defined by \code{selectize.options}
 \item \code{numericInput} - input changed by \code{numeric.width}
 \item \code{textInput} - input changed by \code{text.width}
 \item \code{textAreaInput} - input changed by \code{textarea.width} and \code{textarea.height}
@@ -157,6 +166,12 @@ is acceptable. Can be a case insensitive file extension
 \code{selectInputMultipleReactive}. The reactive itself is a character
 vector.}
 
+\item{selectize.options}{options for \code{selectizeInput}. By default, the options
+defined apply to all selectize inputs. However, selectize.options is a named
+list of lists, where each list is named after an editable selectize-style
+column, then the named lists are individualized options lists for each
+selectize-style column.}
+
 \item{inputEvent}{a named list of functions. The names of each element in
 the list must correspond to an editable column name in the data. The
 function is called when the associated input widget event is observed
@@ -177,7 +192,9 @@ Prefix and suffix will be separated with an underscore '_'.
 placed after this named column.
 }}
 
-\item{selectize}{Whether to use \code{selectize.js} or not. See \code{\link{selectInput}} for more info.}
+\item{selectize}{Whether to use \code{selectize.js} or not for \code{selectInputMultiple}
+or \code{selectInputMultipleReactive}. See \code{shiny::\link{selectInput}} for
+more information.}
 
 \item{modal.size}{the size of the modal dialog. See \code{\link{modalDialog}}.}
 

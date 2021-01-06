@@ -115,15 +115,23 @@ dtedit <- function(input, output,
 #'    or the levels of the data column
 #'    variable (if the column variable is of class `factor`),
 #'    or the already present values in the data column.
+#'  * `selectizeInput` - use selectize version of `selectInput`. Options
+#'    defined by `selectize.options`.
 #'  * `selectInputMultiple` - choices determined by
 #'    `input.choices` or the already present values in the data
 #'    column.
+#'  * `selectizeInputMultiple` - use selectize version of `selectInputMultiple`.
+#'    Options defined by `selectize.options`
 #'  * `selectInputReactive` - choices determined by a reactive
 #'    variable, as defined by `input.choices` and
 #'    `input.choices.reactive`.
+#'  * `selectizeInputReactive` - selectize version of `selectInputReactive`.
+#'    Options defined by `selectize.options`
 #'  * `selectInputMultipleReactive` - choices determined by a
 #'    reactive variable, as defined by `input.choices` and
 #'    `input.choices.reactive`
+#'  * `selectizeInputMultipleReactive` - selectize version of `selectInputReactive`.
+#'    Options defined by `selectize.options`
 #'  * `numericInput` - input changed by `numeric.width`
 #'  * `textInput` - input changed by `text.width`
 #'  * `textAreaInput` - input changed by `textarea.width` and `textarea.height`
@@ -153,6 +161,11 @@ dtedit <- function(input, output,
 #'  `input.choices` to use for input type \code{selectInputReactive} or
 #'  \code{selectInputMultipleReactive}. The reactive itself is a character
 #'  vector.
+#' @param selectize.options options for `selectizeInput`. By default, the options
+#'  defined apply to all selectize inputs. However, selectize.options is a named
+#'  list of lists, where each list is named after an editable selectize-style
+#'  column, then the named lists are individualized options lists for each
+#'  selectize-style column.
 #' @param inputEvent a named list of functions. The names of each element in
 #'  the list must correspond to an editable column name in the data. The
 #'  function is called when the associated input widget event is observed
@@ -169,7 +182,9 @@ dtedit <- function(input, output,
 #'    Prefix and suffix will be separated with an underscore '_'.
 #'  * \code{afterColumn} if provided, the action button column is
 #'    placed after this named column.
-#' @param selectize Whether to use `selectize.js` or not. See \code{\link{selectInput}} for more info.
+#' @param selectize Whether to use `selectize.js` or not for `selectInputMultiple`
+#'  or `selectInputMultipleReactive`. See \code{shiny::\link{selectInput}} for
+#'  more information.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
 #' @param text.width width of text inputs.
@@ -278,6 +293,7 @@ dteditmod <- function(input, output, session,
                       input.types,
                       input.choices = NULL,
                       input.choices.reactive = NULL,
+                      selectize.options = NULL,
                       inputEvent = NULL,
                       action.buttons = NULL,
                       selectize = TRUE,
@@ -370,11 +386,17 @@ dteditmod <- function(input, output, session,
   selectInputMultiple <- function(...) {
     shiny::selectInput(multiple = TRUE, selectize = selectize, ...)
   }
+  selectizeInputMultiple <- function(...) {
+    shiny::selectizeInput(multiple = TRUE, ...)
+  }
 
   valid.input.types <- c(
-    "dateInput", "datetimeInput", "selectInput", "numericInput",
-    "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
-    "selectInputReactive", "selectInputMultipleReactive", "fileInput"
+    "dateInput", "datetimeInput", "selectInput", "selectizeInput",
+    "numericInput", "textInput", "textAreaInput", "passwordInput",
+    "selectInputMultiple", "selectizeInputMultiple",
+    "selectInputReactive", "selectizeInputReactive",
+    "selectInputMultipleReactive","selectizeInputMultipleReactive",
+    "fileInput"
   )
   inputTypes <- sapply(thedataCopy[, edit.cols], FUN = function(x) {
     switch(class(x)[[1]],
@@ -547,6 +569,31 @@ dteditmod <- function(input, output, session,
     #
     # returns a list of shiny inputs, 'fields'
 
+    if (grepl("selectize", inputTypes) && !is.null(selectize.options)) {
+      # if *any* of the selectize input-type variants in the inputTypes
+      # and selectize.options is actually defined
+      #
+      # then are the selectize.options applied to *all* the selectize input
+      # types, or are they individually defined?
+
+      selectize_individual <- TRUE # by default, assume individually defined
+      edit.cols.selectize <- edit.cols[grepl("selectize", inputTypes)]
+      # the editable columns which are 'selectize' variants
+      for (i in names(selectize.options)) {
+        if (i == "" || !(i %in% edit.cols)) {
+          # to be individually defined each item in selectize.options must be
+          # 1. named 2. same name as in the editable columns
+          selectize_individual <- FALSE
+        } else if (!is.list(selectize.options[[i]])) {
+          # to be individually defined each item in selectize.options must be
+          # *also* be a list
+          selectize_individual <- FALSE
+        }
+      }
+    } else {
+      selectize_individual <- FALSE
+    }
+
     fields <- list()
     for (i in seq_along(edit.cols)) {
       if (inputTypes[i] == "dateInput") {
@@ -585,7 +632,8 @@ dteditmod <- function(input, output, session,
           addon = "none",
           width = datetime.width
         )
-      } else if (inputTypes[i] == "selectInputMultiple") {
+      } else if (inputTypes[i] == "selectInputMultiple" ||
+                 inputTypes[i] == "selectizeInputMultiple") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
         if (is.list(value)) {
           value <- value[[1]]
@@ -614,14 +662,34 @@ dteditmod <- function(input, output, session,
             ". Specify them using the input.choices parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
-      } else if (inputTypes[i] == "selectInput") {
+        if (inputTypes[i] == "selectInputMultiple") {
+          fields[[i]] <- selectInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInputMultiple") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- selectizeInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
+      } else if (inputTypes[i] == "selectInput" ||
+                 inputTypes[i] == "selectizeInput") {
         value <- ifelse(
           missing(values),
           "",
@@ -656,14 +724,34 @@ dteditmod <- function(input, output, session,
             ". Specify them using the input.choices parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
-      } else if (inputTypes[i] == "selectInputMultipleReactive") {
+        if (inputTypes[i] == "selectInput") {
+          fields[[i]] <- shiny::selectInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInput") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- shiny::selectizeInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
+      } else if (inputTypes[i] == "selectInputMultipleReactive" ||
+                 inputTypes[i] == "selectizeInputMultipleReactive") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
         if (is.list(value)) {
           value <- value[[1]]
@@ -685,14 +773,34 @@ dteditmod <- function(input, output, session,
             "input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
-      } else if (inputTypes[i] == "selectInputReactive") {
+        if (inputTypes[i] == "selectInputMultipleReactive") {
+          fields[[i]] <- selectInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInputMultipleReactive") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- selectizeInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
+      } else if (inputTypes[i] == "selectInputReactive" ||
+                 inputTypes[i] == "selectizeInputReactive") {
         value <- ifelse(
           missing(values),
           "",
@@ -715,13 +823,32 @@ dteditmod <- function(input, output, session,
             "input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
+        if (inputTypes[i] == "selectInputReactive") {
+          fields[[i]] <- shiny::selectInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInputReactive") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- shiny::selectizeInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
       } else if (inputTypes[i] == "numericInput") {
         value <- ifelse(missing(values), 0, values[, edit.cols[i]])
         fields[[i]] <- shiny::numericInput(
@@ -943,7 +1070,8 @@ dteditmod <- function(input, output, session,
     # the new row is ready for filling
     for (i in edit.cols) {
       if (inputTypes[i] %in%
-          c("selectInputMultiple", "selectInputMultipleReactive")) {
+          c("selectInputMultiple", "selectizeInputMultiple",
+            "selectInputMultipleReactive", "selectizeInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
       } else if (inputTypes[i] == "fileInput") { # file read into binary blob
         datapath <- input[[paste0(name, "_add_", i)]]$datapath
@@ -1055,8 +1183,9 @@ dteditmod <- function(input, output, session,
     if (!is.null(row) && row > 0) {
       newdata <- result$thedata
       for (i in edit.cols) {
-        if (inputTypes[i] %in% c("selectInputMultiple",
-                                 "selectInputMultipleReactive")) {
+        if (inputTypes[i] %in%
+            c("selectInputMultiple", "selectizeInputMultiple",
+              "selectInputMultipleReactive", "selectizeInputMultipleReactive")) {
           newdata[[i]][row] <- list(input[[paste0(name, "_edit_", i)]])
         } else if (inputTypes[i] == "fileInput") {
           datapath <- input[[paste0(name, "_edit_", i)]]$datapath
