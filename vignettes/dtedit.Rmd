@@ -646,6 +646,7 @@ The mappings are :
 * factor $\rightarrow$ "selectInput"
 * integer $\rightarrow$ "numericInput"
 * numeric $\rightarrow$ "numericInput"
+* logical $\rightarrow$ "checkboxInput"
 * blob $\rightarrow$ "fileInput"
 
 `input.types` can be explicitly defined.
@@ -666,8 +667,9 @@ Valid `input.types` are :
 * numericInput
 * textInput
 * textAreaInput
+* checkboxInput
 * passwordInput
-* fileInput.
+* fileInput
 
 For an example of explicit definition, see [`selectInput`](#selectInput).
 

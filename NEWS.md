@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ## DTedit 2.2.4
-27th October 2020
+24th January 2021
 
 ### New
 
@@ -20,11 +20,16 @@ output: html_document
     can be the same list of options for *all* `selectize*` inputs, but can also
     be a named list of individually defined options, each named list must be
     the same as a `selectize*` editable column.
+* `checkboxInput` for logical (TRUE/FALSE) values
+  - by Matthias Hinz (@MatthiasHinz), resolving issue #19
+  - `checkbox.width` to adjust checkbox widths
 
 ### Bug fix
 
 * fix entering an empty (NA) date in `dateInput` and `datetimeInput` when
   editing an entry (issue #21)
+* fix for error when there is only one editable column.
+  - by Matthias Hinz (@MatthiasHinz)
 
 ### Internal changes
 
