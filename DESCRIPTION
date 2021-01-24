@@ -1,6 +1,6 @@
 Package: DTedit
 Title: Editable DataTables for Shiny Apps
-Version: 2.2.3
+Version: 2.2.4
 Authors@R:
     c(person(given = "Jason",
              family = "Bryer",
@@ -22,9 +22,10 @@ Depends:
     R (>= 3.3)
 Imports: 
     DT (>= 0.6),
-    shiny,
+    shiny (>= 1.0.0),
     blob,
-    methods
+    methods,
+    R6
 Suggests: 
     RSQLite,
     base64enc,
@@ -37,7 +38,9 @@ Suggests:
     devtools,
     withr,
     magrittr,
-    shinyWidgets (>= 0.5.2)
+    shinyWidgets (>= 0.5.2),
+    jsonlite,
+    rmdformats
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1

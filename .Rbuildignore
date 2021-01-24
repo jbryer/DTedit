@@ -10,3 +10,6 @@ README.md
 ^vignettes/rsconnect$
 ^\.travis\.yml$
 ^codecov\.yml$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
