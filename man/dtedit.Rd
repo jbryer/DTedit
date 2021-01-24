@@ -34,6 +34,7 @@ dteditmod(
   datetime.width = "200px",
   numeric.width = "100px",
   select.width = "100\%",
+  checkbox.width = "100\%",
   defaultPageLength = 10,
   max.fileInputLength = 1e+08,
   title.delete = "Delete",
@@ -141,6 +142,7 @@ Options defined by \code{selectize.options}
 \item \code{fileInput} - type of acceptable file types is defined by
 \code{input.choices}. Maximum file length is modifed by
 \code{max.fileInputLength}
+\item \code{checkboxInput}- input changed by \code{checkbox.width}
 }
 
 One case where this parameter is desirable is when a text
@@ -211,6 +213,8 @@ more information.}
 \item{numeric.width}{the width of numeric inputs.}
 
 \item{select.width}{the width of drop down inputs.}
+
+\item{checkbox.width}{the width of checkbox inputs.}
 
 \item{defaultPageLength}{number of rows to show in the data table by default.}
 
