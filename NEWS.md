@@ -5,8 +5,8 @@ date: "27th June 2020"
 output: html_document
 ---
 
-## DTedit 2.2.4
-24th January 2021
+## DTedit 2.3.0
+27th August 2021
 
 ### New
 
@@ -34,6 +34,7 @@ output: html_document
 ### Internal changes
 
 * use `shiny::throttle` for `click.time.threshold`
+* add `logical` to `dtedit_test()`
 
 ## DTedit 2.2.3
 21st October 2020
