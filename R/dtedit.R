@@ -48,8 +48,8 @@ dtedit <- function(input, output,
 #' the shiny application.
 #' \code{dteditmodUI} is called in the 'UI' (user-interface) section of the shiny app.
 #'
-#' This object will maintain data state. However, in order of the data to persist
-#' between Shiny instances, data needs to be saved to some external format (e.g.
+#' This object will maintain data state. However, in order for data to persist
+#' between Shiny instances, data needs to be saved to an external format (e.g.
 #' database or R data file). The callback functions provide a mechanism for this
 #' function to interact with a permanent data storage scheme. The callback
 #' functions are called when the user adds, updates, or deletes a row from the
@@ -153,7 +153,7 @@ dtedit <- function(input, output,
 #'  or `selectInputMultipleReactive``, the value is the name
 #'  of the reactive in 'input.choices.reactive'
 #'
-#'  In the case of input type `fileInput`` this is the
+#'  In the case of input type `fileInput` this is the
 #'  'accept' argument, which specifies the type of file which
 #'  is acceptable. Can be a case insensitive file extension
 #'  (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
