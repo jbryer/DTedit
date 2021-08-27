@@ -16,6 +16,8 @@ NULL
 #'   password
 #'   datetimeInput
 #'   inputEvent
+#'   selectizeInput
+#'   logical
 #' @param ... extra options passed to shiny::shinyApp
 #'
 #' @return a shiny app
@@ -793,6 +795,34 @@ dtedit_test <- function(appname = "simple", ...) {
         choices = list('Less' = 1, 'More' = 2),
         selected = 1
       )
+    )
+
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return (shiny::shinyApp(ui = ui, server = server, ...))
+  }
+
+  if (appname == "logical") {
+    server <- function(input, output, session) {
+      Logical_List <- dtedit(
+        input, output,
+        name = 'Logical_List',
+        thedata = data.frame(
+          checkvalue=rep(c(TRUE,FALSE),3)
+        )
+      )
+
+      #### shinytest code for testing purposes only ########
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Logical_List$thedata, {
+        data_list[[length(data_list) + 1]] <<- Logical_List$thedata
+      })
+      shiny::exportTestValues(data_list = {data_list})
+      ######################################################
+    }
+
+    ui <- shiny::fluidPage(
+      shiny::h3('Logical'),
+      shiny::uiOutput('Logical_List')
     )
 
     if (interactive() || isTRUE(getOption("shiny.testmode")))

@@ -16,7 +16,9 @@ error_test
 selectInputReactive
 password
 datetimeInput
-inputEvent}
+inputEvent
+selectizeInput
+logical}
 
 \item{...}{extra options passed to shiny::shinyApp}
 }
