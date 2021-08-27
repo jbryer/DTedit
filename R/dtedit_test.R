@@ -14,6 +14,10 @@ NULL
 #'   error_test
 #'   selectInputReactive
 #'   password
+#'   datetimeInput
+#'   inputEvent
+#'   selectizeInput
+#'   logical
 #' @param ... extra options passed to shiny::shinyApp
 #'
 #' @return a shiny app
@@ -256,6 +260,7 @@ dtedit_test <- function(appname = "simple", ...) {
             buttonPrefix = "subtractOne"
           )
         ),
+        click.time.threshold = 0.1, # very short, for auto-testing
         callback.update = grocery.update.callback,
         callback.delete = grocery.delete.callback,
         callback.insert = grocery.insert.callback,
@@ -608,38 +613,216 @@ dtedit_test <- function(appname = "simple", ...) {
   }
 
   if (appname == "datetimeInput") {
-    server <- function(input, output, session) {
-      Due_List <- dtedit(
+    server <- function(input, output) {
+
+      Grocery_List_Results <- dtedit(
         input, output,
-        name = "ToBuy",
+        name = 'Grocery_List',
         thedata = data.frame(
           Buy = c('Tea', 'Biscuits', 'Apples'),
-          Quantity = as.integer(c(7,2,3)),
-          DueTime = as.POSIXct(c("2020-09-10", "2020-11-14", "2021-05-23")),
+          Quantity = c(7, 2, 5),
+          DueTime = as.POSIXct(c("2020-09-10", "2020-5-14", "2021-05-23"), tz = "GMT"),
+          PurchaseDate = c(as.Date("2020-05-04"), as.Date(NA), as.Date("2018-07-04")),
           stringsAsFactors = FALSE
         ),
         useairDatepicker = TRUE
+        ######################################################
+        # test (superficially) airDatepicker input
+        # unfortunately, there is no testing for datetimeInput yet
+        # because
+        # `app$setInputs(ToBuy_edit_DueTime = 1605548460000)`
+        # does not set the widget's value, and I am unable
+        # to find an alternative app$executeScript which will
+        # set the vlaue
+        # see https://github.com/rstudio/shinytest/issues/252
+        ######################################################
       )
 
       #### shinytest code for testing purposes only ########
       data_list <- list() # exported list for shinytest
-      shiny::observeEvent(Due_List$thedata, {
-        data_list[[length(data_list) + 1]] <<- Due_List$thedata
+      shiny::observeEvent(Grocery_List_Results$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
       })
       shiny::exportTestValues(data_list = {data_list})
-      # unfortunately, there is no testing for datetimeInput yet
-      # because
-      # `app$setInputs(ToBuy_edit_DueTime = 1605548460000)`
-      # does not set the widget's value, and I am unable
-      # to find an alternative app$executeScript which will
-      # set the vlaue
-      # see https://github.com/rstudio/shinytest/issues/252
       ######################################################
     }
 
     ui <- shiny::fluidPage(
-      shiny::h3('ToDo List'),
-      shiny::uiOutput('ToBuy')
+      shiny::h3('Grocery List'),
+      shiny::uiOutput('Grocery_List')
+    )
+
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return (shiny::shinyApp(ui = ui, server = server, ...))
+  }
+
+  if (appname == "inputEvent") {
+
+    server <- function(input, output) {
+      Grocery_List_Results <- dtedit(
+        input, output,
+        name = 'Grocery_List',
+        thedata = data.frame(
+          Buy = c('Tea', 'Biscuits', 'Apples'),
+          Quantity = c(7, 2, 5),
+          stringsAsFactors = FALSE
+        ),
+        inputEvent = list(
+          Quantity = function(x, value) {
+            # value will be NA, if empty input box
+            if (!is.na(value) && value > 100) {
+              shiny::updateNumericInput(
+                session = shiny::getDefaultReactiveDomain(),
+                inputId = x,
+                value = NA
+              )
+            }
+          }
+        )
+      )
+
+      #### shinytest code for testing purposes only ########
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Grocery_List_Results$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
+      })
+      shiny::exportTestValues(data_list = {data_list})
+      ######################################################
+    }
+
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
+      shiny::uiOutput('Grocery_List')
+    )
+
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return (shiny::shinyApp(ui = ui, server = server, ...))
+  }
+
+  if (appname == "selectizeInput") {
+
+    server <- function(input, output) {
+
+      less_states <- list(
+        Eastern = c(`New York` = 'NY', `New Jersey` = 'NJ'),
+        Western = c(`California` = 'CA', `Washington` = 'WA')
+      )
+      more_states <- list(
+        Eastern = c(`New York` = 'NY', `New Jersey` = 'NJ'),
+        Midwest = c(`Illinois` = 'IL', `Indiana` = 'IN', `Minnestota` = 'MN'),
+        Western = c(`California` = 'CA', `Washington` = 'WA')
+      )
+      less_product <- c('clothes', 'food', 'toys')
+      more_product <- c('clothes', 'food', 'toys', 'tea', 'coffee')
+
+      from.states <- shiny::reactiveVal(less_states)
+      product.types <- shiny::reactiveVal(less_product)
+
+      Grocery_List_Results <- dtedit(
+        input, output,
+        name = 'Grocery_List',
+        thedata = data.frame(
+          Store = c('stor1', 'stor1', 'stor2'),
+          Product = c('food', 'clothes', 'clothes'),
+          FromState = I(list(list('CA', 'NJ'), list('WA'), list('NY'))),
+          ToState = I(list(list('CA'), list('WA'), list('NY'))),
+          Quantity = c(7, 2, 5),
+          stringsAsFactors = FALSE
+        ),
+        edit.label.cols = c('Store', 'Product', 'From State', 'To State', 'Quantity'),
+        input.types = list(
+          Store = 'selectizeInput',
+          Product = 'selectizeInputReactive',
+          FromState = 'selectizeInputMultipleReactive',
+          ToState = 'selectizeInputMultiple'
+        ),
+        input.choices = list(
+          Store = c("stor1","stor2"),
+          Product = 'product.list',
+          FromState = 'from.states.list',
+          ToState = less_states
+        ),
+        input.choices.reactive =
+          list(from.states.list = from.states,
+               product.list = product.types),
+        selectize.options = list(
+          Store = list(
+            placeholder = "Please select an option below",
+            onInitialize = I('function() { this.setValue(""); }')
+          ),
+          FromState = list(create = TRUE, maxItems = 2),
+          ToState = list(create = TRUE, maxItems = 3)
+        )
+      )
+
+      shiny::observeEvent(input$choice_states, {
+        if (input$choice_states == 1) {
+          from.states(less_states)
+        } else {
+          from.states(more_states)
+        }
+      })
+      shiny::observeEvent(input$choice_product, {
+        if (input$choice_product == 1) {
+          product.types(less_product)
+        } else {
+          product.types(more_product)
+        }
+      })
+
+      #### shinytest code for testing purposes only ########
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Grocery_List_Results$thedata, {
+        data_list[[length(data_list) + 1]] <<- Grocery_List_Results$thedata
+      })
+      shiny::exportTestValues(data_list = {data_list})
+      ######################################################
+
+    }
+
+    ui <- shiny::fluidPage(
+      shiny::h3('Grocery List'),
+      shiny::uiOutput('Grocery_List'),
+      shiny::radioButtons(
+        inputId = 'choice_states',
+        label = "'From State' choices",
+        choices = list('Less' = 1, 'More' = 2),
+        selected = 1
+      ),
+      shiny::radioButtons(
+        inputId = 'choice_product',
+        label = "Product choices",
+        choices = list('Less' = 1, 'More' = 2),
+        selected = 1
+      )
+    )
+
+    if (interactive() || isTRUE(getOption("shiny.testmode")))
+      return (shiny::shinyApp(ui = ui, server = server, ...))
+  }
+
+  if (appname == "logical") {
+    server <- function(input, output, session) {
+      Logical_List <- dtedit(
+        input, output,
+        name = 'Logical_List',
+        thedata = data.frame(
+          checkvalue=rep(c(TRUE,FALSE),3)
+        )
+      )
+
+      #### shinytest code for testing purposes only ########
+      data_list <- list() # exported list for shinytest
+      shiny::observeEvent(Logical_List$thedata, {
+        data_list[[length(data_list) + 1]] <<- Logical_List$thedata
+      })
+      shiny::exportTestValues(data_list = {data_list})
+      ######################################################
+    }
+
+    ui <- shiny::fluidPage(
+      shiny::h3('Logical'),
+      shiny::uiOutput('Logical_List')
     )
 
     if (interactive() || isTRUE(getOption("shiny.testmode")))

@@ -115,15 +115,23 @@ dtedit <- function(input, output,
 #'    or the levels of the data column
 #'    variable (if the column variable is of class `factor`),
 #'    or the already present values in the data column.
+#'  * `selectizeInput` - use selectize version of `selectInput`. Options
+#'    defined by `selectize.options`.
 #'  * `selectInputMultiple` - choices determined by
 #'    `input.choices` or the already present values in the data
 #'    column.
+#'  * `selectizeInputMultiple` - use selectize version of `selectInputMultiple`.
+#'    Options defined by `selectize.options`
 #'  * `selectInputReactive` - choices determined by a reactive
 #'    variable, as defined by `input.choices` and
 #'    `input.choices.reactive`.
+#'  * `selectizeInputReactive` - selectize version of `selectInputReactive`.
+#'    Options defined by `selectize.options`
 #'  * `selectInputMultipleReactive` - choices determined by a
 #'    reactive variable, as defined by `input.choices` and
 #'    `input.choices.reactive`
+#'  * `selectizeInputMultipleReactive` - selectize version of `selectInputReactive`.
+#'    Options defined by `selectize.options`
 #'  * `numericInput` - input changed by `numeric.width`
 #'  * `textInput` - input changed by `text.width`
 #'  * `textAreaInput` - input changed by `textarea.width` and `textarea.height`
@@ -136,9 +144,10 @@ dtedit <- function(input, output,
 #'  One case where this parameter is desirable is when a text
 #'  area is required instead of a simple text input.
 #'
-#' @param input.choices a list of character vectors. The names of each element in the list must
-#'  correspond to a column name in the data. The value, a character vector, are the options
-#'  presented to the user for data entry, in the case of input type \code{selectInput}).
+#' @param input.choices a list of character vectors. The names of each element
+#'  in the list must correspond to a column name in the data. The value,
+#'  a character vector, are the options presented to the user for data entry,
+#'  in the case of input type \code{selectInput}).
 #'
 #'  In the case of input type `selectInputReactive`
 #'  or `selectInputMultipleReactive``, the value is the name
@@ -149,9 +158,21 @@ dtedit <- function(input, output,
 #'  is acceptable. Can be a case insensitive file extension
 #'  (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
 #'  'application/pdf').
-#' @param input.choices.reactive a named list of reactives, referenced in 'input.choices'
-#'  to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
-#'  The reactive itself is a character vector.
+#' @param input.choices.reactive a named list of reactives, referenced in
+#'  `input.choices` to use for input type \code{selectInputReactive} or
+#'  \code{selectInputMultipleReactive}. The reactive itself is a character
+#'  vector.
+#' @param selectize.options options for `selectizeInput`. By default, the options
+#'  defined apply to all selectize inputs. However, selectize.options is a named
+#'  list of lists, where each list is named after an editable selectize-style
+#'  column, then the named lists are individualized options lists for each
+#'  selectize-style column.
+#' @param inputEvent a named list of functions. The names of each element in
+#'  the list must correspond to an editable column name in the data. The
+#'  function is called when the associated input widget event is observed
+#'  during editing/adding a data row. Can be used, for example,
+#'  with `shinyFeedback`. The functions need to accept two parameters,
+#'  the inputID of the input widget, and the value of that widget.
 #' @param action.buttons a named list of action button columns.
 #'  Each column description is a list of \code{columnLabel}, \code{buttonLabel},
 #'  \code{buttonPrefix}, \code{afterColumn}.
@@ -162,7 +183,9 @@ dtedit <- function(input, output,
 #'    Prefix and suffix will be separated with an underscore '_'.
 #'  * \code{afterColumn} if provided, the action button column is
 #'    placed after this named column.
-#' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
+#' @param selectize Whether to use `selectize.js` or not for `selectInputMultiple`
+#'  or `selectInputMultipleReactive`. See \code{shiny::\link{selectInput}} for
+#'  more information.
 #' @param defaultPageLength number of rows to show in the data table by default.
 #' @param modal.size the size of the modal dialog. See \code{\link{modalDialog}}.
 #' @param text.width width of text inputs.
@@ -185,10 +208,14 @@ dtedit <- function(input, output,
 #' @param label.copy the label of the copy button.
 #' @param label.save the label of the save button.
 #' @param label.cancel the label of the cancel button.
-#' @param icon.delete the icon for the delete button, e.g. \code{icon("trash")}. Defaults to \code{NULL}.
-#' @param icon.edit the icon for the edit button, e.g. \code{icon("edit")}. Defaults to \code{NULL}.
-#' @param icon.add the icon for the add button, e.g. \code{icon("plus")}. Defaults to \code{NULL}.
-#' @param icon.copy the icon for the copy button, e.g. \code{icon("copy")}. Defaults to \code{NULL}.
+#' @param icon.delete the icon for the delete button, e.g. \code{icon("trash")}.
+#'  Defaults to \code{NULL}.
+#' @param icon.edit the icon for the edit button, e.g. \code{icon("edit")}.
+#'  Defaults to \code{NULL}.
+#' @param icon.add the icon for the add button, e.g. \code{icon("plus")}.
+#'  Defaults to \code{NULL}.
+#' @param icon.copy the icon for the copy button, e.g. \code{icon("copy")}.
+#'  Defaults to \code{NULL}.
 #' @param text.delete.modal the text shown in the delete modal dialog.
 #' @param show.delete whether to show/enable the delete button.
 #' @param show.update whether to show/enable the update button.
@@ -204,18 +231,19 @@ dtedit <- function(input, output,
 #'  called with arguments `data`, `row` and `buttonID`.
 #'  This function can return an updated data.frame,
 #'  alternatively return NULL if data is not to be changed.
-#' @param click.time.threshold This is to prevent duplicate entries usually by double clicking the
-#'  save or update buttons. If the user clicks the save button again within this amount of
-#'  time (in seconds), the subsequent click will be ignored. Set to zero to disable this
-#'  feature. For developers, a message is printed using the warning function.
+#' @param click.time.threshold This is to prevent duplicate entries usually by
+#'  double clicking the save or update buttons. If the user clicks the save
+#'  button again within this amount of time (in seconds), the subsequent click
+#'  will be ignored (using `shiny::throttle`). Set to zero to disable this
+#'  feature.
 #' @param useairDatepicker use `shinyWidgets` package `airDatepickerInput`
 #' @param datatable.options options passed to \code{DT::renderDataTable}.
 #'  See \url{https://rstudio.github.io/DT/options.html} for more information.
 #' @param datatable.rownames show rownames as part of the datatable? `TRUE` or `FALSE`.
 #'  Note that if datatable.call includes `DT::format*` calls,
 #'  then `datatable.rownames` must equal `TRUE`
-#' @param datatable.call pre-processing call when calling `DT::renderDataTable`. Can be defined,
-#'  for example, to include `DT::format*` calls.
+#' @param datatable.call pre-processing call when calling `DT::renderDataTable`.
+#'  Can be defined, for example, to include `DT::format*` calls.
 #'  `dtedit` will pass several arguments to the `datatable.call` function.
 #'  * `data` a dataframe. may have been processed to add `actionButtons`
 #'  * `options` - `datatable.options`
@@ -267,6 +295,8 @@ dteditmod <- function(input, output, session,
                       input.types,
                       input.choices = NULL,
                       input.choices.reactive = NULL,
+                      selectize.options = NULL,
+                      inputEvent = NULL,
                       action.buttons = NULL,
                       selectize = TRUE,
                       modal.size = "m",
@@ -303,7 +333,7 @@ dteditmod <- function(input, output, session,
                       callback.update = function(data, olddata, row) { },
                       callback.insert = function(data, row) { },
                       callback.actionButton = function(data, row, buttonID) { },
-                      click.time.threshold = 2, # in seconds
+                      click.time.threshold = 0.5, # in seconds
                       useairDatepicker = FALSE,
                       datatable.options = list(pageLength = defaultPageLength),
                       datatable.rownames = FALSE,
@@ -359,11 +389,17 @@ dteditmod <- function(input, output, session,
   selectInputMultiple <- function(...) {
     shiny::selectInput(multiple = TRUE, selectize = selectize, ...)
   }
+  selectizeInputMultiple <- function(...) {
+    shiny::selectizeInput(multiple = TRUE, ...)
+  }
 
   valid.input.types <- c(
-    "dateInput", "datetimeInput", "selectInput", "numericInput",
-    "textInput", "textAreaInput", "passwordInput", "selectInputMultiple",
-    "selectInputReactive", "selectInputMultipleReactive", "fileInput", "checkboxInput"
+    "dateInput", "datetimeInput", "selectInput", "selectizeInput",
+    "numericInput", "textInput", "textAreaInput", "passwordInput",
+    "selectInputMultiple", "selectizeInputMultiple",
+    "selectInputReactive", "selectizeInputReactive",
+    "selectInputMultipleReactive","selectizeInputMultipleReactive",
+    "fileInput", "checkboxInput"
   )
   # data.frames are coerced to unnamed vectors when selecting a single column using thedataCopy[, edit.cols]
   # therefore, use the subset-function to avoid errors:
@@ -539,6 +575,31 @@ dteditmod <- function(input, output, session,
     #
     # returns a list of shiny inputs, 'fields'
 
+    if (grepl("selectize", inputTypes) && !is.null(selectize.options)) {
+      # if *any* of the selectize input-type variants in the inputTypes
+      # and selectize.options is actually defined
+      #
+      # then are the selectize.options applied to *all* the selectize input
+      # types, or are they individually defined?
+
+      selectize_individual <- TRUE # by default, assume individually defined
+      edit.cols.selectize <- edit.cols[grepl("selectize", inputTypes)]
+      # the editable columns which are 'selectize' variants
+      for (i in names(selectize.options)) {
+        if (i == "" || !(i %in% edit.cols)) {
+          # to be individually defined each item in selectize.options must be
+          # 1. named 2. same name as in the editable columns
+          selectize_individual <- FALSE
+        } else if (!is.list(selectize.options[[i]])) {
+          # to be individually defined each item in selectize.options must be
+          # *also* be a list
+          selectize_individual <- FALSE
+        }
+      }
+    } else {
+      selectize_individual <- FALSE
+    }
+
     fields <- list()
     for (i in seq_along(edit.cols)) {
       if (inputTypes[i] == "dateInput") {
@@ -577,7 +638,8 @@ dteditmod <- function(input, output, session,
           addon = "none",
           width = datetime.width
         )
-      } else if (inputTypes[i] == "selectInputMultiple") {
+      } else if (inputTypes[i] == "selectInputMultiple" ||
+                 inputTypes[i] == "selectizeInputMultiple") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
         if (is.list(value)) {
           value <- value[[1]]
@@ -606,14 +668,34 @@ dteditmod <- function(input, output, session,
             ". Specify them using the input.choices parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
-      } else if (inputTypes[i] == "selectInput") {
+        if (inputTypes[i] == "selectInputMultiple") {
+          fields[[i]] <- selectInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInputMultiple") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- selectizeInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
+      } else if (inputTypes[i] == "selectInput" ||
+                 inputTypes[i] == "selectizeInput") {
         value <- ifelse(
           missing(values),
           "",
@@ -648,14 +730,34 @@ dteditmod <- function(input, output, session,
             ". Specify them using the input.choices parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
-      } else if (inputTypes[i] == "selectInputMultipleReactive") {
+        if (inputTypes[i] == "selectInput") {
+          fields[[i]] <- shiny::selectInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInput") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- shiny::selectizeInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
+      } else if (inputTypes[i] == "selectInputMultipleReactive" ||
+                 inputTypes[i] == "selectizeInputMultipleReactive") {
         value <- ifelse(missing(values), "", values[, edit.cols[i]])
         if (is.list(value)) {
           value <- value[[1]]
@@ -677,14 +779,34 @@ dteditmod <- function(input, output, session,
             "input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- selectInputMultiple(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
-      } else if (inputTypes[i] == "selectInputReactive") {
+        if (inputTypes[i] == "selectInputMultipleReactive") {
+          fields[[i]] <- selectInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInputMultipleReactive") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- selectizeInputMultiple(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
+      } else if (inputTypes[i] == "selectInputReactive" ||
+                 inputTypes[i] == "selectizeInputReactive") {
         value <- ifelse(
           missing(values),
           "",
@@ -707,13 +829,32 @@ dteditmod <- function(input, output, session,
             "input.choices.reactive parameter"
           ))
         }
-        fields[[i]] <- shiny::selectInput(
-          ns(paste0(name, typeName, edit.cols[i])),
-          label = edit.label.cols[i],
-          choices = choices,
-          selected = value,
-          width = select.width
-        )
+        if (inputTypes[i] == "selectInputReactive") {
+          fields[[i]] <- shiny::selectInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width
+          )
+        } else if (inputTypes[i] == "selectizeInputReactive") {
+          if (selectize_individual) {
+            selectize.option <- selectize.options[[edit.cols[[i]]]]
+            # selectize.options are individually defined for
+            # each 'selectizeInput'
+          } else {
+            selectize.option <- selectize.options
+            # only one (unnamed) options list for selectizeInput
+          }
+          fields[[i]] <- shiny::selectizeInput(
+            ns(paste0(name, typeName, edit.cols[i])),
+            label = edit.label.cols[i],
+            choices = choices,
+            selected = value,
+            width = select.width,
+            options = selectize.option
+          )
+        }
       } else if (inputTypes[i] == "numericInput") {
         value <- ifelse(missing(values), 0, values[, edit.cols[i]])
         fields[[i]] <- shiny::numericInput(
@@ -797,6 +938,75 @@ dteditmod <- function(input, output, session,
     result$rows_selected <- NULL # no row selected after each edit
   }
 
+  ##### inputEvent observeEvent helper ####################################
+
+  inputEvent_object <- R6::R6Class("inputEvent_object", list(
+    handles = NULL,
+    # list of observeEvents
+    initialize = function(input_infix) {
+      # parameters : input_infix e.g. "_add", or "_edit"
+      # creates observeEvents watching the edit/add input widgets
+      # e.g. to use package 'shinyFeedback'
+      # for edit.cols with functions defined in parameter 'inputEvent'
+      #
+      # stores the observeEvents in self$handler
+      # (so they can be later destroyed)
+      #
+      self$handles <- lapply(
+        X = edit.cols[
+          grepl(
+            paste(paste0('^', names(inputEvent), '$'), collapse = "|"),
+            # enforce exact pattern matching with '^' and '$'
+            # otherwise can match subsets, including NULL (!!!)
+            edit.cols
+          )],
+        # choose only edit.cols which are defined in 'inputEvent'
+        FUN = function(x) {
+          input_name <- paste0(name, input_infix, "_", x)
+          observeEvent(input[[input_name]], {
+            inputEvent[[x]](input_name, input[[input_name]])
+            # sends two parameters - the inputID and the input value
+            #
+            # unfortunately, could not easily just send the inputID alone
+            # for the inputEvent function to refer to the value by input[[input_name]]
+            #
+            # input[[input_name]] for the defined inputEvent function *does* work
+            # in the simple case
+            #
+            # however, if dtedit is called in dteditmod (module) mode,
+            # the function's enclosing environment (where it was defined)
+            # might need to *additionally* prefix the input_name with the
+            # dtedit module ID
+            #
+            # calling session$ns(input_name) from within dteditmod results in adding the
+            # dteditmod module ID and, IF the calling function is *also* a
+            # module, adding the module ID of the calling function ('fully
+            # specified' name). Unfortunately, if the calling function is
+            # a module then the fully specified name is not easily used from
+            # within the inputEvent function!
+            #  e.g. I could only access with ... unlist(input)$impl$get(x)    !!!
+          })
+        }
+      )
+    },
+    finalize = function() {
+      # remove the observeEvents, if they exist
+      # otherwise, when the modal dialog closes, observeEvents will accumulate
+      if (!is.null(self$handles)) {
+        lapply(
+          X = self$handles,
+          FUN = function(x) {
+            x$destroy()
+          }
+        )
+        self$handles <- NULL
+      }
+    }
+  ))
+
+  inputEvent_handles <- NULL
+  # will be used by the functions which call inputEvent_handler
+
   ##### Insert functions #####################################################
 
   observeEvent(input[[paste0(name, "_add")]], {
@@ -804,6 +1014,7 @@ dteditmod <- function(input, output, session,
     # the 'addModal' popup is generated, with 'missing' values
     if (!is.null(row)) {
       shiny::showModal(addModal())
+      inputEvent_handles <<- inputEvent_object$new("_add")
     }
   })
 
@@ -826,7 +1037,7 @@ dteditmod <- function(input, output, session,
       ),
       fields,
       footer = shiny::column(
-        shiny::modalButton(label.cancel),
+        shiny::actionButton(ns(paste0(name, "_insert_cancel")), label.cancel),
         shiny::actionButton(ns(paste0(name, "_insert")), label.save),
         width = 12
       ),
@@ -834,20 +1045,17 @@ dteditmod <- function(input, output, session,
     )
   }
 
-  insert.click <- NA # click timer (to avoid overly fast double-click)
+  observeEvent(input[[paste0(name, "_insert_cancel")]], {
+    # the '_cancel' event is observed from the 'addModal' popup
+    inputEvent_handles$finalize() # remove the observeEvents
+    shiny::removeModal() # close the modal without saving
+  })
 
-  observeEvent(input[[paste0(name, "_insert")]], {
-    # '_insert' event generated from the 'addModal' popup
-    if (!is.na(insert.click)) {
-      lastclick <- as.numeric(Sys.time() - insert.click, units = "secs")
-      if (lastclick < click.time.threshold) {
-        warning(
-          paste0("Double click detected. Ignoring insert call for ",
-                 name, "."))
-        return()
-      }
-    }
-    insert.click <<- Sys.time()
+  insert_event <- shiny::reactive({input[[paste0(name, "_insert")]]})
+  insert_event_t <- shiny::throttle(insert_event, click.time.threshold * 1000)
+  # '_insert' event generated from the 'addModal' popup
+  # 'throttled' version of insert button
+  observeEvent(insert_event_t(), {
     newdata <- result$thedata
     row <- nrow(newdata) + 1 # the new row number
     new_row <- list() # to contain a 'blank' new row
@@ -877,7 +1085,8 @@ dteditmod <- function(input, output, session,
     # the new row is ready for filling
     for (i in edit.cols) {
       if (inputTypes[i] %in%
-          c("selectInputMultiple", "selectInputMultipleReactive")) {
+          c("selectInputMultiple", "selectizeInputMultiple",
+            "selectInputMultipleReactive", "selectizeInputMultipleReactive")) {
         newdata[[i]][row] <- list(input[[paste0(name, "_add_", i)]])
       } else if (inputTypes[i] == "fileInput") { # file read into binary blob
         datapath <- input[[paste0(name, "_add_", i)]]$datapath
@@ -908,6 +1117,7 @@ dteditmod <- function(input, output, session,
                  rownames = datatable.rownames
       )
       result$edit.count <- result$edit.count + 1
+      inputEvent_handles$finalize() # remove the observeEvents
       shiny::removeModal()
       return(TRUE)
     }, error = function(e) {
@@ -927,6 +1137,8 @@ dteditmod <- function(input, output, session,
     if (!is.null(row)) {
       if (row > 0) {
         shiny::showModal(addModal(values = result$thedata[row, , drop = FALSE]))
+        inputEvent_handles <<- inputEvent_object$new("_add")
+        # shares the same input names as '_add'
       }
     }
   })
@@ -938,6 +1150,7 @@ dteditmod <- function(input, output, session,
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       shiny::showModal(editModal(row))
+      inputEvent_handles <<- inputEvent_object$new("_edit")
     }
   })
 
@@ -962,7 +1175,7 @@ dteditmod <- function(input, output, session,
         fields
       ),
       footer = column(
-        shiny::modalButton(label.cancel),
+        shiny::actionButton(ns(paste0(name, "_update_cancel")), label.cancel),
         shiny::actionButton(ns(paste0(name, "_update")), label.save),
         width = 12
       ),
@@ -970,27 +1183,24 @@ dteditmod <- function(input, output, session,
     )
   }
 
-  update.click <- NA # a timer to avoid 'double-clicks'
+  observeEvent(input[[paste0(name, "_update_cancel")]], {
+    # the '_cancel' event is observed from the 'editModal' popup
+    inputEvent_handles$finalize() # remove the observeEvents
+    shiny::removeModal() # close the modal without saving
+  })
 
-  observeEvent(input[[paste0(name, "_update")]], {
-    # the '_update' event is observed from the 'editModal' popup
-
-    if (!is.na(update.click)) {
-      lastclick <- as.numeric(Sys.time() - update.click, units = "secs")
-      if (lastclick < click.time.threshold) {
-        warning(paste0("Double click detected. Ignoring update call for ",
-                       name, "."))
-        return()
-      }
-    }
-    update.click <- Sys.time()
-
+  update_event <- shiny::reactive({input[[paste0(name, "_update")]]})
+  update_event_t <- shiny::throttle(update_event, click.time.threshold * 1000)
+  # the '_update' event is observed from the 'editModal' popup
+  # throttled version of 'update' button
+  observeEvent(update_event_t(), {
     row <- input[[paste0(name, "dt_rows_selected")]]
     if (!is.null(row) && row > 0) {
       newdata <- result$thedata
       for (i in edit.cols) {
-        if (inputTypes[i] %in% c("selectInputMultiple",
-                                 "selectInputMultipleReactive")) {
+        if (inputTypes[i] %in%
+            c("selectInputMultiple", "selectizeInputMultiple",
+              "selectInputMultipleReactive", "selectizeInputMultipleReactive")) {
           newdata[[i]][row] <- list(input[[paste0(name, "_edit_", i)]])
         } else if (inputTypes[i] == "fileInput") {
           datapath <- input[[paste0(name, "_edit_", i)]]$datapath
@@ -1003,6 +1213,15 @@ dteditmod <- function(input, output, session,
                 n = max.fileInputLength
               )
             )
+          }
+        } else if (inputTypes[i] %in% c("dateInput", "datetimeInput")) {
+          if (length(input[[paste0(name, "_edit_", i)]]) == 0) {
+            newdata[row, i] <- as.Date(NA)
+            # 'dateInput' returns length 0 if empty, but date of length 0
+            # fails to 'replace' the current contents of newdata[row, i]!
+            # address issue #21
+          } else {
+            newdata[row, i] <- input[[paste0(name, "_edit_", i)]]
           }
         } else {
           newdata[row, i] <- input[[paste0(name, "_edit_", i)]]
@@ -1027,6 +1246,7 @@ dteditmod <- function(input, output, session,
                    rownames = datatable.rownames
         )
         result$edit.count <- result$edit.count + 1
+        inputEvent_handles$finalize() # remove the observeEvents
         shiny::removeModal()
         return(TRUE)
       }, error = function(e) {

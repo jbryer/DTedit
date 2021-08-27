@@ -22,6 +22,8 @@ dteditmod(
   input.types,
   input.choices = NULL,
   input.choices.reactive = NULL,
+  selectize.options = NULL,
+  inputEvent = NULL,
   action.buttons = NULL,
   selectize = TRUE,
   modal.size = "m",
@@ -57,7 +59,7 @@ dteditmod(
   callback.update = function(data, olddata, row) { },
   callback.insert = function(data, row) { },
   callback.actionButton = function(data, row, buttonID) { },
-  click.time.threshold = 2,
+  click.time.threshold = 0.5,
   useairDatepicker = FALSE,
   datatable.options = list(pageLength = defaultPageLength),
   datatable.rownames = FALSE,
@@ -116,15 +118,23 @@ are:
 or the levels of the data column
 variable (if the column variable is of class \code{factor}),
 or the already present values in the data column.
+\item \code{selectizeInput} - use selectize version of \code{selectInput}. Options
+defined by \code{selectize.options}.
 \item \code{selectInputMultiple} - choices determined by
 \code{input.choices} or the already present values in the data
 column.
+\item \code{selectizeInputMultiple} - use selectize version of \code{selectInputMultiple}.
+Options defined by \code{selectize.options}
 \item \code{selectInputReactive} - choices determined by a reactive
 variable, as defined by \code{input.choices} and
 \code{input.choices.reactive}.
+\item \code{selectizeInputReactive} - selectize version of \code{selectInputReactive}.
+Options defined by \code{selectize.options}
 \item \code{selectInputMultipleReactive} - choices determined by a
 reactive variable, as defined by \code{input.choices} and
 \code{input.choices.reactive}
+\item \code{selectizeInputMultipleReactive} - selectize version of \code{selectInputReactive}.
+Options defined by \code{selectize.options}
 \item \code{numericInput} - input changed by \code{numeric.width}
 \item \code{textInput} - input changed by \code{text.width}
 \item \code{textAreaInput} - input changed by \code{textarea.width} and \code{textarea.height}
@@ -138,9 +148,10 @@ reactive variable, as defined by \code{input.choices} and
 One case where this parameter is desirable is when a text
 area is required instead of a simple text input.}
 
-\item{input.choices}{a list of character vectors. The names of each element in the list must
-correspond to a column name in the data. The value, a character vector, are the options
-presented to the user for data entry, in the case of input type \code{selectInput}).
+\item{input.choices}{a list of character vectors. The names of each element
+in the list must correspond to a column name in the data. The value,
+a character vector, are the options presented to the user for data entry,
+in the case of input type \code{selectInput}).
 
 In the case of input type \code{selectInputReactive}
 or `selectInputMultipleReactive``, the value is the name
@@ -152,9 +163,23 @@ is acceptable. Can be a case insensitive file extension
 (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
 'application/pdf').}
 
-\item{input.choices.reactive}{a named list of reactives, referenced in 'input.choices'
-to use for input type \code{selectInputReactive} or \code{selectInputMultipleReactive}.
-The reactive itself is a character vector.}
+\item{input.choices.reactive}{a named list of reactives, referenced in
+\code{input.choices} to use for input type \code{selectInputReactive} or
+\code{selectInputMultipleReactive}. The reactive itself is a character
+vector.}
+
+\item{selectize.options}{options for \code{selectizeInput}. By default, the options
+defined apply to all selectize inputs. However, selectize.options is a named
+list of lists, where each list is named after an editable selectize-style
+column, then the named lists are individualized options lists for each
+selectize-style column.}
+
+\item{inputEvent}{a named list of functions. The names of each element in
+the list must correspond to an editable column name in the data. The
+function is called when the associated input widget event is observed
+during editing/adding a data row. Can be used, for example,
+with \code{shinyFeedback}. The functions need to accept two parameters,
+the inputID of the input widget, and the value of that widget.}
 
 \item{action.buttons}{a named list of action button columns.
 Each column description is a list of \code{columnLabel}, \code{buttonLabel},
@@ -169,7 +194,9 @@ Prefix and suffix will be separated with an underscore '_'.
 placed after this named column.
 }}
 
-\item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}
+\item{selectize}{Whether to use \code{selectize.js} or not for \code{selectInputMultiple}
+or \code{selectInputMultipleReactive}. See \code{shiny::\link{selectInput}} for
+more information.}
 
 \item{modal.size}{the size of the modal dialog. See \code{\link{modalDialog}}.}
 
@@ -213,13 +240,17 @@ The limit can be modified by using shiny.maxRequestSize option.}
 
 \item{label.cancel}{the label of the cancel button.}
 
-\item{icon.delete}{the icon for the delete button, e.g. \code{icon("trash")}. Defaults to \code{NULL}.}
+\item{icon.delete}{the icon for the delete button, e.g. \code{icon("trash")}.
+Defaults to \code{NULL}.}
 
-\item{icon.edit}{the icon for the edit button, e.g. \code{icon("edit")}. Defaults to \code{NULL}.}
+\item{icon.edit}{the icon for the edit button, e.g. \code{icon("edit")}.
+Defaults to \code{NULL}.}
 
-\item{icon.add}{the icon for the add button, e.g. \code{icon("plus")}. Defaults to \code{NULL}.}
+\item{icon.add}{the icon for the add button, e.g. \code{icon("plus")}.
+Defaults to \code{NULL}.}
 
-\item{icon.copy}{the icon for the copy button, e.g. \code{icon("copy")}. Defaults to \code{NULL}.}
+\item{icon.copy}{the icon for the copy button, e.g. \code{icon("copy")}.
+Defaults to \code{NULL}.}
 
 \item{text.delete.modal}{the text shown in the delete modal dialog.}
 
@@ -245,10 +276,11 @@ called with arguments \code{data}, \code{row} and \code{buttonID}.
 This function can return an updated data.frame,
 alternatively return NULL if data is not to be changed.}
 
-\item{click.time.threshold}{This is to prevent duplicate entries usually by double clicking the
-save or update buttons. If the user clicks the save button again within this amount of
-time (in seconds), the subsequent click will be ignored. Set to zero to disable this
-feature. For developers, a message is printed using the warning function.}
+\item{click.time.threshold}{This is to prevent duplicate entries usually by
+double clicking the save or update buttons. If the user clicks the save
+button again within this amount of time (in seconds), the subsequent click
+will be ignored (using \code{shiny::throttle}). Set to zero to disable this
+feature.}
 
 \item{useairDatepicker}{use \code{shinyWidgets} package \code{airDatepickerInput}}
 
@@ -259,8 +291,8 @@ See \url{https://rstudio.github.io/DT/options.html} for more information.}
 Note that if datatable.call includes \verb{DT::format*} calls,
 then \code{datatable.rownames} must equal \code{TRUE}}
 
-\item{datatable.call}{pre-processing call when calling \code{DT::renderDataTable}. Can be defined,
-for example, to include \verb{DT::format*} calls.
+\item{datatable.call}{pre-processing call when calling \code{DT::renderDataTable}.
+Can be defined, for example, to include \verb{DT::format*} calls.
 \code{dtedit} will pass several arguments to the \code{datatable.call} function.
 \itemize{
 \item \code{data} a dataframe. may have been processed to add \code{actionButtons}

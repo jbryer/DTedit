@@ -5,6 +5,37 @@ date: "27th June 2020"
 output: html_document
 ---
 
+## DTedit 2.3.0
+27th August 2021
+
+### New
+
+* `inputEvent` allows custom response to changes in add/edit modal dialog inputs.
+   Allows the use of `shinyFeedback` https://github.com/merlinoa/shinyFeedback
+   (issue #17 and issue #9)
+* `selectizeInput`, `selectizeInputReactive`, `selectizeInputMultiple` 
+  `selectizeInputMultipleReactive` input options. uses  `shiny::selectizeInput`
+  instead of `shiny::selectInput`
+  - `selectize.options` - a list of options for `selectizeInput` variants. This
+    can be the same list of options for *all* `selectize*` inputs, but can also
+    be a named list of individually defined options, each named list must be
+    the same as a `selectize*` editable column.
+* `checkboxInput` for logical (TRUE/FALSE) values
+  - by Matthias Hinz (@MatthiasHinz), resolving issue #19
+  - `checkbox.width` to adjust checkbox widths
+
+### Bug fix
+
+* fix entering an empty (NA) date in `dateInput` and `datetimeInput` when
+  editing an entry (issue #21)
+* fix for error when there is only one editable column.
+  - by Matthias Hinz (@MatthiasHinz)
+
+### Internal changes
+
+* use `shiny::throttle` for `click.time.threshold`
+* add `logical` to `dtedit_test()`
+
 ## DTedit 2.2.3
 21st October 2020
 
