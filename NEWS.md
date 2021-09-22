@@ -5,6 +5,14 @@ date: "27th June 2020"
 output: html_document
 ---
 
+## DTedit 2.3.1
+22nd September 2021
+
+### Changes
+
+* Caution in documentation regarding the potential return values of different
+  `input.types`. For example, `textInput` cannot return a `NA` (issue #33)
+
 ## DTedit 2.3.0
 27th August 2021
 

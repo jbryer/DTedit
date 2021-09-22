@@ -62,6 +62,11 @@ dtedit <- function(input, output,
 #' be the new data table; otherwise this function will remove row \code{row} from
 #' \code{data} and that will become the current data table.
 #'
+#' While `olddata` will contain values as contained in the original `data.frame`,
+#' the values returned in `data` are limited to values that can be returned by the
+#' `shiny` widgets underlying the `input.types`. For example, the `textInput` can
+#' return an empty string, but cannot return `NA`.
+#'
 #' The callback functions may throw errors (see e.g. \code{stop}) if there are
 #' problems with data. That is, if data validation checks indicate data problems
 #' before inserting or updating a row the function may throw an error. Note that

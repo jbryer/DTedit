@@ -1,6 +1,6 @@
 Package: DTedit
 Title: Editable DataTables for Shiny Apps
-Version: 2.3.0
+Version: 2.3.1
 Authors@R:
     c(person(given = "Jason",
              family = "Bryer",

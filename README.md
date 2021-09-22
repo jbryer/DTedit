@@ -68,6 +68,11 @@ my.delete.callback <- function(data, row) {
 
 Typically these functions would interact with a database. As written here, the data would be lost between shiny sessions.
 
+While `olddata` will contain values as contained in the original `data.frame`,
+the values returned in `data` are limited to values that can be returned by the 
+`shiny` widgets underlying the `input.types`. For example, the `textInput` can
+return an empty string, but cannot return `NA`.
+
 2. Create the `dtedit` object within your `server` function. 
 
 ```r
