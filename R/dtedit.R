@@ -155,7 +155,7 @@ dtedit <- function(input, output,
 #'  in the case of input type \code{selectInput}).
 #'
 #'  In the case of input type `selectInputReactive`
-#'  or `selectInputMultipleReactive``, the value is the name
+#'  or `selectInputMultipleReactive`, the value is the name
 #'  of the reactive in 'input.choices.reactive'
 #'
 #'  In the case of input type `fileInput` this is the
@@ -1061,7 +1061,9 @@ dteditmod <- function(input, output, session,
   # '_insert' event generated from the 'addModal' popup
   # 'throttled' version of insert button
   observeEvent(insert_event_t(), {
-    newdata <- result$thedata
+    newdata <- as.data.frame(result$thedata)
+    # coerce to dataframe
+    # class(newdata[,i])[[1]] does not work if newdata is a tibble
     row <- nrow(newdata) + 1 # the new row number
     new_row <- list() # to contain a 'blank' new row
     # the following loop can be tested on the following dataframes

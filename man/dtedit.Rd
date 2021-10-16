@@ -154,7 +154,7 @@ a character vector, are the options presented to the user for data entry,
 in the case of input type \code{selectInput}).
 
 In the case of input type \code{selectInputReactive}
-or `selectInputMultipleReactive``, the value is the name
+or \code{selectInputMultipleReactive}, the value is the name
 of the reactive in 'input.choices.reactive'
 
 In the case of input type \code{fileInput} this is the

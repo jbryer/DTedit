@@ -6,12 +6,20 @@ output: html_document
 ---
 
 ## DTedit 2.3.1
-22nd September 2021
+16th October 2021
 
 ### Changes
 
 * Caution in documentation regarding the potential return values of different
   `input.types`. For example, `textInput` cannot return a `NA` (issue #33)
+  
+### Bugfix
+
+* Co-erce `thedata` parameter to `as.data.frame` during insertion/modification of
+  data when interpreting the data types of columns of `thedata`.
+  + otherwise the interpretation of data types of the columns of `thedata` fails
+  if `thedata` is a tibble.
+  + it is recommended that `thedata` is a dataframe, not a tibble.
 
 ## DTedit 2.3.0
 27th August 2021
