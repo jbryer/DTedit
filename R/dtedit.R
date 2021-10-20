@@ -900,6 +900,7 @@ dteditmod <- function(input, output, session,
         )
       } else if (inputTypes[i] == "checkboxInput") {
         value <- ifelse(missing(values), FALSE, values[, edit.cols[i]])
+        value <- ifelse(is.na(value), FALSE, value)
         fields[[i]] <- shiny::checkboxInput(
           ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
