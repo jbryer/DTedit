@@ -61,6 +61,8 @@ library(DTedit)
 
 Package version : `r packageVersion("DTedit")`
 
+Github source : [David Fong's Github page](https://github.com/DavidPatShuiFong/DTedit/)
+
 # Introduction
 
 The DTedit package allows the viewing and editing of dataframes, via the
@@ -318,6 +320,93 @@ callbacks for multiple datatables, can be seen with
 
 in the `app_mod.R` tab.
 
+### Show a raised exception message inside callback function with `tryCatch`
+
+Callbacks will often try to store data edited using the modal dialog
+using 'SQL' queries. Sometimes the database query will return an error message
+('raise an exception').
+
+These exceptions can be caught with `tryCatch`, in order to display a more
+meaningful and less cryptic error message.
+
+In this example, there is a misspelt column in the `books.insert.callback` callback,
+which will result in an exception being raised by the SQL query.
+
+```{r, eval = FALSE}
+library(shiny)
+library(RSQLite)
+library(DTedit)
+
+conn <- dbConnect(SQLite(), "books.sqlite")
+books <- data.frame(
+  Author = c("Mary", "John", "Sue"), 
+  Publisher = c("University House", "Random House", "Beyond Books"),
+  stringsAsFactors = FALSE
+)
+dbWriteTable(conn, "books", books, overwite = TRUE)
+dbDisconnect(conn)
+
+conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
+
+getBooks <- function() {
+  res <- dbSendQuery(conn, "SELECT * FROM books")
+  books <- dbFetch(res)
+  dbClearResult(res)
+  books$Authors <- books$Authors
+  books$Publisher <- books$Publisher
+  return(books)
+}
+
+##### Callback functions.
+books.insert.callback <- function(data, row) {
+  query <- paste0(
+    "INSERT INTO books (Author, Publishxer) VALUES (",
+    # !!! incorrectly spelt column 'Publishxer' !!!
+    "'", paste0(data[row,]$Author[[1]], collapse = ';'), "', ",
+    "'", as.character(data[row,]$Publisher), "' ",
+    ")")
+  print(query) # For debugging
+  tryCatch(
+      {
+          res <- dbSendQuery(conn, query)
+          dbClearResult(res)
+      },
+      error = function(cond) {
+          stop(paste("Database error: ", cond))
+      }
+  )
+  return(getBooks())
+}
+
+##### Create the Shiny server
+server <- function(input, output, session) {
+  books <- getBooks()
+  booksdt <- dtedit(
+    input, output,
+    name = 'books',
+    thedata = books,
+    edit.cols = c('Author', 'Publisher'),
+    edit.label.cols = c(
+      'Author', 'Publisher'
+    ),
+    show.delete = FALSE, show.copy = FALSE, show.update = FALSE,
+    callback.insert = books.insert.callback,
+  )
+
+  cancel.onsessionEnded <- session$onSessionEnded(function() {
+    DBI::dbDisconnect(conn)
+  })
+}
+
+##### Create the shiny UI
+ui <- fluidPage(
+  h3('Books'),
+  uiOutput('books'),
+)
+
+shinyApp(ui = ui, server = server)
+```
+
 ## `inputEvent` - observing input events from the New/Edit/Copy modal dialogs
 
 `observeEvent`s, to watch for changes in the input dialogs, are created with
@@ -334,7 +423,7 @@ The function can then use the value of the input dialog, create
 [`shinyfeedback`](https://github.com/merlinoa/shinyFeedback) messages,
 or even change the contents of the input dialog.
 
-(Note the comments in the example regarding some )
+(Note the comments in the example regarding peculiarities when using modules)
 
 ```{r eval = FALSE}
 library(shiny)

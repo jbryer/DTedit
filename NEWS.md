@@ -12,6 +12,8 @@ output: html_document
 
 * Caution in documentation regarding the potential return values of different
   `input.types`. For example, `textInput` cannot return a `NA` (issue #33)
+* Documentation of using `tryCatch` inside callbacks (suggestion from @andresrcs,
+  issue #34)
   
 ### Bugfix
 
