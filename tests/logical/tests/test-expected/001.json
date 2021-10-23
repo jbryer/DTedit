@@ -5,20 +5,26 @@
         "checkvalue": [
           true,
           false,
+          null,
           true,
           false,
+          null,
           true,
-          false
+          false,
+          null
         ]
       },
       {
         "checkvalue": [
           false,
           false,
+          null,
           true,
           false,
+          null,
           true,
-          false
+          false,
+          null
         ]
       }
     ]
