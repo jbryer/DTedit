@@ -48,8 +48,8 @@ dtedit <- function(input, output,
 #' the shiny application.
 #' \code{dteditmodUI} is called in the 'UI' (user-interface) section of the shiny app.
 #'
-#' This object will maintain data state. However, in order of the data to persist
-#' between Shiny instances, data needs to be saved to some external format (e.g.
+#' This object will maintain data state. However, in order for data to persist
+#' between Shiny instances, data needs to be saved to an external format (e.g.
 #' database or R data file). The callback functions provide a mechanism for this
 #' function to interact with a permanent data storage scheme. The callback
 #' functions are called when the user adds, updates, or deletes a row from the
@@ -61,6 +61,11 @@ dtedit <- function(input, output,
 #' row. That is, if \code{callback.delete} returns a \code{data.frame}, that will
 #' be the new data table; otherwise this function will remove row \code{row} from
 #' \code{data} and that will become the current data table.
+#'
+#' While `olddata` will contain values as contained in the original `data.frame`,
+#' the values returned in `data` are limited to values that can be returned by the
+#' `shiny` widgets underlying the `input.types`. For example, the `textInput` can
+#' return an empty string, but cannot return `NA`.
 #'
 #' The callback functions may throw errors (see e.g. \code{stop}) if there are
 #' problems with data. That is, if data validation checks indicate data problems
@@ -150,10 +155,10 @@ dtedit <- function(input, output,
 #'  in the case of input type \code{selectInput}).
 #'
 #'  In the case of input type `selectInputReactive`
-#'  or `selectInputMultipleReactive``, the value is the name
+#'  or `selectInputMultipleReactive`, the value is the name
 #'  of the reactive in 'input.choices.reactive'
 #'
-#'  In the case of input type `fileInput`` this is the
+#'  In the case of input type `fileInput` this is the
 #'  'accept' argument, which specifies the type of file which
 #'  is acceptable. Can be a case insensitive file extension
 #'  (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
@@ -900,6 +905,7 @@ dteditmod <- function(input, output, session,
         )
       } else if (inputTypes[i] == "checkboxInput") {
         value <- ifelse(missing(values), FALSE, values[, edit.cols[i]])
+        value <- ifelse(is.na(value), FALSE, value)
         fields[[i]] <- shiny::checkboxInput(
           ns(paste0(name, typeName, edit.cols[i])),
           label = edit.label.cols[i],
@@ -1056,7 +1062,9 @@ dteditmod <- function(input, output, session,
   # '_insert' event generated from the 'addModal' popup
   # 'throttled' version of insert button
   observeEvent(insert_event_t(), {
-    newdata <- result$thedata
+    newdata <- as.data.frame(result$thedata)
+    # coerce to dataframe
+    # class(newdata[,i])[[1]] does not work if newdata is a tibble
     row <- nrow(newdata) + 1 # the new row number
     new_row <- list() # to contain a 'blank' new row
     # the following loop can be tested on the following dataframes

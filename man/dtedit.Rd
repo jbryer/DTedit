@@ -154,10 +154,10 @@ a character vector, are the options presented to the user for data entry,
 in the case of input type \code{selectInput}).
 
 In the case of input type \code{selectInputReactive}
-or `selectInputMultipleReactive``, the value is the name
+or \code{selectInputMultipleReactive}, the value is the name
 of the reactive in 'input.choices.reactive'
 
-In the case of input type `fileInput`` this is the
+In the case of input type \code{fileInput} this is the
 'accept' argument, which specifies the type of file which
 is acceptable. Can be a case insensitive file extension
 (e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
@@ -330,8 +330,8 @@ in the UI (user interface) definition.
 the shiny application.
 \code{dteditmodUI} is called in the 'UI' (user-interface) section of the shiny app.
 
-This object will maintain data state. However, in order of the data to persist
-between Shiny instances, data needs to be saved to some external format (e.g.
+This object will maintain data state. However, in order for data to persist
+between Shiny instances, data needs to be saved to an external format (e.g.
 database or R data file). The callback functions provide a mechanism for this
 function to interact with a permanent data storage scheme. The callback
 functions are called when the user adds, updates, or deletes a row from the
@@ -343,6 +343,11 @@ the \code{data} represents the data table just before deleting the specified
 row. That is, if \code{callback.delete} returns a \code{data.frame}, that will
 be the new data table; otherwise this function will remove row \code{row} from
 \code{data} and that will become the current data table.
+
+While \code{olddata} will contain values as contained in the original \code{data.frame},
+the values returned in \code{data} are limited to values that can be returned by the
+\code{shiny} widgets underlying the \code{input.types}. For example, the \code{textInput} can
+return an empty string, but cannot return \code{NA}.
 
 The callback functions may throw errors (see e.g. \code{stop}) if there are
 problems with data. That is, if data validation checks indicate data problems

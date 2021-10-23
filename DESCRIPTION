@@ -1,6 +1,6 @@
 Package: DTedit
 Title: Editable DataTables for Shiny Apps
-Version: 2.3.0
+Version: 2.3.1
 Authors@R:
     c(person(given = "Jason",
              family = "Bryer",
@@ -13,7 +13,11 @@ Authors@R:
       person(given = "Klodian",
              family = "Dhana", role = c("ctb")),
       person(given = "László",
-             family = "Szakács", role = c("ctb")))
+             family = "Szakács", role = c("ctb")),
+      person(given = "Matthias",
+             family = "Hinz", role = c("ctb")),
+      person(given = "Ben",
+             family = "Best", role = c("ctb")))
 Description: Allows user to create, edit and delete rows in datatable() from the 'DT' package.
 License: LGPL
 URL: https://github.com/jbryer/DTedit
