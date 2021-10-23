@@ -807,7 +807,7 @@ dtedit_test <- function(appname = "simple", ...) {
         input, output,
         name = 'Logical_List',
         thedata = data.frame(
-          checkvalue=rep(c(TRUE,FALSE),3)
+          checkvalue=rep(c(TRUE,FALSE, NA),3)
         )
       )
 
