@@ -37,7 +37,7 @@ my.update.callback <- function(data, olddata, row) {
 }
 
 my.delete.callback <- function(data, row) {
-	mydata[row,] <- NULL
+	mydata <- mydata[-row,]
 	return(mydata)
 }
 ```
