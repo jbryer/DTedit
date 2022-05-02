@@ -14,12 +14,11 @@ server <- function(input, output) {
 		mydata <- rbind(data, mydata)
 		return(mydata)
 	}
-
 	my.update.callback <- function(data, olddata, row) {
-		mydata[row,] <- data[1,]
+		mydata <- olddata
+		mydata[row, ] <- data[row, ]
 		return(mydata)
 	}
-
 	my.delete.callback <- function(data, row) {
 		mydata <- mydata[-row,]
 		return(mydata)

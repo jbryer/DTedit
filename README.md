@@ -32,12 +32,13 @@ my.insert.callback <- function(data, row) {
 }
 
 my.update.callback <- function(data, olddata, row) {
-	mydata[row,] <- data[1,]
+	mydata <- olddata
+	mydata[row, ] <- data[row, ]
 	return(mydata)
 }
 
 my.delete.callback <- function(data, row) {
-	mydata[row,] <- NULL
+	mydata <- mydata[-row,]
 	return(mydata)
 }
 ```
