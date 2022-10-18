@@ -1,0 +1,1121 @@
+---
+title: "DTedit"
+author: "David Fong"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: yes
+  rmdformats::readthedown:
+    toc_depth: 4
+  html_document:
+    number_sections: yes
+    theme: lumen
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+  pdf_document:
+    toc: yes
+    toc_depth: '3'
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: vignette
+    toc: yes
+    toc_depth: 4
+vignette: >
+  %\VignetteIndexEntry{DTedit} 
+  \usepackage[utf8]{inputenc}
+  %\VignetteEngine{knitr::rmarkdown}
+---
+  
+```{r setup, include = FALSE}
+# as of 7th June 2020 this vignette CANNOT be successfully generated
+# with RStudio's Build - Document menu option, with 
+# Build Tools - Roxygen settings - Vignette turned on
+
+# the build fails with the help_console function
+
+# however the build succeeds if using the 
+# build_vignettes_to_inst.R function
+# which is defined in the root directory
+
+# OR using devtools::build()
+
+knitr::opts_chunk$set(
+collapse = TRUE,
+comment = "#>"
+)
+
+library(DTedit)
+```
+
+# Abstract
+
+> Editable DataTables (DT) package for shiny apps. Originally created by Jason
+  Bryer. Data columns to view or edit can be selected. Different datatypes can be edited.
+  Valid input choices and interaction with persistent storage can be defined through
+  callbacks. In the case of limited selection choices for data columns with 'dropdown'
+  inputs, the choices can be defined and dynamically changed. Available in general-purpose
+  and module versions.
+
+Package version : `r packageVersion("DTedit")`
+
+Github source : [David Fong's Github page](https://github.com/DavidPatShuiFong/DTedit/)
+
+# Introduction
+
+The DTedit package allows the viewing and editing of dataframes, via the
+[DT](https://rstudio.github.io/DT/) (DataTables for [shiny](https://shiny.rstudio.com/))
+package.
+
+An entry (row) of the viewed datatable is selected, and can then be edited,
+copied or deleted. New entries (rows) can be added.
+
+Numerous **data types** (alphanumeric characters, passwords, numbers, dates,
+'categorical'/factors and raw 'binary') can be edited. The data columns which
+are viewed or edited can be chosen. In the case where choices are
+restricted ('categorical'/factor, or if required, alphanumeric), the available
+choices can be dynamically chosen.
+
+Using **callbacks** it is possible to further verify whether an entry/row has
+been modified in an acceptable way. **callbacks** can also be used to enable
+persistent storage of modified dataframes into databases.
+
+`dtedit` ('standard' version) and `dteditmod` ('module' version) both return
+reactive versions of the editable dataframe. They also both accept reactive
+dataframes, and can change their copy of the dataframe in response to changes
+in the original reactive dataframe.
+
+This vignette will describe the basic usage and features of `DTedit`.
+
+Full option/argument descriptions can be found in [the appendix](#appendix).
+
+<br/>
+
+# Usage
+
+## Getting started
+
+### 'Standard' version `dtedit`
+
+For the 'standard' (non-module) version, the `dtedit` object is defined within
+the `server` function. The `name` defined in the `dtedit` function (in this
+case **Grocery_List**) is referenced by a `uiOutput` object in the `ui` (user
+interface) definition, as seen in the very simple example below.
+
+```{r, message = FALSE}
+# minimal DTedit example 'dtedit'
+# you can try this example in interactive mode
+# with 'example("dtedit")'
+library(shiny)
+library(DT)
+library(DTedit)
+
+server <- function(input, output) {
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    )
+  )
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+`input` and `output` in `dtedit` is the same as is received by the
+`server` function. `thedata` is a dataframe.
+
+### Modular version `dteditmod`
+
+The module version `dteditmod` is very similar to `dtedit`, and accepts many of
+the same arguments.
+
+`dteditmod` is referenced by the `callModule` function, which in turn is defined
+in shiny's `server` function. Instead of using `name`, `dteditmod` uses `id` (in
+this case **Grocery_List**). The same `id` is referenced by `dteditmodUI` object
+in the `ui` (user interface) definition, surrounded by a `shiny::NS` function call,
+as seen in the example below.
+
+```{r, eval = FALSE}
+# minimal DTedit example 'dteditmod'
+library(shiny)
+library(DTedit)
+
+myModuleUI <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    dteditmodUI(ns('Grocery_List'))
+  )
+}
+
+myModule <- function(input, output, session) {
+  Grocery_List_Results <- shiny::callModule(
+    dteditmod,
+    id = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    )
+  )
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  myModuleUI('myModule1')
+)
+
+server <- function(input, output, session) {
+  shiny::callModule(myModule, 'myModule1')
+}
+
+shinyApp(ui = ui, server = server)
+```
+
+In this vignette, the 'standard' `dtedit` is mostly used. Some examples referenced,
+but not fully described, in the `DTedit` package use the modular `dteditmod`.
+
+## Receiving changes from `dtedit` (or `dteditmod`)
+
+`dtedit` returns a list. The list includes `$thedata`, which is a reactive and
+will change when `dtedit`'s copy of the dataframe changes. The list also includes
+`$rows_selected`, which is a reactive and will change when a different row
+is selected.
+
+In the example below, the results are stored in a variable name **Grocery_List_Results**.
+Every time the internal copy of `thedata` changes, so does **Grocery_List_Results$thedata**.
+
+An `observeEvent` waits for changes in **Grocery_List_Results$thedata**.
+
+The `observeEvent` then messages the contents of **Grocery_List_Results$thedata**
+to the console.
+
+Similarly, an `observeEvent` waits for changes in **Grocery_List_Results$rows_selected**.
+
+```{r, eval = FALSE}
+server <- function(input, output) {
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    )
+  )
+  
+  observeEvent(Grocery_List_Results$thedata, {
+    message(Grocery_List_Results$thedata)
+  })
+  
+  observeEvent(Grocery_List_Results$rows_selected, ignoreNULL = FALSE, {
+    # 'no' (NULL) row will be 'selected' after each edit of the data
+    message(paste("Selected row:", Grocery_List_Results$rows_selected))
+  })
+  
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+## Callbacks
+
+A more sophisticated approach to handling changing of the data is by using **callbacks**.
+
+In the example below, `callback.update` is defined, and checks whether the 
+purchase `Quantity` is less than zero. If `Quantity` is less than zero, an error
+is thrown, and it is not possible to store the updated data.
+
+Note that `callback.insert` has been defined  *differently*, and so it is still
+possible to create a *new* entry/row which has a negative purchase amount!
+In `grocery.insert.callback`, new entries must have a non-empty **Buy** entry,
+and does not allow more than ten quantity. Of course, `grocery.update.callback`
+and `grocery.insert.callback` could be re-defined to be consistent with each other.
+
+Note that `grocery.insert.callback` combines error messages, and makes use of
+HTML line breaks.
+
+```{r, eval = FALSE}
+server <- function(input, output) {
+  
+  grocery.update.callback <- function(data, olddata, row) {
+    # 'data' contains the dataframe *after* the row has been updated
+    # 'row' is the row number where data has been updated
+    # 'olddata' is the previous version of the data
+    
+    if (data[row, "Quantity"] < 0) {
+      stop("Can't buy less than zero (0)!")
+    }
+    
+    return(data)
+  }
+  
+  grocery.insert.callback <- function(data, row) {
+    # 'data' contains the dataframe *after* the row has been inserted
+    
+    msg <- list()
+    if (data[row, "Buy"] == "") {
+      msg[[1]] <- "Item name can't be empty!"
+    }
+    if (data[row, "Quantity"] > 10) {
+      msg[[2]] <- "Can't buy more than ten (10)!"
+    }
+    msg <- Filter(Negate(is.null), msg)
+    if (length(msg)) stop(paste(msg, collapse = "<br>"))
+    
+    return(data)
+  }
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ),
+    callback.update = grocery.update.callback,
+    callback.insert = grocery.insert.callback
+  )
+  
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+More sophisticated **callbacks** can take the opportunity to store changed data
+in a persistent database. This is demonstrated in `dtedit_demo()`. The source
+code for the demonstration can be seen with 
+
+* `dtedit_demo(options = list(display.mode = "showcase"))`
+
+in the `app.R` tab.
+
+The modular `dteditmod` version of the **callbacks** demonstration, with multiple
+callbacks for multiple datatables, can be seen with
+
+* `dtedit_mod_demo(options = list(display.mode = "showcase"))`
+
+in the `app_mod.R` tab.
+
+### Show a raised exception message inside callback function with `tryCatch`
+
+Callbacks will often try to store data edited using the modal dialog
+using 'SQL' queries. Sometimes the database query will return an error message
+('raise an exception').
+
+These exceptions can be caught with `tryCatch`, in order to display a more
+meaningful and less cryptic error message.
+
+In this example, there is a misspelt column in the `books.insert.callback` callback,
+which will result in an exception being raised by the SQL query.
+
+```{r, eval = FALSE}
+library(shiny)
+library(RSQLite)
+library(DTedit)
+
+conn <- dbConnect(SQLite(), "books.sqlite")
+books <- data.frame(
+  Author = c("Mary", "John", "Sue"), 
+  Publisher = c("University House", "Random House", "Beyond Books"),
+  stringsAsFactors = FALSE
+)
+dbWriteTable(conn, "books", books, overwite = TRUE)
+dbDisconnect(conn)
+
+conn <- dbConnect(RSQLite::SQLite(), "books.sqlite")
+
+getBooks <- function() {
+  res <- dbSendQuery(conn, "SELECT * FROM books")
+  books <- dbFetch(res)
+  dbClearResult(res)
+  books$Authors <- books$Authors
+  books$Publisher <- books$Publisher
+  return(books)
+}
+
+##### Callback functions.
+books.insert.callback <- function(data, row) {
+  query <- paste0(
+    "INSERT INTO books (Author, Publishxer) VALUES (",
+    # !!! incorrectly spelt column 'Publishxer' !!!
+    "'", paste0(data[row,]$Author[[1]], collapse = ';'), "', ",
+    "'", as.character(data[row,]$Publisher), "' ",
+    ")")
+  print(query) # For debugging
+  tryCatch(
+      {
+          res <- dbSendQuery(conn, query)
+          dbClearResult(res)
+      },
+      error = function(cond) {
+          stop(paste("Database error: ", cond))
+      }
+  )
+  return(getBooks())
+}
+
+##### Create the Shiny server
+server <- function(input, output, session) {
+  books <- getBooks()
+  booksdt <- dtedit(
+    input, output,
+    name = 'books',
+    thedata = books,
+    edit.cols = c('Author', 'Publisher'),
+    edit.label.cols = c(
+      'Author', 'Publisher'
+    ),
+    show.delete = FALSE, show.copy = FALSE, show.update = FALSE,
+    callback.insert = books.insert.callback,
+  )
+
+  cancel.onsessionEnded <- session$onSessionEnded(function() {
+    DBI::dbDisconnect(conn)
+  })
+}
+
+##### Create the shiny UI
+ui <- fluidPage(
+  h3('Books'),
+  uiOutput('books'),
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+## `inputEvent` - observing input events from the New/Edit/Copy modal dialogs
+
+`observeEvent`s, to watch for changes in the input dialogs, are created with
+the help of the `inputEvent` parameter. This is particularly useful for creating
+feedback to the user 'on the fly'. It was designed to use together with 
+[`shinyfeedback`](https://github.com/merlinoa/shinyFeedback), but does not depend
+on [`shinyfeedback`](https://github.com/merlinoa/shinyFeedback).
+
+In the example below, which uses [`shinyfeedback`](https://github.com/merlinoa/shinyFeedback),
+`inputEvent` is a named list, including functions with the names of editable
+columns. The functions takes an `inputId` argument of the input dialog
+which is related to the editable column, and the value of the input dialog.
+The function can then use the value of the input dialog, create
+[`shinyfeedback`](https://github.com/merlinoa/shinyFeedback) messages,
+or even change the contents of the input dialog.
+
+(Note the comments in the example regarding peculiarities when using modules)
+
+```{r eval = FALSE}
+library(shiny)
+library(DTedit)
+
+server <- function(input, output) {
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ),
+    inputEvent = list(
+      Quantity = function(x, value) {
+        # x will be the inputID of the 'Quantity' widget
+        # value will be the contents of the input widget
+        #
+        # if *not* called as a module, then value == input[[x]]
+        # however, if 'dteditmod' is called, then value != input[[x]] because
+        # 'x' does *not* include the ID 'prefix' of the module. (the module's
+        # ID prefix could be added 'manually' by the function, potentially).
+        # Strangely, the inputId parameter of shinyFeedback can use 'x'
+        # without any modification, even if 'dteditmod' is called.
+        
+        # if the input box is empty, value will be NA
+        if (!is.na(value) && value < 0) {
+          shinyFeedback::showFeedbackWarning(
+            inputId = x,
+            text = "Less than zero"
+          )
+        } else {
+          shinyFeedback::hideFeedback(x)
+        }
+        if (!is.na(value) && value > 10 && value <= 100) {
+          shinyFeedback::showToast("success", "That's a lot!")
+        }
+        if (!is.na(value) && value > 100) {
+          shinyFeedback::showToast("error", "Too many, try again!")
+          shiny::updateNumericInput(
+            session = shiny::getDefaultReactiveDomain(),
+            inputId = x,
+            value = NA
+          )
+        }
+      },
+      Buy = function(x, value) {
+        if (value == "") {
+          shinyFeedback::showFeedbackDanger(
+            inputId = x,
+            text = "Name must not be empty!"
+            # note that this is just a warning, really
+            # since this feedback itself does not
+            # enforce the warning.
+          )
+        } else {
+          shinyFeedback::hideFeedback(x)
+        }
+      }
+    )
+  )
+  
+}
+
+ui <- fluidPage(
+  shinyFeedback::useShinyFeedback(),
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+
+## Reactive `thedata` dataframe
+
+`thedata` can be a reactive `reactiveVal`, in which case `dtedit`'s copy of the `thedata`
+will change in response to changes in the original dataframe. In the example below,
+the input buttons **more** and **less** trigger changes in **mydata**, which will
+be detected by `dtedit`.
+
+In the call to `dtedit`, **mydata** is referred to in the `thedata` definition
+as **mydata**, *not* **mydata()**.
+
+Changes in `dtedit`'s copy of the data as the result of editing within `dtedit`
+do **not** automatically change the original dataframe **mydata**. The example
+below has set up an `observeEvent` to 
+
+* detect changes in **Grocery_List_Results$thedata**
+* which then changes **mydata** 
+
+Note that **Grocery_List_Results$thedata** does *not* have trailing parentheses '()'.
+
+```{r, eval = FALSE}
+server <- function(input, output) {
+  
+  mydata <- reactiveVal({
+    data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    )
+  })
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = mydata
+  )
+  
+  observeEvent(input$more, {
+    # if the 'Buy More!' button is pressed
+    newdata <- data.frame(
+      Buy = mydata()$Buy,
+      Quantity = mydata()$Quantity * 2,
+      # doubles the quantity
+      stringsAsFactors = FALSE
+    )
+    mydata(newdata)
+  })
+  
+  observeEvent(input$less, {
+    # if the 'Too Much!' button is pressed
+    newdata <- data.frame(
+      Buy = mydata()$Buy,
+      Quantity = mydata()$Quantity * 0.5,
+      # halves the quantity
+      stringsAsFactors = FALSE
+    )
+    mydata(newdata)
+  })
+  
+  observeEvent(Grocery_List_Results$thedata, {
+    # the data has been added
+    # copy the changes to our own copy
+    mydata(Grocery_List_Results$thedata)
+  })
+  
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List'),
+  actionButton(inputId = "more", label = "Buy More!"),
+  actionButton(inputId = "less", label = "Too Much!")
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+Another example of reactive dataframes can be seen, with source code, with
+
+* `dtedit_reactive_demo(options = list(display.mode = "showcase"))`
+
+the code is in the `app.R` tab. A modular version, using `dteditmod`, can be
+seen with `example(dteditmodUI)`.
+
+## View and Edit columns
+
+Sometimes not all columns of a dataframe should be viewed, or edited. The columns
+to edit or view can be defined.
+
+In the example below, `edit.cols` is defined such that only **Quantity** and
+**Comment** columns can be edited. The **Quantity** column is not seen in the
+datatable view, because it is not included in the `view.cols` definition.
+
+In addition, **delete**, **add** and **copy** buttons have been turned off with
+`show.delete`, `show.insert` and `show.copy` options all set to `FALSE`.
+
+```{r, eval = FALSE}
+server <- function(input, output) {
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      Comment = c('Irish', 'Not too sweet', 'Jonathan'),
+      stringsAsFactors = FALSE
+    ),
+    edit.cols = c('Quantity', 'Comment'),
+    view.cols = c('Buy', 'Comment'),
+    show.delete = FALSE,
+    show.insert = FALSE,
+    show.copy = FALSE
+  )
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+## Custom icons for New/Edit/Delete/Copy buttons
+
+By default, the **Add**, **Edit**, **Delete** and **Copy** buttons have no icons.
+Icons can be added with the `icon.add`, `icon.edit`, `icon.delete` and `icon.copy`
+options.
+
+```{r}
+server <- function(input, output, session) {
+  
+  Grocery_List <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ), 
+    icon.delete = shiny::icon("trash"), 
+    icon.edit = shiny::icon("edit"), 
+    icon.add = shiny::icon("plus"), 
+    icon.copy = shiny::icon("copy")
+  )
+  
+  #### shinytest code for testing purposes only ########
+  data_list <- list() # exported list for shinytest
+  shiny::observeEvent(Grocery_List$thedata, {
+    data_list[[length(data_list) + 1]] <<- Grocery_List$thedata
+  })
+  shiny::exportTestValues(data_list = {data_list})
+  ######################################################
+}
+
+ui <- shiny::fluidPage(
+  shiny::h3('Grocery List'),
+  shiny::uiOutput('Grocery_List')
+)
+
+shiny::shinyApp(ui = ui, server = server)
+```
+
+## Formatting columns : `datatable.call` and `datatable.rownames`
+
+`DTedit` uses `DT` by calling `DT::renderDataTable`.
+`DT` [provides *helper* functions `format*()`](https://rstudio.github.io/DT/functions.html)
+to format table columns as currency, percentages or round numbers. To use the helper functions,
+the data needs to be pre-processed by `DT::datatable` and `DT::format*()` *before* being
+passed to `DT::renderDataTable`. These helper functions can be accessed by defining 
+`datatable.call` as a pre-processing function.
+
+The formatting demonstrated below is not actually appropriate to the `mtcars` data,
+but is used for demonstration purposes. The formatting does not work
+[unless `datatable.rownames` is set to `TRUE`](https://stackoverflow.com/questions/56879672/how-to-replacedata-in-dt-rendered-in-r-shiny-using-the-datatable-function).
+
+```{r, warning = FALSE, message = FALSE}
+library(shiny)
+library(DTedit)
+library(magrittr) # provides the pipe '%>%' operator
+
+server <- function(input, output, session) {
+  dtedit(
+    input, output,
+    name = 'mtcarstable',
+    thedata = mtcars,
+    datatable.rownames = TRUE, # needed for the format*() functions to work
+    datatable.call = function(...) {
+      DT::datatable(...) %>%
+        DT::formatSignif('qsec', 2) %>%
+        DT::formatCurrency('mpg') %>%
+        DT::formatStyle(
+          'cyl',
+          color = 'red', backgroundColor = 'orange', fontWeight = 'bold'
+        )
+      # note, none of this is proper formatting for the mtcars data!
+      # but serves to demonstrate the formatting
+    }
+  )
+}
+
+ui <- fluidPage(
+  h3('mtcars'),
+  uiOutput('mtcarstable')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+By default, `datatable.call` is defined as :
+
+```{r, eval = FALSE}
+function(...) {DT::datatable(...)}
+```
+
+`DTedit` will pass several arguments to `datatable.call`.
+
+* `data` a dataframe. May have been processed to add `actionButtons`
+* `options` - `datatable.options`
+* `rownames` - `datatable.rownames`
+* `escape` - escape all columns except those with `actionButtons`.
+* `selection` - `single`
+
+## `input.types`
+
+The data class of the column determines the default input type of the column.
+The mappings are :
+
+* list $\rightarrow$ "selectInputMultiple"
+* character $\rightarrow$ "textInput"
+* Date $\rightarrow$ "dateInput"
+* POSIXct $\rightarrow$ "datetimeInput"
+* factor $\rightarrow$ "selectInput"
+* integer $\rightarrow$ "numericInput"
+* numeric $\rightarrow$ "numericInput"
+* logical $\rightarrow$ "checkboxInput"
+* blob $\rightarrow$ "fileInput"
+
+`input.types` can be explicitly defined.
+
+Valid `input.types` are :
+
+* dateInput
+* datetimeInput - **note** this requires `shinyWidgets` (>= 0.5.2) package and 
+`useairDatepicker` option.
+* selectInput
+* selectInputMultiple
+* selectInputReactive
+* selectInputMultipleReactive
+* selectizeInput
+* selectizeInputMultiple
+* selectizeInputReactive
+* selectizeInputMultipleReactive
+* numericInput
+* textInput
+* textAreaInput
+* checkboxInput
+* passwordInput
+* fileInput
+
+For an example of explicit definition, see [`selectInput`](#selectInput).
+
+## `selectInput` and `selectInputReactive` {#selectInput}
+
+Drop down choices can be defined statically by defining `input.types` as
+`selectInput`. `selectInput` will look for possible input choices in the
+following ways :
+
+* if `input.choices` is defined (as in the example below)
+* the column is a 'factor/categorical' variable, with defined `factor`s 
+* the pre-existing values already present in the column.
+
+Drop down choices can be changed dynamically by defining `input.types` as
+`selectInputReactive`. The `input.choices` for a `selectInputReactive` is a list
+name (in this case `buy.types.list`) in `input.choices.reactive`. `buy.types.list`
+in `input.choices.reactive` defines a reactive variable, which in the example
+below is `buy.Types`.
+
+In the example below, if the radioButton `choices` is changed to `More` (value = 2),
+then the reactive variable **buy.Types** is changed to the longer vector of
+grocery names.
+
+```{r, eval = FALSE}
+server <- function(input, output) {
+  
+  less_choices <- c('Tea', 'Biscuits', 'Apples', 'Cheese')
+  more_choices <- c(less_choices, 'Coffee', 'Pears', 'Fish')
+  
+  buy.Types <- reactiveVal(less_choices)
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Type = c('Plant', 'Processed', 'Fruit'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ),
+    input.types = list(
+      Buy = 'selectInputReactive',
+      Type = 'selectInput'
+    ),
+    input.choices = list(
+      Buy = 'buy.Types.list',
+      Type = c('Plant', 'Processed', 'Fruit', 'Animal')
+    ),
+    input.choices.reactive =
+      list(buy.Types.list = buy.Types)
+  )
+  
+  observeEvent(input$choice, {
+    if (input$choice == 1) {
+      buy.Types(less_choices)
+    } else {
+      buy.Types(more_choices)
+    }
+  })
+  
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List'),
+  radioButtons(
+    'choice',
+    label = 'Buy choices',
+    choices = list('Less' = 1, 'More' = 2),
+    selected = 1
+  )
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+`selectInputReactive` is demonstrated with 
+
+* `dtedit_selectInputReactive_demo(options = list(display.mode = "showcase"))`
+
+with the source code in the `app.R` tab. In this demonstration, **names.Types**
+(user types) and **names.Likes** (potential user Likes) are reactive variables
+which are used to determine the choices to `selectInputReactive` and
+`selectInputMultipleReactive` in the **names** DataTable. **names.Types** and
+**names.Likes** are themselves altered by changes in two other `DTedit` datatables.
+
+The same demonstration is shown as part of the demonstration using modular `dteditmod` 
+
+* `dteditmod_demo(options = list(display.mode = "showcase"))`
+
+with source code in the `app_mod.R` tab. The interacting datatables are in the `Emails` tab.
+
+## `selectizeInput` (and other `selectize...` variants)
+
+Each of `selectInput`, `selectInputMultiple`, `selectInputReactive` and 
+`selectInputMultipleReactive` have `selectize...` variants. If more than
+one `selectize...` input type is being used, then the `selectize` options can
+be individually defined in `selectize.options` as a named list, as in the
+example below.
+
+This example uses `selectize.options` to limit the number of multiple selections
+for `FromState` and `ToState`, as well as create a placeholder for `Store`.
+
+```{r, eval = FALSE}
+library(shiny)
+library(DTedit)
+
+server <- function(input, output) {
+  
+  less_states <- list(
+    Eastern = c(`New York` = 'NY', `New Jersey` = 'NJ'),
+    Western = c(`California` = 'CA', `Washington` = 'WA')
+  )
+  more_states <- list(
+    Eastern = c(`New York` = 'NY', `New Jersey` = 'NJ'),
+    Midwest = c(`Illinois` = 'IL', `Indiana` = 'IN', `Minnestota` = 'MN'),
+    Western = c(`California` = 'CA', `Washington` = 'WA')
+  )
+  less_product <- c('clothes', 'food', 'toys')
+  more_product <- c('clothes', 'food', 'toyes', 'tea', 'coffee')
+  
+  from.states <- reactiveVal(less_states)
+  product.types <- reactiveVal(less_product)
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Store = c('stor1', 'stor1', 'stor2'),
+      Product = c('food', 'clothes', 'clothes'),
+      FromState = I(list(list('CA', 'NJ'), list('WA'), list('NY'))),
+      ToState = I(list(list('CA'), list('WA'), list('NY'))),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ),
+    edit.label.cols = c('Store', 'Product', 'From State', 'To State', 'Quantity'),
+    input.types = list(
+      Store = 'selectizeInput',
+      Product = 'selectizeInputReactive',
+      FromState = 'selectizeInputMultipleReactive',
+      ToState = 'selectizeInputMultiple'
+    ),
+    input.choices = list(
+      Store = c("stor1","stor2"),
+      Product = 'product.list',
+      FromState = 'from.states.list',
+      ToState = less_states
+    ),
+    input.choices.reactive = 
+      list(from.states.list = from.states,
+           product.list = product.types),
+    selectize.options = list(
+      Store = list(
+        placeholder = "Please select an option below",
+        onInitialize = I('function() { this.setValue(""); }')
+      ),
+      FromState = list(create = TRUE, maxItems = 2),
+      ToState = list(create = TRUE, maxItems = 3)
+    )
+  )
+  
+  observeEvent(input$choice_states, {
+    if (input$choice_states == 1) {
+      from.states(less_states)
+    } else {
+      from.states(more_states)
+    }
+  })
+  observeEvent(input$choice_product, {
+    if (input$choice_product == 1) {
+      product.types(less_product)
+    } else {
+      product.types(more_product)
+    }
+  })
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List'),
+  radioButtons(
+    inputId = 'choice_states',
+    label = "'From State' choices",
+    choices = list('Less' = 1, 'More' = 2),
+    selected = 1
+  ),
+  radioButtons(
+    inputId = 'choice_product',
+    label = "Product choices",
+    choices = list('Less' = 1, 'More' = 2),
+    selected = 1
+  )
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+## Datatables options - buttons
+
+`dtedit` uses the [`DT`](https://rstudio.github.io/DT/) package to create
+datatables. [`DT`](https://rstudio.github.io/DT/) is based on [`datatables`](https://datatables.net/).
+`DT::datatable` has an `options` argument. `options` can be passed through to
+`DT::datatable` with `dtedit`'s `datatables.options` argument. In this case, we
+can add further arguments to `DT::datatable` by customizing the `datatable.call` function.
+
+Any argument that is not recognized by `dtedit` is passed through to `DT::renderDataTable`.
+
+The following example adds [copy, CSV, PDF and Excel buttons](https://rstudio.github.io/DT/003-tabletools-buttons.html) to `dtedit`'s datatable by defining `datatable.options` and `datatable.call`. Note that 'Excel'
+might not be available on all R installations.
+
+```{r, message = FALSE}
+server <- function(input, output) {
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ),
+    datatable.call = function(...)
+    {DT::datatable(..., extensions = 'Buttons')},
+    datatable.options = list(
+      dom = 'Bfrtip',
+      buttons = c('copy', 'csv', 'pdf', 'excel')
+    )
+  )
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+## Action buttons
+
+An *action button* column can be created. When an *action button* is pushed, the
+function defined in `callback.actionButton` is called, allowing, for example,
+modification of the data in the datatable, as shown in the example below.
+
+```{r, message = FALSE}
+server <- function(input, output) {
+  
+  grocery.callback.actionButton <- function(data, row, buttonID) {
+    # data - the current copy of 'thedata'
+    # row - the row number of the clicked button
+    # buttonID - the buttonID of the clicked button
+    print(paste("You chose", buttonID))
+    
+    if (substr(buttonID, 1, nchar("random")) == "random") {
+      # in this demonstration, all the buttons are 'random'
+      # but it is possible to define more than one column of buttons
+      data[row, "Quantity"] <- sample(1:10, 1)
+    }
+    return(data)
+  }
+  
+  Grocery_List_Results <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    ),
+    action.buttons = list(
+      myaction = list( # the 'myaction' name is arbitrary
+        columnLabel = "Choose a number",
+        buttonLabel = "Any number",
+        buttonPrefix = "random"
+      )
+    ),
+    callback.actionButton = grocery.callback.actionButton
+  )
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+shinyApp(ui = ui, server = server)
+```
+
+A demonstration of action buttons (two columns in the same datatable) can be seen,
+with source code, with
+
+* `dteditmod_fileInput_demo(options = list(display.mode = "showcase"))`
+
+The code is in the `app.R` tab. This demonstration uses the modular `dteditmod`.
+It also demonstrates use of binary blob data-types, use of `view.cols` and
+`edit.cols` and the (implicit) use of `fileInput` to store pictures and spreadsheets
+in the dataframe.
+
+# Appendix - Help files with full option descriptions {#appendix}
+
+## `dtedit` and `dteditmod` help
+
+```{r, echo = FALSE}
+help_console <- function(topic, package,
+                         format=c("text", "html", "latex", "Rd"),
+                         before=NULL, after=NULL) {
+  # topic - the command for which help is required
+  # package - the package name with the required topic
+  # format - output format
+  # before - place code before the output e.g. "<blockquote>"
+  # after - place code after the output e.g. "</blockquote>"
+  
+  # based on code by Noam Ross
+  #  http://www.noamross.net/archives/2013-06-18-helpconsoleexample/
+  # Stéphane Laurent
+  #  https://stackoverflow.com/questions/60468080/
+  #   print-an-r-help-file-vignette-as-output-into-an-r-html-notebook
+  # and Michael Sumner (mdsumner)
+  #  https://stackoverflow.com/questions/7495685/
+  #   how-to-access-the-help-documentation-rd-source-files-in-r
+  
+  format <- match.arg(format)
+  if (!is.character(topic)) topic <- deparse(substitute(topic))
+  db <- tools::Rd_db(package)
+  helpfile <- db[paste0(topic, ".Rd")][[1]]
+  
+  hs <- capture.output(
+    switch(
+      format,
+      text = tools::Rd2txt(helpfile),
+      html = tools::Rd2HTML(
+        helpfile,
+        package = "",
+        stages = c("install", "render")
+      ),
+      latex = tools::Rd2latex(helpfile),
+      Rd = tools:::prepare_Rd(helpfile)
+    )
+  )
+  if (format == "html") {
+    i <- grep("<body>", hs)
+    j <- grep("</body>", hs)
+    hs <- hs[(i+1):(j-1)]
+  }
+  hs <- c(before, hs, after)
+  hs <- cat(hs, sep = "\n")
+  invisible(hs)
+}
+
+```
+
+```{r, echo = FALSE, results = "asis"}
+help_console("dtedit", "DTedit", format = "html")
+```
+
+## `dteditmodUI` help
+
+```{r, echo = FALSE, results = "asis"}
+help_console("dteditmodUI", "DTedit", format = "html")
+```

@@ -2,33 +2,91 @@
 % Please edit documentation in R/dtedit.R
 \name{dtedit}
 \alias{dtedit}
-\title{Function to create a DataTable with Add, Edit, and Delete buttons.}
+\alias{dteditmod}
+\title{Create a DataTable with Add, Edit and Delete buttons.}
 \usage{
-dtedit(input, output, name, thedata, view.cols = names(thedata),
-  edit.cols = names(thedata), edit.label.cols = edit.cols, input.types,
-  input.choices = NULL, selectize = TRUE, modal.size = "m",
-  text.width = "100\%", textarea.width = "570px",
-  textarea.height = "200px", date.width = "100px",
-  numeric.width = "100px", select.width = "100\%",
-  defaultPageLength = 10, title.delete = "Delete",
-  title.edit = "Edit", title.add = "New", label.delete = "Delete",
-  label.edit = "Edit", label.add = "New", label.copy = "Copy",
-  show.delete = TRUE, show.update = TRUE, show.insert = TRUE,
-  show.copy = TRUE, callback.delete = function(data, row) { },
+dtedit(input, output, name, thedata, ...)
+
+dteditmod(
+  input,
+  output,
+  session,
+  thedata,
+  view.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
+    else {     thedata })),
+  edit.cols = names(shiny::isolate(if (shiny::is.reactive(thedata)) {     thedata() }
+    else {     thedata })),
+  edit.label.cols = edit.cols,
+  delete.info.cols = view.cols,
+  delete.info.label.cols = delete.info.cols,
+  input.types,
+  input.choices = NULL,
+  input.choices.reactive = NULL,
+  selectize.options = NULL,
+  inputEvent = NULL,
+  action.buttons = NULL,
+  selectize = TRUE,
+  modal.size = "m",
+  text.width = "100\%",
+  textarea.width = "570px",
+  textarea.height = "200px",
+  date.width = "100px",
+  datetime.width = "200px",
+  numeric.width = "100px",
+  select.width = "100\%",
+  checkbox.width = "100\%",
+  defaultPageLength = 10,
+  max.fileInputLength = 1e+08,
+  title.delete = "Delete",
+  title.edit = "Edit",
+  title.add = "New",
+  label.delete = "Delete",
+  label.edit = "Edit",
+  label.add = "New",
+  label.copy = "Copy",
+  label.save = "Save",
+  label.cancel = "Cancel",
+  icon.delete = NULL,
+  icon.edit = NULL,
+  icon.add = NULL,
+  icon.copy = NULL,
+  text.delete.modal = "Are you sure you want to delete this record?",
+  show.delete = TRUE,
+  show.update = TRUE,
+  show.insert = TRUE,
+  show.copy = TRUE,
+  callback.delete = function(data, row) { },
   callback.update = function(data, olddata, row) { },
-  callback.insert = function(data, row) { }, click.time.threshold = 2,
-  datatable.options = list(pageLength = defaultPageLength))
+  callback.insert = function(data, row) { },
+  callback.actionButton = function(data, row, buttonID) { },
+  click.time.threshold = 0.5,
+  useairDatepicker = FALSE,
+  datatable.options = list(pageLength = defaultPageLength),
+  datatable.rownames = FALSE,
+  datatable.call = function(...) {     DT::datatable(...) },
+  ...
+)
 }
 \arguments{
 \item{input}{Shiny input object passed from the server.}
 
 \item{output}{Shiny output object passed from the server.}
 
-\item{name}{the name of the UI output. That is, put \code{uiOutput(name)} where
-you want the DataTable in \code{ui.R}. When using more that one \code{dtedit}
-within a Shiny application the name must be unique.}
+\item{name}{(\code{name} is available in \code{dtedit} only). The \code{name} of the
+outputted editable datatable. The \code{name} passed to \code{dtedit} is the same
+as the name passed to \code{uiOutput}. Put \code{uiOutput(name)} where you want the
+editable datatable in the \code{ui.R}. When using more than one \code{dtedit} within a Shiny
+application the name must be unique. (\code{name} is converted
+to the \code{session} argument of dteditmod.)}
 
-\item{thedata}{a data frame to view and edit.}
+\item{thedata}{a data frame to view and edit. can be a reactive}
+
+\item{...}{arguments not recognized by DTedit are passed to \code{DT::renderDataTable}
+By default, \code{datatable.call} uses \code{DT::dataframe}, so this limits the options that
+can be passed through this method.}
+
+\item{session}{Shiny session object (an environment) passed from the server.
+Alternatively, the 'name' (character) of the outputted editable datatable.}
 
 \item{view.cols}{character vector with the column names to show in the DataTable.
 This can be a subset of the full \code{data.frame}.}
@@ -40,18 +98,105 @@ This can be a subset of the full \code{data.frame}.}
 and add dialogs. The length and order of \code{code.cols.labels} must
 correspond to \code{edit.cols}.}
 
+\item{delete.info.cols}{character vector with the column names specifying
+which values are presented on the delete dialog.
+This can be a subset of the full \code{data.frame}. Defaults to \code{view.cols}.
+If \code{NULL}, no data values are shown on the delete dialog.}
+
+\item{delete.info.label.cols}{character vector with the labels to use on the delete
+dialog. The length and order of \code{delete.info.label.cols} must
+correspond to \code{delete.info.cols}.}
+
 \item{input.types}{a character vector where the name corresponds to a column
 in \code{edit.cols} and the value is the input type. Possible values
-are \code{dateInput}, \code{selectInput}, \code{numericInput},
-\code{textInput}, \code{textAreaInput}, or \code{passwordInput}.
-The most common case where this parameter is desirable is when a text
+are:
+\itemize{
+\item \code{dateInput} - input changed by \code{date.width}
+\item \code{datetimeInput} - input changed by \code{datetime.width}. needs
+\code{useairDatepicker} set to \code{TRUE} and requires package \code{shinyWidgets}.
+\item \code{selectInput} - choices determined by \code{input.choices},
+or the levels of the data column
+variable (if the column variable is of class \code{factor}),
+or the already present values in the data column.
+\item \code{selectizeInput} - use selectize version of \code{selectInput}. Options
+defined by \code{selectize.options}.
+\item \code{selectInputMultiple} - choices determined by
+\code{input.choices} or the already present values in the data
+column.
+\item \code{selectizeInputMultiple} - use selectize version of \code{selectInputMultiple}.
+Options defined by \code{selectize.options}
+\item \code{selectInputReactive} - choices determined by a reactive
+variable, as defined by \code{input.choices} and
+\code{input.choices.reactive}.
+\item \code{selectizeInputReactive} - selectize version of \code{selectInputReactive}.
+Options defined by \code{selectize.options}
+\item \code{selectInputMultipleReactive} - choices determined by a
+reactive variable, as defined by \code{input.choices} and
+\code{input.choices.reactive}
+\item \code{selectizeInputMultipleReactive} - selectize version of \code{selectInputReactive}.
+Options defined by \code{selectize.options}
+\item \code{numericInput} - input changed by \code{numeric.width}
+\item \code{textInput} - input changed by \code{text.width}
+\item \code{textAreaInput} - input changed by \code{textarea.width} and \code{textarea.height}
+\item \code{passwordInput}
+\item \code{fileInput} - type of acceptable file types is defined by
+\code{input.choices}. Maximum file length is modifed by
+\code{max.fileInputLength}
+\item \code{checkboxInput}- input changed by \code{checkbox.width}
+}
+
+One case where this parameter is desirable is when a text
 area is required instead of a simple text input.}
 
-\item{input.choices}{a list of character vectors. The names of each element in the list must
-correpsond to a column name in the data. The value, a character vector, are the options
-presented to the user for data entry.}
+\item{input.choices}{a list of character vectors. The names of each element
+in the list must correspond to a column name in the data. The value,
+a character vector, are the options presented to the user for data entry,
+in the case of input type \code{selectInput}).
 
-\item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}
+In the case of input type \code{selectInputReactive}
+or \code{selectInputMultipleReactive}, the value is the name
+of the reactive in 'input.choices.reactive'
+
+In the case of input type \code{fileInput} this is the
+'accept' argument, which specifies the type of file which
+is acceptable. Can be a case insensitive file extension
+(e.g. '.csv' or '.rds') or a MIME type (e.g. 'text/plain' or
+'application/pdf').}
+
+\item{input.choices.reactive}{a named list of reactives, referenced in
+\code{input.choices} to use for input type \code{selectInputReactive} or
+\code{selectInputMultipleReactive}. The reactive itself is a character
+vector.}
+
+\item{selectize.options}{options for \code{selectizeInput}. By default, the options
+defined apply to all selectize inputs. However, selectize.options is a named
+list of lists, where each list is named after an editable selectize-style
+column, then the named lists are individualized options lists for each
+selectize-style column.}
+
+\item{inputEvent}{a named list of functions. The names of each element in
+the list must correspond to an editable column name in the data. The
+function is called when the associated input widget event is observed
+during editing/adding a data row. Can be used, for example,
+with \code{shinyFeedback}. The functions need to accept two parameters,
+the inputID of the input widget, and the value of that widget.}
+
+\item{action.buttons}{a named list of action button columns.
+Each column description is a list of \code{columnLabel}, \code{buttonLabel},
+\code{buttonPrefix}, \code{afterColumn}.
+\itemize{
+\item \code{columnLabel} label used for the column.
+\item \code{buttonLabel} label used for each button
+\item \code{buttonPrefix} used as the prefix for action button IDs.
+The suffix will be a number from '1' to the number of rows.
+Prefix and suffix will be separated with an underscore '_'.
+\item \code{afterColumn} if provided, the action button column is
+placed after this named column.
+}}
+
+\item{selectize}{Whether to use \code{selectize.js} or not for \code{selectInputMultiple}
+or \code{selectInputMultipleReactive}. See \code{shiny::\link{selectInput}} for
+more information.}
 
 \item{modal.size}{the size of the modal dialog. See \code{\link{modalDialog}}.}
 
@@ -63,11 +208,19 @@ presented to the user for data entry.}
 
 \item{date.width}{the width of data inputs}
 
+\item{datetime.width}{the width of datetime inputs}
+
 \item{numeric.width}{the width of numeric inputs.}
 
 \item{select.width}{the width of drop down inputs.}
 
+\item{checkbox.width}{the width of checkbox inputs.}
+
 \item{defaultPageLength}{number of rows to show in the data table by default.}
+
+\item{max.fileInputLength}{the maximum length (in bytes) of \code{fileInput}.
+Shiny itself has a default limit of 5 megabytes per file.
+The limit can be modified by using shiny.maxRequestSize option.}
 
 \item{title.delete}{the title of the dialog box for deleting a row.}
 
@@ -83,34 +236,102 @@ presented to the user for data entry.}
 
 \item{label.copy}{the label of the copy button.}
 
+\item{label.save}{the label of the save button.}
+
+\item{label.cancel}{the label of the cancel button.}
+
+\item{icon.delete}{the icon for the delete button, e.g. \code{icon("trash")}.
+Defaults to \code{NULL}.}
+
+\item{icon.edit}{the icon for the edit button, e.g. \code{icon("edit")}.
+Defaults to \code{NULL}.}
+
+\item{icon.add}{the icon for the add button, e.g. \code{icon("plus")}.
+Defaults to \code{NULL}.}
+
+\item{icon.copy}{the icon for the copy button, e.g. \code{icon("copy")}.
+Defaults to \code{NULL}.}
+
+\item{text.delete.modal}{the text shown in the delete modal dialog.}
+
 \item{show.delete}{whether to show/enable the delete button.}
 
 \item{show.update}{whether to show/enable the update button.}
 
 \item{show.insert}{whether to show/enable the insert button.}
 
-\item{show.copy}{whether to show/enablre the copy button.}
+\item{show.copy}{whether to show/enable the copy button.}
 
-\item{callback.delete}{a function called when the user deletes a row. This function should
-return an updated data.frame.}
+\item{callback.delete}{a function called when the user deletes a row.
+This function should return an updated data.frame.}
 
-\item{callback.update}{a function called when the user updates a row. This function should
-return an updated data.frame.}
+\item{callback.update}{a function called when the user updates a row.
+This function should return an updated data.frame.}
 
-\item{callback.insert}{a function called when the user inserts a new row. This function should
-return an updated data.frame.}
+\item{callback.insert}{a function called when the user inserts a new row.
+This function should return an updated data.frame.}
 
-\item{click.time.threshold}{This is to prevent duplicate entries usually by double clicking the
-save or update buttons. If the user clicks the save button again within this amount of
-time (in seconds), the subsequent click will be ignored. Set to zero to disable this
-feature. For developers, a message is printed using the warning function.}
+\item{callback.actionButton}{a function called when the user clicks an action button.
+called with arguments \code{data}, \code{row} and \code{buttonID}.
+This function can return an updated data.frame,
+alternatively return NULL if data is not to be changed.}
 
-\item{datatable.options}{options passed to \code{\link{DT::renderDataTable}}.
-See \link{https://rstudio.github.io/DT/options.html} for more information.}
+\item{click.time.threshold}{This is to prevent duplicate entries usually by
+double clicking the save or update buttons. If the user clicks the save
+button again within this amount of time (in seconds), the subsequent click
+will be ignored (using \code{shiny::throttle}). Set to zero to disable this
+feature.}
+
+\item{useairDatepicker}{use \code{shinyWidgets} package \code{airDatepickerInput}}
+
+\item{datatable.options}{options passed to \code{DT::renderDataTable}.
+See \url{https://rstudio.github.io/DT/options.html} for more information.}
+
+\item{datatable.rownames}{show rownames as part of the datatable? \code{TRUE} or \code{FALSE}.
+Note that if datatable.call includes \verb{DT::format*} calls,
+then \code{datatable.rownames} must equal \code{TRUE}}
+
+\item{datatable.call}{pre-processing call when calling \code{DT::renderDataTable}.
+Can be defined, for example, to include \verb{DT::format*} calls.
+\code{dtedit} will pass several arguments to the \code{datatable.call} function.
+\itemize{
+\item \code{data} a dataframe. may have been processed to add \code{actionButtons}
+\item \code{options} - \code{datatable.options}
+\item \code{rownames} - \code{datatable.rownames}
+\item \code{escape} - escape all columns except those with action buttons.
+\item \code{selection} - \code{single}
+}}
+}
+\value{
+Returns reactiveValues
+\itemize{
+\item \code{theData} - the current state of \code{DTedit}'s copy of the data
+\item \code{view.cols}
+\item \code{edit.cols}
+\item \code{edit.count} - number of edits to data done within \code{DTedit} (does not
+include changes to \code{DTedit}'s copy of the data secondary to changes
+of a reactive \code{thedata})
+\item \code{rows_selected} - the row number selected. initially set to \code{NULL}
+}
 }
 \description{
-This object will maintain data state. However, in order of the data to persist
-between Shiny instances, data needs to be saved to some external format (e.g.
+dtedit - editable DataTable
+
+dteditmod - editable DataTable, adapted for use in modules
+}
+\details{
+\code{dtedit} is used in conjunction with \code{uiOutput} to create editable datatables.
+\code{dtedit} is used in a shiny application's server definition, \code{uiOutput} is used
+in the UI (user interface) definition.
+
+\code{dteditmod} is used in conjunction with \code{callModule} and
+\code{dteditmodUI} to create editable datatables in a module environment.
+\code{dteditmod} is called through \code{callModule} in the 'server' section of
+the shiny application.
+\code{dteditmodUI} is called in the 'UI' (user-interface) section of the shiny app.
+
+This object will maintain data state. However, in order for data to persist
+between Shiny instances, data needs to be saved to an external format (e.g.
 database or R data file). The callback functions provide a mechanism for this
 function to interact with a permanent data storage scheme. The callback
 functions are called when the user adds, updates, or deletes a row from the
@@ -122,8 +343,12 @@ the \code{data} represents the data table just before deleting the specified
 row. That is, if \code{callback.delete} returns a \code{data.frame}, that will
 be the new data table; otherwise this function will remove row \code{row} from
 \code{data} and that will become the current data table.
-}
-\details{
+
+While \code{olddata} will contain values as contained in the original \code{data.frame},
+the values returned in \code{data} are limited to values that can be returned by the
+\code{shiny} widgets underlying the \code{input.types}. For example, the \code{textInput} can
+return an empty string, but cannot return \code{NA}.
+
 The callback functions may throw errors (see e.g. \code{stop}) if there are
 problems with data. That is, if data validation checks indicate data problems
 before inserting or updating a row the function may throw an error. Note that
@@ -136,3 +361,99 @@ Callback functions may return a \code{data.frame}. When a \code{data.frame} is
 returned that will become the current state of the data table. If anything
 else is returned then the internal \code{data.frame} will be used.
 }
+\examples{
+# minimal DTedit example 'dtedit'
+# you can try this example in interactive mode
+# with 'example("dtedit")'
+
+library(shiny)
+library(DTedit)
+
+server <- function(input, output) {
+  
+  Grocery_List <- dtedit(
+    input, output,
+    name = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    )
+  )
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  uiOutput('Grocery_List')
+)
+
+if (interactive())
+  shinyApp(ui = ui, server = server)
+
+#### end of 'dtedit' example ####
+
+
+# minimal DTedit example 'dteditmod'
+# this is a separate application from the 'dtedit' example!
+#
+# unfortunately, this application cannot be
+# tried with 'example("dteditmod")', but you can copy
+# and paste to execute in 'interactive' console mode,
+# or copy the lines into an '.R' file and choose
+# 'Run App' from RStudio.
+library(shiny)
+library(DTedit)
+
+myModuleUI <- function(id) {
+  ns <- shiny::NS(id)
+  shiny::tagList(
+    dteditmodUI(ns('Grocery_List'))
+  )
+}
+
+myModule <- function(input, output, session) {
+  Grocery_List_Results <- shiny::callModule(
+    dteditmod,
+    id = 'Grocery_List',
+    thedata = data.frame(
+      Buy = c('Tea', 'Biscuits', 'Apples'),
+      Quantity = c(7, 2, 5),
+      stringsAsFactors = FALSE
+    )
+  )
+}
+
+server <- function(input, output, session) {
+
+  shiny::callModule(myModule, 'myModule1')
+
+}
+
+ui <- fluidPage(
+  h3('Grocery List'),
+  myModuleUI('myModule1')
+)
+
+if (interactive() || isTRUE(getOption("shiny.testmode")))
+  shinyApp(ui = ui, server = server)
+}
+\seealso{
+\itemize{
+ \item \code{example("dtedit")} a simple example.
+ \item \code{dtedit_demo()} demonstration of dtedit.
+ \item \code{dtedit_reactive_demo()} reactive dataframe
+ \item \code{dtedit_selectInputReactive_demo()} reactive selectInput
+ }
+
+\itemize{
+\item \code{\link{dteditmodUI}} : the companion user-interface function for \code{dteditmod}.\cr
+\item \code{example("dteditmodUI")} a simple module example with reactive dataframe
+\item \code{dteditmod_demo()} a more complex module example. Database interaction
+and interactions between the data of multiple datatables.
+\item \code{dteditmod_fileInput_demo()} a modular example including binary file input and action buttons.
+}
+
+Other Datatable Edit functions: 
+\code{\link{dteditmodUI}()}
+}
+\concept{Datatable Edit functions}

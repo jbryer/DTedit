@@ -1,12 +1,56 @@
 Package: DTedit
-Title: Editable DataTables for shiny apps
-Version: 1.0.0
-Authors@R: person("Jason", "Bryer", email = "jason@bryer.org", role = c("aut", "cre"))
-Description: This package extends the DT::DataTable to allow users to create, edit, and delete
-    rows from the data table.
-Depends: R (>= 3.3.2), DT, shiny
-Suggests: RSQLite
+Title: Editable DataTables for Shiny Apps
+Version: 2.3.1
+Authors@R:
+    c(person(given = "Jason",
+             family = "Bryer",
+             email = "jason@bryer.org",
+             role = c("aut", "cre")),
+      person(given = "David",
+             family = "Fong",
+             email = "vkelim@bigpond.com",
+             role = c("aut")),
+      person(given = "Klodian",
+             family = "Dhana", role = c("ctb")),
+      person(given = "László",
+             family = "Szakács", role = c("ctb")),
+      person(given = "Matthias",
+             family = "Hinz", role = c("ctb")),
+      person(given = "Ben",
+             family = "Best", role = c("ctb")))
+Description: Allows user to create, edit and delete rows in datatable() from the 'DT' package.
 License: LGPL
+URL: https://github.com/jbryer/DTedit
+BugReports: https://github.com/DavidPatShuiFong/DTedit/issues
+Depends: 
+    R (>= 3.3)
+Imports: 
+    DT (>= 0.6),
+    shiny (>= 1.0.0),
+    blob,
+    methods,
+    R6
+Suggests: 
+    RSQLite,
+    base64enc,
+    randomNames,
+    knitr,
+    rmarkdown,
+    testthat,
+    shinytest,
+    covr,
+    devtools,
+    withr,
+    magrittr,
+    shinyWidgets (>= 0.5.2),
+    jsonlite,
+    rmdformats
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
+VignetteBuilder: knitr
+Collate: 
+    'DTedit-package.R'
+    'dtedit.R'
+    'dtedit_demo.R'
+    'dtedit_test.R'

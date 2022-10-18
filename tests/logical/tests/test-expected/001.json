@@ -1,0 +1,32 @@
+{
+  "export": {
+    "data_list": [
+      {
+        "checkvalue": [
+          true,
+          false,
+          null,
+          true,
+          false,
+          null,
+          true,
+          false,
+          null
+        ]
+      },
+      {
+        "checkvalue": [
+          false,
+          false,
+          null,
+          true,
+          false,
+          null,
+          true,
+          false,
+          null
+        ]
+      }
+    ]
+  }
+}
