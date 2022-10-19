@@ -2,8 +2,4 @@
 .Rhistory
 .RData
 .Ruserdata
-DTedit.Rcheck/
-Meta
-doc
-tests/dtedit_demo/books.sqlite
-inst/shiny_demo/books.sqlite
+/DTedit.Rproj
