@@ -1,9 +1,9 @@
 library(devtools)
 
-document()
-build()
-install()
-check(cran = TRUE)
+devtools::document()
+devtools::build()
+devtools::install()
+devtools::check(cran = TRUE)
 
 library(DTedit)
 

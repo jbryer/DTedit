@@ -4,3 +4,4 @@ build.R
 .gitignore
 .Rhistory
 README.md
+^LICENSE\.md$

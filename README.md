@@ -44,11 +44,11 @@ my.delete.callback <- function(data, row) {
 
 Typically these functions would interact with a database. As written here, the data would be lost between shiny sessions.
 
-2. Create the `dtedit` object within your `server` function. 
+2. Create the `dtedit_server` object within your `server` function. 
 
 ```r
-DTedit::dtedit(input, output,
-	   name = 'mycontacts',
+DTedit::dtedit_server(
+	   id = 'mycontacts',
 	   thedata = mydata,
 	   edit.cols = c('name', 'email', 'useR', 'notes'),
 	   edit.label.cols = c('Name', 'Email Address', 'Are they an R user?', 'Additional notes'),
@@ -59,12 +59,12 @@ DTedit::dtedit(input, output,
 	   callback.delete = my.delete.callback)
 ```
 
-The `input` and `output` are passed from the `server` function. The `name` parameter will define the name of the object available to the `uiOutput`. The `thedata` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`. The structure of the `data.frame` will define the inputs (e.g. `factor`s will be drop down, `Date` will use `dateInput`, `numeric`s will use `numericInput`, etc.). There are many other parameters to custom the behavior of `dtedit`, see `?dtedit` for the full list.
+The `id` parameter defines the name of the object available to the `uiOutput`. The `thedata` is a `data.frame` for the initial view of the data table. This can be an empty (i.e. no rows) `data.frame`. The structure of the `data.frame` will define the inputs (e.g. `factor`s will be drop down, `Date` will use `dateInput`, `numeric`s will use `numericInput`, etc.). There are many other parameters to custom the behavior of `dtedit`, see `?dtedit` for the full list.
 
-3. Use `uiOutput` in your UI to display the editable data table.
+3. Use `dtedit_ui` in your UI to display the editable data table.
 
-The `name` you will pass to `uiOutput` is the name you passed to the `dtedit` created on the server side.
+The `id` you will pass to `dteditui` is the name you passed to the `dtedit_server` created on the server side.
 
 ```r
-uiOutput('mycontacts')
+dtedit_ui('mycontacts')
 ```

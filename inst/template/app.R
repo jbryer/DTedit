@@ -26,8 +26,8 @@ server <- function(input, output) {
 	}
 
 	##### Create the DTedit object
-	DTedit::dtedit(input, output,
-		   name = 'mycontacts',
+	DTedit::dtedit_server(
+		   id = 'mycontacts',
 		   thedata = mydata,
 		   edit.cols = c('name', 'email', 'useR', 'notes'),
 		   edit.label.cols = c('Name', 'Email Address', 'Are they an R user?', 'Additional notes'),
@@ -41,7 +41,7 @@ server <- function(input, output) {
 ##### Create the shiny UI
 ui <- fluidPage(
 	h3('DTedit Template'),
-	uiOutput('mycontacts')
+	dtedit_ui('mycontacts')
 )
 
 ##### Start the shiny app

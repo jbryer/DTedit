@@ -2,6 +2,8 @@
 
 export(dtedit)
 export(dtedit_demo)
+export(dtedit_server)
+export(dtedit_ui)
 importFrom(DT,dataTableOutput)
 importFrom(DT,dataTableProxy)
 importFrom(DT,renderDataTable)

@@ -46,7 +46,7 @@
 #'        The most common case where this parameter is desirable is when a text
 #'        area is required instead of a simple text input.
 #' @param input.choices a list of character vectors. The names of each element in the list must
-#'        correpsond to a column name in the data. The value, a character vector, are the options
+#'        correspond to a column name in the data. The value, a character vector, are the options
 #'        presented to the user for data entry.
 #' @param selectize Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.
 #' @param defaultPageLength number of rows to show in the data table by default.
@@ -81,7 +81,7 @@
 #' @param datatable.options options passed to \code{\link{DT::renderDataTable}}.
 #'        See \link{https://rstudio.github.io/DT/options.html} for more information.
 #' @export
-dtedit <- function(input, output, name, thedata,
+dtedit <- function(input, output, name, thedata, id,
 				   view.cols = names(thedata),
 				   edit.cols = names(thedata),
 				   edit.label.cols = edit.cols,
@@ -124,6 +124,12 @@ dtedit <- function(input, output, name, thedata,
 		stop('Not all edit.cols are in the data.')
 	}
 
+	if(missing(id)) {
+		id <- ''
+	} else {
+		id <- paste0(id, '-')
+	}
+
 	DataTableName <- paste0(name, 'dt')
 
 	result <- shiny::reactiveValues()
@@ -138,7 +144,8 @@ dtedit <- function(input, output, name, thedata,
 	}
 
 	valid.input.types <- c('dateInput', 'selectInput', 'numericInput',
-						   'textInput', 'textAreaInput', 'passwordInput', 'selectInputMultiple')
+						   'textInput', 'textAreaInput', 'passwordInput',
+						   'selectInputMultiple')
 	inputTypes <- sapply(thedata[,edit.cols], FUN=function(x) {
 		switch(class(x),
 			   list = 'selectInputMultiple',
@@ -180,10 +187,11 @@ dtedit <- function(input, output, name, thedata,
 				value <- ifelse(missing(values),
 								as.character(Sys.Date()),
 								as.character(values[,edit.cols[i]]))
-				fields[[i]] <- dateInput(paste0(name, typeName, edit.cols[i]),
-										 label=edit.label.cols[i],
-										 value=value,
-										 width=date.width)
+				fields[[i]] <- dateInput(
+					inputId = paste0(id, name, typeName, edit.cols[i]),
+					label = edit.label.cols[i],
+					value = value,
+					width = date.width)
 			} else if(inputTypes[i] == 'selectInputMultiple') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
 				if(is.list(value)) {
@@ -198,47 +206,54 @@ dtedit <- function(input, output, name, thedata,
 						choices <- input.choices[[edit.cols[i]]]
 					}
 				}
-				if(length(choices) == 1 & choices == '') {
-					warning(paste0('No choices available for ', edit.cols[i],
-								   '. Specify them using the input.choices parameter'))
+				if(length(choices) == 1) {
+					if(choices == '') {
+						warning(paste0('No choices available for ', edit.cols[i],
+									   '. Specify them using the input.choices parameter'))
+					}
 				}
-				fields[[i]] <- selectInputMultiple(paste0(name, typeName, edit.cols[i]),
-										   label=edit.label.cols[i],
-										   choices=choices,
-										   selected=value,
-										   width=select.width)
-
+				fields[[i]] <- selectInputMultiple(
+					inputId = paste0(id, name, typeName, edit.cols[i]),
+					label = edit.label.cols[i],
+					choices = choices,
+					selected = value,
+					width = select.width)
 			} else if(inputTypes[i] == 'selectInput') {
 				value <- ifelse(missing(values), '', as.character(values[,edit.cols[i]]))
-				fields[[i]] <- shiny::selectInput(paste0(name, typeName, edit.cols[i]),
-										   label=edit.label.cols[i],
-										   choices=levels(result$thedata[,edit.cols[i]]),
-										   selected=value,
-										   width=select.width)
+				fields[[i]] <- shiny::selectInput(
+					inputId = paste0(id, name, typeName, edit.cols[i]),
+					label = edit.label.cols[i],
+					choices = levels(result$thedata[,edit.cols[i]]),
+					selected = value,
+					width = select.width)
 			} else if(inputTypes[i] == 'numericInput') {
 				value <- ifelse(missing(values), 0, values[,edit.cols[i]])
-				fields[[i]] <- shiny::numericInput(paste0(name, typeName, edit.cols[i]),
-											label=edit.label.cols[i],
-											value=value,
-											width=numeric.width)
+				fields[[i]] <- shiny::numericInput(
+					inputId = paste0(id, name, typeName, edit.cols[i]),
+					label = edit.label.cols[i],
+					value = value,
+					width = numeric.width)
 			} else if(inputTypes[i] == 'textAreaInput') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
-				fields[[i]] <- shiny::textAreaInput(paste0(name, typeName, edit.cols[i]),
-											 label=edit.label.cols[i],
-											 value=value,
-											 width=textarea.width, height=textarea.height)
+				fields[[i]] <- shiny::textAreaInput(
+					inputId = paste0(id, name, typeName, edit.cols[i]),
+					label = edit.label.cols[i],
+					value = value,
+					width = textarea.width, height=textarea.height)
 			} else if(inputTypes[i] == 'textInput') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
-				fields[[i]] <- shiny::textInput(paste0(name, typeName, edit.cols[i]),
-										 label=edit.label.cols[i],
-										 value=value,
-										 width=text.width)
+				fields[[i]] <- shiny::textInput(
+					inputId = paste0(id, name, typeName, edit.cols[i]),
+					label = edit.label.cols[i],
+					value = value,
+					width = text.width)
 			} else if(inputTypes[i] == 'passwordInput') {
 				value <- ifelse(missing(values), '', values[,edit.cols[i]])
-				fields[[i]] <- shiny::passwordInput(paste0(name, typeName, edit.cols[i]),
-										 label=edit.label.cols[i],
-										 value=value,
-										 width=text.width)
+				fields[[i]] <- shiny::passwordInput(
+					inputId = paste0(id, name, typeName, edit.cols[i]),
+					label = edit.label.cols[i],
+					value = value,
+					width = text.width)
 			} else {
 				stop('Invalid input type!')
 			}
@@ -281,6 +296,7 @@ dtedit <- function(input, output, name, thedata,
 		newdata <- result$thedata
 		row <- nrow(newdata) + 1
 		newdata[row,] <- NA
+
 		for(i in edit.cols) {
 			if(inputTypes[i] %in% c('selectInputMultiple')) {
 				newdata[[i]][row] <- list(input[[paste0(name, '_add_', i)]])
@@ -313,7 +329,7 @@ dtedit <- function(input, output, name, thedata,
 					shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 					fields,
 					footer = shiny::column(shiny::modalButton('Cancel'),
-									shiny::actionButton(paste0(name, '_insert'), 'Save'),
+									shiny::actionButton(paste0(id, name, '_insert'), 'Save'),
 									width=12),
 					size = modal.size
 		)
@@ -389,12 +405,12 @@ dtedit <- function(input, output, name, thedata,
 
 	editModal <- function(row) {
 		output[[paste0(name, '_message')]] <- renderText('')
-		fields <- getFields('_edit_', values=result$thedata[row,])
+		fields <- getFields('_edit_', values = result$thedata[row,])
 		shiny::modalDialog(title = title.edit,
 			shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 			fields,
 			footer = column(shiny::modalButton('Cancel'),
-							shiny::actionButton(paste0(name, '_update'), 'Save'),
+							shiny::actionButton(paste0(id, name, '_update'), 'Save'),
 							width=12),
 			size = modal.size
 		)
@@ -440,7 +456,7 @@ dtedit <- function(input, output, name, thedata,
 					shiny::p('Are you sure you want to delete this record?'),
 					fields,
 					footer = shiny::column(modalButton('Cancel'),
-									shiny::actionButton(paste0(name, '_delete'), 'Delete'),
+									shiny::actionButton(paste0(id, name, '_delete'), 'Delete'),
 									width=12),
 					size = modal.size
 		)
@@ -450,11 +466,11 @@ dtedit <- function(input, output, name, thedata,
 
 	output[[name]] <- shiny::renderUI({
 		shiny::div(
-			if(show.insert) { shiny::actionButton(paste0(name, '_add'), label.add) },
-			if(show.update) { shiny::actionButton(paste0(name, '_edit'), label.edit) },
-			if(show.delete) { shiny::actionButton(paste0(name, '_remove'), label.delete) },
-			if(show.copy) { shiny::actionButton(paste0(name, '_copy'), label.copy) },
-			shiny::br(), shiny::br(), DT::dataTableOutput(DataTableName)
+			if(show.insert) { shiny::actionButton(paste0(id, name, '_add'), label.add) },
+			if(show.update) { shiny::actionButton(paste0(id, name, '_edit'), label.edit) },
+			if(show.delete) { shiny::actionButton(paste0(id, name, '_remove'), label.delete) },
+			if(show.copy) { shiny::actionButton(paste0(id, name, '_copy'), label.copy) },
+			shiny::br(), shiny::br(), DT::dataTableOutput(paste0(id, DataTableName))
 		)
 	})
 

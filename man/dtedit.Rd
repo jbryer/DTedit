@@ -4,20 +4,46 @@
 \alias{dtedit}
 \title{Function to create a DataTable with Add, Edit, and Delete buttons.}
 \usage{
-dtedit(input, output, name, thedata, view.cols = names(thedata),
-  edit.cols = names(thedata), edit.label.cols = edit.cols, input.types,
-  input.choices = NULL, selectize = TRUE, modal.size = "m",
-  text.width = "100\%", textarea.width = "570px",
-  textarea.height = "200px", date.width = "100px",
-  numeric.width = "100px", select.width = "100\%",
-  defaultPageLength = 10, title.delete = "Delete",
-  title.edit = "Edit", title.add = "New", label.delete = "Delete",
-  label.edit = "Edit", label.add = "New", label.copy = "Copy",
-  show.delete = TRUE, show.update = TRUE, show.insert = TRUE,
-  show.copy = TRUE, callback.delete = function(data, row) { },
-  callback.update = function(data, olddata, row) { },
-  callback.insert = function(data, row) { }, click.time.threshold = 2,
-  datatable.options = list(pageLength = defaultPageLength))
+dtedit(
+  input,
+  output,
+  name,
+  thedata,
+  id,
+  view.cols = names(thedata),
+  edit.cols = names(thedata),
+  edit.label.cols = edit.cols,
+  input.types,
+  input.choices = NULL,
+  selectize = TRUE,
+  modal.size = "m",
+  text.width = "100\%",
+  textarea.width = "570px",
+  textarea.height = "200px",
+  date.width = "100px",
+  numeric.width = "100px",
+  select.width = "100\%",
+  defaultPageLength = 10,
+  title.delete = "Delete",
+  title.edit = "Edit",
+  title.add = "New",
+  label.delete = "Delete",
+  label.edit = "Edit",
+  label.add = "New",
+  label.copy = "Copy",
+  show.delete = TRUE,
+  show.update = TRUE,
+  show.insert = TRUE,
+  show.copy = TRUE,
+  callback.delete = function(data, row) {
+ },
+  callback.update = function(data, olddata, row) {
+ },
+  callback.insert = function(data, row) {
+ },
+  click.time.threshold = 2,
+  datatable.options = list(pageLength = defaultPageLength)
+)
 }
 \arguments{
 \item{input}{Shiny input object passed from the server.}
@@ -48,7 +74,7 @@ The most common case where this parameter is desirable is when a text
 area is required instead of a simple text input.}
 
 \item{input.choices}{a list of character vectors. The names of each element in the list must
-correpsond to a column name in the data. The value, a character vector, are the options
+correspond to a column name in the data. The value, a character vector, are the options
 presented to the user for data entry.}
 
 \item{selectize}{Whether to use selectize.js or not. See \code{\link{selectInput}} for more info.}

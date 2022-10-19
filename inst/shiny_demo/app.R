@@ -1,3 +1,4 @@
+# DTedit Shiny Demo
 library(shiny)
 library(RSQLite)
 library(DTedit)
@@ -58,7 +59,7 @@ books.delete.callback <- function(data, row) {
 }
 
 ##### Create the Shiny server
-server <- function(input, output) {
+server <- function(input, output, session) {
 	books <- getBooks()
 	dtedit(input, output,
 		   name = 'books',
