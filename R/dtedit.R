@@ -60,6 +60,8 @@
 #' @param title.delete the title of the dialog box for deleting a row.
 #' @param title.edit the title of the dialog box for editing a row.
 #' @param title.add the title of the dialog box for inserting a new row.
+#' @param title.save the title of the modal save confirmation button.
+#' @param title.cancel the title of the modal cancellation button.
 #' @param label.delete the label of the delete button.
 #' @param label.edit the label of the edit button.
 #' @param label.add the label of the add button.
@@ -99,6 +101,8 @@ dtedit <- function(input, output, name, thedata, id,
 				   title.delete = 'Delete',
 				   title.edit = 'Edit',
 				   title.add = 'New',
+				   title.save = 'Save',
+				   title.cancel = 'Cancel',
 				   label.delete = 'Delete',
 				   label.edit = 'Edit',
 				   label.add = 'New',
@@ -328,8 +332,8 @@ dtedit <- function(input, output, name, thedata, id,
 		shiny::modalDialog(title = title.add,
 					shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 					fields,
-					footer = shiny::column(shiny::modalButton('Cancel'),
-									shiny::actionButton(paste0(id, name, '_insert'), 'Save'),
+					footer = shiny::column(shiny::modalButton(title.cancel),
+									shiny::actionButton(paste0(id, name, '_insert'), title.save),
 									width=12),
 					size = modal.size
 		)
@@ -409,8 +413,8 @@ dtedit <- function(input, output, name, thedata, id,
 		shiny::modalDialog(title = title.edit,
 			shiny::div(shiny::textOutput(paste0(name, '_message')), style='color:red'),
 			fields,
-			footer = column(shiny::modalButton('Cancel'),
-							shiny::actionButton(paste0(id, name, '_update'), 'Save'),
+			footer = column(shiny::modalButton(title.cancel),
+							shiny::actionButton(paste0(id, name, '_update'), title.save),
 							width=12),
 			size = modal.size
 		)
