@@ -2,6 +2,7 @@
 % Please edit documentation in R/DTedit-package.R
 \docType{package}
 \name{DTedit-package}
+\alias{DTedit}
 \alias{DTedit-package}
 \title{Editable DataTables for shiny apps}
 \description{

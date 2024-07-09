@@ -35,14 +35,22 @@ dtedit(
   show.update = TRUE,
   show.insert = TRUE,
   show.copy = TRUE,
+  enable.delete = TRUE,
+  enable.update = TRUE,
+  enable.insert = TRUE,
+  enable.copy = TRUE,
   callback.delete = function(data, row) {
  },
   callback.update = function(data, olddata, row) {
  },
   callback.insert = function(data, row) {
  },
+  callback.replace = function(data) {
+     data
+ },
   click.time.threshold = 2,
-  datatable.options = list(pageLength = defaultPageLength)
+  datatable.options = list(pageLength = defaultPageLength),
+  colnames
 )
 }
 \arguments{
